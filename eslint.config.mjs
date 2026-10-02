@@ -53,7 +53,9 @@ export default [
   { linterOptions: { reportUnusedDisableDirectives: 'error' } },
   // File sets are disjoint on purpose: flat config MERGES globals of overlapping blocks.
   // Server, adapters, scripts, tests, config files: Node.
-  { files: ['**/*.js', '**/*.mjs'], ignores: ['js/**'], languageOptions: lang(node), rules },
+  { files: ['**/*.js', '**/*.mjs'], ignores: ['js/**', 'tests/e2e/**'], languageOptions: lang(node), rules },
+  // Browser E2E scripts: Node, plus browser globals inside page.evaluate() callbacks.
+  { files: ['tests/e2e/**/*.mjs'], languageOptions: lang({ ...node, ...browser }), rules },
   // Browser UI.
   { files: ['js/**/*.js'], ignores: ['js/core/**'], languageOptions: lang(browser), rules },
   // js/core runs in BOTH browser and Node (valuation engine): only APIs both provide.

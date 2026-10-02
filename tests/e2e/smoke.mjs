@@ -60,7 +60,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); console.log(`${ok ? ' 
 let browser;
 try {
   browser = await pw.chromium.launch();
-  for (const viewport of [{ width: 1360, height: 900 }, { width: 390, height: 844 }]) {
+  for (const viewport of [{ width: 1360, height: 900 }, { width: 721, height: 900 }, { width: 390, height: 844 }]) {
     console.log(`viewport ${viewport.width}×${viewport.height}`);
     const page = await browser.newPage({ viewport });
     const errors = [];
@@ -68,6 +68,7 @@ try {
     page.on('pageerror', (e) => errors.push(String(e)));
 
     await page.goto(`${base}/#/trade`);
+    await page.locator('#tabs a').first().waitFor({ timeout: 15000 });
     const boxes = page.locator('.trade-side input[type=search], input[type=search]');
     await boxes.first().waitFor({ timeout: 15000 });
     // Add one player to each side via search (fixture names: "Test WR 1", "Test RB 1").
@@ -90,6 +91,15 @@ try {
       await page.waitForTimeout(700);
       check((await page.locator('main, #app, body').first().innerText()).trim().length > 50, `${route} renders`);
     }
+    // Layout (handoff bugs #6/#7 and the mid-width header overflow): every section tab and the Sync button are on
+    // screen, and the page never scrolls sideways.
+    const layout = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+      offTabs: [...document.querySelectorAll('#tabs a')].filter((a) => a.offsetParent).filter((a) => { const r = a.getBoundingClientRect(); return r.left < 0 || r.right > window.innerWidth; }).map((a) => a.textContent.trim()),
+      syncOn: (() => { const r = document.querySelector('#sync-btn').getBoundingClientRect(); return r.left >= 0 && r.right <= window.innerWidth; })(),
+    }));
+    check(layout.overflow <= 0 && layout.syncOn, `layout: no sideways page scroll, Sync visible (overflow ${layout.overflow}px)`);
+    check(layout.offTabs.length === 0, `layout: all section tabs on screen${layout.offTabs.length ? ` (cut: ${layout.offTabs.join(', ')})` : ''}`);
     // Trends: model change marked, model line broken, change measured within the current model only.
     await page.goto(`${base}/#/player/TWR1`);
     await page.locator('.modal-body').waitFor({ timeout: 10000 });

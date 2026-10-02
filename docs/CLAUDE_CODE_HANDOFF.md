@@ -92,7 +92,7 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
 | `npm test` | `node --test tests/*.test.js` — 78 tests, offline | **yes, 78/78** |
 | `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`). **CI runs it before the tests; a lint error blocks the release** | **yes, clean** |
-| `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360 px and 390 px: trade 1-for-1 with verdict, every main route, player Trends with a seeded two-model history (marker, broken line, within-model change), no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
+| `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360, 721 and 390 px: layout (no sideways page scroll, Sync and all tabs on screen), trade 1-for-1 with verdict, every main route, player Trends with a seeded two-model history (marker, broken line, within-model change), no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
 | `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--freeze`, `--snapshot-before`, `--out=DIR`). `--freeze`/`--snapshot-before` without `--only` do only that (no backtests) | yes (fresh clone, mismatch and full before/after workflow; §17 item 10) |
 | `npm run calibrate` | Re-derive `config/calibration/*.json` from nflverse 2006–2025 (downloads ~60 MB to `scripts/.cache/`) | ran earlier in project |
 | `npm run backtest` | ECR vs realised production → `reports/backtest.json` (shown on the Model page) | ran earlier in project |
@@ -442,12 +442,12 @@ Verified by Playwright screenshots this session (desktop 1360 px and mobile 390 
 
 | Page (route) | Purpose | Main interactions | Data | Known UX issues |
 |---|---|---|---|---|
-| Header | mode toggle REDRAFT/DYNASTY, league profile dropdown, data pill (age, n/10 sources), Sync All | sync progress overlay | `/api/status` | Mobile: nav tabs are clipped ("Setti…"), so Data/Settings/Model/Help need horizontal scrolling |
+| Header | mode toggle REDRAFT/DYNASTY, league profile dropdown, data pill (age, n/10 sources), Sync All | sync progress overlay | `/api/status` | — (tabs wrap onto a second row on narrow screens; compact header 721–1120 px; bugs #6/#13 fixed) |
 | Trade (`#/trade`, home) | build and analyze a trade | search ("jef", "det rb", "2027 1st", "1.04"), pick adder (year/round/slot or bucket/range), Swap/Save/Export/Print/Clear, saved trades with re-check | valuations + `/api/trades` | Once dismissed, the welcome card only returns after Settings → "Clear browser storage" (the same steps stay on the Help page); saved-trades table overflows on mobile |
 | Players (`#/players`) | searchable table | filters (pos, team, age, value, injured, rookies), sort, custom columns, CSV exports | valuations | wide table on mobile |
 | Player modal | "Why this value?", dynasty outlook, market & sources, stats, trends, "Why did this value change?" | tabs | valuations, `/api/history`, snapshots | — (Trends marks model changes since the bug #3 fix) |
 | Compare (`#/compare`) | up to 8 assets, age-curve overlay | add/remove | valuations | — |
-| Rookies & Picks (`#/rookies`, dynasty only) | prospect values, pick grid, methodology | tabs | valuations, picks | Prospect table is wider than the 1360 px viewport (last column cut off) |
+| Rookies & Picks (`#/rookies`, dynasty only) | prospect values, pick grid, methodology | tabs | valuations, picks | — (prospect table fits 1360 px; scrolls inside its box with a pinned Player column below that; bug #7 fixed) |
 | Data (`#/data`, `/sources`, `/import`, `/quality`, `/snapshots`) | sync dashboard, source health (details, retry), manual import wizard, identity resolution, snapshots | Retry, Force refresh, import steps, resolve ambiguous | `/api/status`, `/api/quality`, `/api/import/*` | — |
 | Settings (`#/settings/...`) | league, scoring, roster, redraft/dynasty/pick model parameters, advanced JSON, profile import/export, Sleeper league import | number fields write `overrides` | profiles | Many parameters; resets exist only as "Reset custom scoring" and "Reset model overrides" (all overrides), not per section |
 | Model (`#/model`) | methodology, replacement levels, calibration charts, backtest | — | `reports/backtest.json`, calibration | Does **not** show the 2.0 audit results (`reports/audit/` isn't served by the static allow-list) |
@@ -522,6 +522,15 @@ No formal usability audit has been done.
     1-for-1 with an unavailable player charged the other side's player a consolidation package adjustment. Verified
     in Node (Philip Rivers for Jeremiyah Love: package 0, named note) and in the browser (toast when a stored trade
     loses an N/A player, saved-trade "Now" column). 1 new test in `trade.test.js` (fails on the old code).
+14. **Bugs #6, #7 and #13 fixed (layout)** — `css/app.css`, `js/ui/views/rookies.js`: section tabs wrap instead of
+    scrolling behind a hidden scrollbar (all 8 visible at 390/360 px); header compacts between 721 and 1120 px (it
+    overflowed the page by 67–370 px and hid Sync); phone header stays one row. Rookie prospect table: columns
+    declared once (header + cell), "Rookie ADP" dropped when no player has one (true for all current data), shorter
+    headers ("Team", "Range" with the SD in a tooltip, "Conf."), sticky Player column — 1,381 → 1,292 px, fits 1360 px
+    with no scroll. Verified with Playwright on real data (all routes × both modes at 1024/800 px: no page overflow).
+    E2E now runs 1360/721/390 px and checks no sideways page scroll, Sync visible and all tabs on screen — the old
+    CSS fails at 721 px (334 px overflow) and 390 px (5 tabs cut). `eslint.config.mjs` gained a Node+browser block
+    for `tests/e2e/**` (`page.evaluate` callbacks).
 
 ## 18. What is currently in progress
 
@@ -531,7 +540,7 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 
 | Feature | Current state | What remains | Files | Blocker | Next step |
 |---|---|---|---|---|---|
-| Audit results in the UI | only `reports/backtest.json` shown | serve/show `reports/audit/scorecard.csv` or a summary JSON | `server/index.js` STATIC_ALLOW, `js/ui/views/model.js` | none | §35 item 5 |
+| Audit results in the UI | only `reports/backtest.json` shown | serve/show `reports/audit/scorecard.csv` or a summary JSON | `server/index.js` STATIC_ALLOW, `js/ui/views/model.js` | none | §35 item 3 |
 
 ## 19. Known bugs
 
@@ -542,12 +551,13 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 | 3 | ~~Value history mixes model versions~~ **FIXED** (2.1.0 session) | was Medium | Player → Trends with history spanning a model change | model changes marked | dashed marker + label at each change, model-value line broken there, 7/30-day/season change measured within the current model version (market change still across versions), explanatory note | was: `server/history.js` recorded `model_version` per entry but the UI ignored it | `js/ui/history-series.js`, `js/ui/charts.js` (`markers`, series `breaks`), `js/ui/views/player-modal.js`, `css/app.css` | — |
 | 4 | ~~Format-mismatched market lists used silently~~ **FIXED in model 2.1.1** | Low (no current impact: FantasyCalc provides SF lists) | a source with only 1QB lists in an SF league | warn or exclude | `formatMismatch: true` is set but never read | unfinished guard | `js/core/valuation/signals.js` L35 | — |
 | 5 | ~~TE-premium market lists never preferred~~ **FIXED in model 2.1.1** | Low | TEP league with a source that publishes TEP values (KTC import with `tep`) | prefer the matching TEP list | always prefers `tep: 0` | `marketMismatch` uses `Math.abs(rec.tep − 0)` | `signals.js` L12 | none |
-| 6 | Mobile header nav clipped | Low (UX) | 390 px viewport | all tabs reachable visibly | tabs cut off at "Setti…" | nav overflow styling | `css/app.css`, `index.html` | swipe/scroll the nav |
-| 7 | Rookie prospect table wider than desktop viewport | Low (UX) | `#/rookies` at 1360 px | fits or scrolls clearly | last column cut | many columns | `js/ui/views/rookies.js`, `css/app.css` | horizontal scroll |
+| 6 | ~~Mobile header nav clipped~~ **FIXED** (2.1.0 session) | Low (UX) | 390 px viewport | all tabs reachable visibly | tabs cut off at "Setti…" | nav overflow styling | `css/app.css`, `index.html` | swipe/scroll the nav |
+| 7 | ~~Rookie prospect table wider than desktop viewport~~ **FIXED** (2.1.0 session) | Low (UX) | `#/rookies` at 1360 px | fits or scrolls clearly | last column cut | many columns | `js/ui/views/rookies.js`, `css/app.css` | horizontal scroll |
 | 8 | `js/core/version.js` comment references `js/core/schema.js migrate*`, which doesn't exist | Low (doc/code) | read file | migration helpers exist, or no reference | no schema migration code at all | aspirational comment | `js/core/version.js` | — |
 | 9 | `config/calibration/rookie-slot-curve.json` `generated_at` predates its current shape | Low | compare `generated_at` with git history | timestamp of the LS-exponential refit | shape was refit in place from `raw_mean_by_rank` during the audit; `generated_at` still 13:33 | manual refit | that file; `npm run calibrate` regenerates consistently | rerun `npm run calibrate` |
 | 10 | ~~ESPN ADP placeholder (≈168–170) treated as a real ADP~~ **FIXED in the adapter** (after 2.1.0) | was Low | `data/normalized/espn/adp.json` | undrafted players tie | 815 of 1,050 entries are now exactly 170 with `undrafted: true`; they share one average overall rank (≈0 value) instead of being ordered by noise | was: adapter kept every ADP < 300 | `adapters/espn.js` (`ESPN_UNDRAFTED_ADP`, `ESPN_UNDRAFTED_MARGIN`) | — |
 | 11 | ~~Trade note "Unavailable assets" lists raw ids, and a missing asset still counts as "Team A consolidates"~~ **FIXED** (2.1.0 session) | was Low | `analyzeTrade` with an N/A player (e.g. Philip Rivers) | names; no false consolidation | note names the player (`names` option: function or map; falls back to the id); unavailable non-pick ids count as players (value 0), so a 1-for-1 with an N/A player no longer charges the other side a package adjustment; a side with only unavailable assets is no longer "incomplete"; the live trade builder tells you by name (toast) when it drops unavailable assets, and saved-trade "Now" uses the same names/counting | was: notes used ids; player count only included resolved assets | `js/core/valuation/trade.js`, `js/ui/views/trade.js`, `tests/trade.test.js` | — |
+| 13 | Header overflowed the page between 721 and ~1090 px (found while fixing #6) — **FIXED** (2.1.0 session) | was Medium (UX: Sync button off-screen on tablets/small laptops, page scrolled sideways on every route) | 800 px viewport, any page | header fits | right-hand controls (651 px) pushed the page 67–370 px sideways | no breakpoint between 720 px (phone layout) and desktop | `css/app.css` (≤1120 px: brand text hidden, header wraps; ≤960 px: data-pill text and Sync label hidden, as on phones) | — |
 | 12 | `npm test` leaves one `ffta-sync-*` temp dir per run in the OS temp folder | Low (test hygiene) | run `npm test`, list `$TMPDIR/ffta-sync-*` | removed after the suite | stays | `tests/sync.test.js` creates it with `mkdtemp` and never removes it | `tests/sync.test.js` | delete them by hand |
 
 No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68–72 in the 2.1.0 session).
@@ -805,7 +815,6 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 | Priority | Task | Why it matters | Current state | Dependencies | Files |
 |---|---|---|---|---|---|
-| Medium | Mobile nav + wide-table UX fixes (bugs #6, #7) | many users on phones | unfixed | none | `css/app.css`, `js/app.js`, `js/ui/views/rookies.js` |
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
 | Low | Schema migration helpers or remove the stale comment (bug #8) | doc/code consistency | stale comment | none | `js/core/version.js` |
@@ -814,15 +823,11 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 ## 35. Recommended next steps
 
-1. **Mobile header nav:** make `nav` tabs wrap or show a scroll affordance at ≤480 px so Data/Settings/Model/Help
-   are visibly reachable. *Files:* `css/app.css`, `index.html`. *Verify:* screenshot at 390×844.
-2. **Rookies table width:** hide low-value columns (College, Rookie ADP when empty) under 1400 px or allow
-   horizontal scroll with a sticky name column. *Files:* `js/ui/views/rookies.js`, `css/app.css`.
-3. *(done — lint tooling, §3; runs in CI)*
-4. *(done — optional E2E smoke test, §26)*. Possible extension: import wizard, player modal, dynasty pick adder.
-5. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
+1. *(done — lint tooling, §3; runs in CI)*
+2. *(done — optional E2E smoke test, §26)*. Possible extension: import wizard, player modal, dynasty pick adder.
+3. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
    `STATIC_ALLOW` and render it in `js/ui/views/model.js`.
-6. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
+4. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
     dead weight in redraft). Measure size and valuation time before and after.
 
 # PICK UP HERE
@@ -832,10 +837,10 @@ Current state:            Model 2.1.1 (bug #1 fixed: ADP corroborates only; #4/#
                           (bug #10); dev-only `npm run lint` (also in CI) + optional `npm run test:e2e`; audit-model
                           reproducible (bug #2); Trends marks model changes (bug #3). All 10 sources sync; 78/78
                           tests, lint clean, E2E pass.
-Most important unfinished: Mobile header nav clipped at 390 px (bug #6, §35 item 1), then rookies table width (#7).
-Secondary:                sync-test temp-dir leak (#12), #8/#9 doc/metadata, audit scorecard on Model page.
+Most important unfinished: remaining small bugs #8, #9, #12 (doc/metadata/test hygiene), then §35 item 3.
+Secondary:                audit scorecard on Model page; dataset pruning decision; UX audit (none done yet).
 Known blockers:           None.
-Files to inspect first:   css/app.css (header/nav), index.html, js/app.js, js/ui/views/rookies.js
+Files to inspect first:   js/core/version.js, config/calibration/rookie-slot-curve.json, tests/sync.test.js
 Tests to run first:       npm test (expect 78/78); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
@@ -885,7 +890,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
   model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling → lint in CI +
   audit-model reproducibility (bug #2) → Trends model-version markers (bug #3) → model 2.1.1 market list
-  format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11) → layout fixes (bugs #6, #7, #13, this
+  update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

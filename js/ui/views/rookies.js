@@ -42,12 +42,25 @@ export function renderRookies(root) {
       list.push({ a, p, ecr: ecrs.length ? mean(ecrs) : null, ecrSd: rr[0]?.sd ?? null, best: rr[0]?.best ?? null, worst: rr[0]?.worst ?? null, adp: adp?.adp ?? null });
     }
     list.sort((x, y) => (x.ecr ?? 999) - (y.ecr ?? 999) || y.a.value - x.a.value);
-    const tbl = h('table.data', {}, h('thead', {}, h('tr', {}, ['Rk', 'Player', 'Pos', 'Team (landing spot)', 'Age', 'College', 'NFL draft', 'Rookie ECR', 'Expert range', 'Rookie ADP', 'Prospect value', 'Market', 'Confidence'].map((c) => h('th', { class: ['Player', 'Pos', 'Team (landing spot)', 'College', 'Confidence'].includes(c) ? '' : 'num' }, c)))),
-      h('tbody', {}, list.map((r, i) => h('tr.clickable', { onclick: () => openPlayer(r.a.id) },
-        h('td.num.muted', {}, i + 1), h('td.player-cell', {}, h('span.player-name', {}, r.a.name)), h('td', {}, posBadge(r.a.position)), h('td', {}, r.a.team || 'FA'), h('td.num', {}, fmtAge(r.a.age)), h('td.small', {}, r.p.college || '—'),
-        h('td.num', {}, r.p.draft?.round ? `${r.p.draft.year} R${r.p.draft.round}${r.p.draft.pick ? ` #${r.p.draft.pick}` : ''}` : r.p.draft?.year ? `${r.p.draft.year} UDFA` : '—'),
-        h('td.num.bold', {}, fmt1(r.ecr)), h('td.num.small', {}, r.best ? `${r.best}–${r.worst} (sd ${fmt1(r.ecrSd)})` : '—'), h('td.num', {}, fmt1(r.adp)),
-        h('td.num.model-v.bold', {}, fmtValue(r.a.value)), h('td.num.market-v', {}, fmtValue(r.a.groupValues?.market)), h('td', {}, confBadge(r.a.confidence))))));
+    // Columns are defined once (header + cell) so optional ones can be dropped: the table must fit a desktop window.
+    const hasAdp = list.some((r) => r.adp !== null);
+    const cols = [
+      ['Rk', 'num', (r, i) => h('td.num.muted', {}, i + 1)],
+      ['Player', 'sticky-col', (r) => h('td.player-cell.sticky-col', {}, h('span.player-name', {}, r.a.name))],
+      ['Pos', '', (r) => h('td', {}, posBadge(r.a.position))],
+      ['Team', '', (r) => h('td', { title: 'Landing spot' }, r.a.team || 'FA')],
+      ['Age', 'num', (r) => h('td.num', {}, fmtAge(r.a.age))],
+      ['College', '', (r) => h('td.small', {}, r.p.college || '—')],
+      ['NFL draft', 'num', (r) => h('td.num.nowrap', {}, r.p.draft?.round ? `${r.p.draft.year} R${r.p.draft.round}${r.p.draft.pick ? ` #${r.p.draft.pick}` : ''}` : r.p.draft?.year ? `${r.p.draft.year} UDFA` : '—')],
+      ['Rookie ECR', 'num', (r) => h('td.num.bold', {}, fmt1(r.ecr))],
+      ['Range', 'num', (r) => h('td.num.small.nowrap', { title: r.best ? `Best–worst expert rank; standard deviation ${fmt1(r.ecrSd)}` : '' }, r.best ? `${r.best}–${r.worst}` : '—')],
+      ...(hasAdp ? [['Rookie ADP', 'num', (r) => h('td.num', {}, fmt1(r.adp))]] : []),
+      ['Prospect value', 'num', (r) => h('td.num.model-v.bold', {}, fmtValue(r.a.value))],
+      ['Market', 'num', (r) => h('td.num.market-v', {}, fmtValue(r.a.groupValues?.market))],
+      ['Conf.', '', (r) => h('td', {}, confBadge(r.a.confidence))],
+    ];
+    const tbl = h('table.data', {}, h('thead', {}, h('tr', {}, cols.map(([c, cls]) => h('th', { class: cls }, c)))),
+      h('tbody', {}, list.map((r, i) => h('tr.clickable', { onclick: () => openPlayer(r.a.id) }, cols.map(([, , cell]) => cell(r, i))))));
     return h('div', {}, h('p.small.muted', {}, `Rookie class ${pk.classYear || '—'}: individual drafted players valued by the dynasty model (draft-capital prior, early production, market, consensus). College production metrics are not available from the free sources used, so they are not modelled — see docs/DATA_SOURCES.md.`), h('div.table-wrap', {}, tbl),
       h('div.mt', {}, h('button.btn.btn-sm', { onclick: () => download('rookie-prospects.csv', toCSV(list.map((r) => ({ player: r.a.name, pos: r.a.position, team: r.a.team, age: r.a.age?.toFixed(1), draft: r.p.draft?.round ? `${r.p.draft.year}-${r.p.draft.round}-${r.p.draft.pick}` : '', rookie_ecr: r.ecr, prospect_value: Math.round(r.a.value), market_value: r.a.groupValues?.market ? Math.round(r.a.groupValues.market) : '' }))), 'text/csv') }, '⤓ Export rookie prospects CSV')));
   }
