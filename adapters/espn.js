@@ -10,6 +10,13 @@ export const ESPN_STAT_IDS = {
   23: 'rush_att', 24: 'rush_yd', 25: 'rush_td', 26: 'rush_2pt',
   53: 'rec', 42: 'rec_yd', 43: 'rec_td', 44: 'rec_2pt', 58: 'rec_tgt', 72: 'fum_lost',
 };
+// ESPN counts a player who goes undrafted as pick 170, so ADP within one pick of that default means "drafted in few or
+// no leagues" (2026-10-02: 815 of 1,050 entries ≥ 169, median ownership ≈0–4%). The decimals there are noise, not a
+// draft order, so these entries are collapsed to exactly the default: they tie (shared average rank) instead of being
+// ranked arbitrarily, and still say "undrafted" (dropping them would lose that information).
+export const ESPN_UNDRAFTED_ADP = 170;
+export const ESPN_UNDRAFTED_MARGIN = 1;
+
 const INJ = { QUESTIONABLE: 'Questionable', OUT: 'Out', DOUBTFUL: 'Doubtful', INJURY_RESERVE: 'IR', SUSPENSION: 'Suspended', ACTIVE: null, NORMAL: null, PROBABLE: null, DAY_TO_DAY: 'Questionable' };
 
 export function mapEspnStats(stats, pos, appliedTotal) {
@@ -67,7 +74,8 @@ export class EspnAdapter extends BaseAdapter {
       const { pos, rec } = this._base(pl);
       const adp = pl.player?.ownership?.averageDraftPosition;
       if (!pos || typeof adp !== 'number' || adp <= 0 || adp >= 300) continue;
-      records.push({ ...rec, format: 'redraft_ppr', adp, pos_adp: null, platform: 'espn', owned_pct: pl.player.ownership.percentOwned ?? null, as_of: new Date().toISOString() });
+      const undrafted = adp >= ESPN_UNDRAFTED_ADP - ESPN_UNDRAFTED_MARGIN;
+      records.push({ ...rec, format: 'redraft_ppr', adp: undrafted ? ESPN_UNDRAFTED_ADP : adp, undrafted, pos_adp: null, platform: 'espn', owned_pct: pl.player.ownership.percentOwned ?? null, as_of: new Date().toISOString() });
     }
     return { records, minRecords: 50 };
   }

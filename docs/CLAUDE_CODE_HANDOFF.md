@@ -68,7 +68,7 @@ Player Database: Implemented. 17 external ID systems, never merges ambiguous pla
 Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool crashes on a fresh clone at the
                  compare step (needs the git-ignored frozen dataset).
 UX Audit:        Not done. Known UX issues in §16.
-Testing:         68/68 node:test tests pass (≈5 s, offline). Browser E2E exists only as /tmp scripts, NOT in repo.
+Testing:         69/69 node:test tests pass (≈5 s, offline). Browser E2E exists only as /tmp scripts, NOT in repo.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions builds and publishes ZIPs on every push to main; last run succeeded [verified].
 ```
@@ -87,7 +87,7 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --failed` | Retry only failed/partial/quarantined sources | inferred |
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
-| `npm test` | `node --test tests/*.test.js` — 68 tests, offline | **yes, 68/68** |
+| `npm test` | `node --test tests/*.test.js` — 69 tests, offline | **yes, 69/69** |
 | `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--snapshot-before`) | yes, but see §19 bug #2 |
 | `npm run calibrate` | Re-derive `config/calibration/*.json` from nflverse 2006–2025 (downloads ~60 MB to `scripts/.cache/`) | ran earlier in project |
 | `npm run backtest` | ECR vs realised production → `reports/backtest.json` (shown on the Model page) | ran earlier in project |
@@ -232,7 +232,7 @@ None needs authentication. Registry: `config/sources.json`. Details and terms no
 | `fantasypros_ecr` | FantasyPros ECR (redraft, ROS, dynasty, rookie) via the DynastyProcess GitHub mirror | active, primary consensus | `dynastyprocess.js` | weekly mirror; no TE-premium list | `fantasypros_manual` import |
 | `nflverse` | players/bio/draft, weekly stats (incl. snaps, target share), official injury report, schedule | active, primary | `nflverse.js` | current-season files 404 in the offseason (expected) | sleeper_stats |
 | `ffc_adp` | Fantasy Football Calculator redraft ADP | active, supplemental | `ffc.js` | small list (≈400) | Sleeper/ESPN ADP |
-| `espn` | independent projections, ADP, injury status | active, supplemental | `espn.js` | **undocumented endpoint** | Sleeper projections |
+| `espn` | independent projections, ADP, injury status | active, supplemental | `espn.js` | **undocumented endpoint**; ADP ≥169 is ESPN's undrafted default and is collapsed to 170 (`undrafted: true`) so those players tie | Sleeper projections |
 | `ktc` | KeepTradeCut values/picks | **manual only** | `manual` | Terms §2.1 forbid automated collection — never fetched | FantasyCalc |
 | `fantasypros_manual`, `manual_projections`, `manual_market`, `manual_rankings`, `manual_adp`, `manual_picks` | user imports | manual, "not imported" | `manual` | — | — |
 
@@ -261,7 +261,7 @@ Planned (not implemented): Yahoo, FantasyPros API (`.env.example` placeholders o
    unplayed weeks summed to ROS), weekly stats, last season, injuries, bye weeks, team schedule context
    (`remaining_games`, `remaining_opponents`). Players without any signal are dropped.
 8. **Outputs** — `data/calculated/dataset.json`, snapshot `data/snapshots/<data_version>.json.gz` (90 kept),
-   `history.json` (reference-league values per build), `data/state/{source-status,last-sync,sync-log,quality}.json`.
+   `history.json` (reference-league values per build), `data/state/{sources-status,last-sync,sync-log,quality-report,nfl-state}.json`.
 9. **UI** — the browser fetches `/api/dataset` (or the static file) and computes values locally.
 
 | Situation | Behaviour |
@@ -467,6 +467,15 @@ No formal usability audit has been done.
    monotonicity 75 checks / 0 failures, before/after Spearman 1.0 and median change 0 in all four reference leagues,
    scorecard metrics unchanged. 2 new tests (failing on 2.0.0). Committed `reports/audit/` was deliberately left as
    the 2.0.0 audit record (the 2.1.0 run only relabels it).
+7. **ESPN undrafted-ADP placeholder (bug #10)** — `adapters/espn.js` collapses ADP ≥ 169 (within one pick of ESPN's
+   undrafted default 170) to exactly 170 and flags `undrafted: true`. Dropping those entries was tried first and
+   **rejected on evidence**: the ≈170 value carries real "undrafted" information, and without it 248 deep players rose
+   (e.g. a production-only WR 90 → 269) because Sleeper's deep ADP alone then mapped them higher. Collapsing to a tie
+   (frozen-dataset simulation, then confirmed on a live re-sync): in season only **decreases** (235 players in 12-team
+   1QB, e.g. backup QBs Mason Rudolph 194 → 15 and Kenny Pickett 190 → 11 in the 12-team dynasty roster preset as
+   redraft; Kyle Juszczyk 172 → 104), forced preseason ≤ ~10-point rises; SF presets unaffected (no ESPN SF ADP);
+   dynasty unaffected. Data normalization, not a formula/default change → `model_version` stays 2.1.0. New
+   `tests/adapters.test.js` (stubbed HTTP).
 
 ## 18. What is currently in progress
 
@@ -493,10 +502,10 @@ code). The owner approved (2026-10-02): dev-only ESLint/Playwright run via globa
 | 7 | Rookie prospect table wider than desktop viewport | Low (UX) | `#/rookies` at 1360 px | fits or scrolls clearly | last column cut | many columns | `js/ui/views/rookies.js`, `css/app.css` | horizontal scroll |
 | 8 | `js/core/version.js` comment references `js/core/schema.js migrate*`, which doesn't exist | Low (doc/code) | read file | migration helpers exist, or no reference | no schema migration code at all | aspirational comment | `js/core/version.js` | — |
 | 9 | `config/calibration/rookie-slot-curve.json` `generated_at` predates its current shape | Low | compare `generated_at` with git history | timestamp of the LS-exponential refit | shape was refit in place from `raw_mean_by_rank` during the audit; `generated_at` still 13:33 | manual refit | that file; `npm run calibrate` regenerates consistently | rerun `npm run calibrate` |
-| 10 | ESPN ADP placeholder (≈168–170) treated as a real ADP | Low since 2.1.0 (only affects players that have other signals) | `data/normalized/espn/adp.json`: 782 of 1,050 entries at 168–170.3 | undrafted players carry no ADP | they get overall ranks ≈228–1050 and a small ADP contribution | ESPN reports ~170 for undrafted players; adapter only drops `adp >= 300` | `adapters/espn.js fetchADP` | — (fix planned as the next commit) |
+| 10 | ~~ESPN ADP placeholder (≈168–170) treated as a real ADP~~ **FIXED in the adapter** (after 2.1.0) | was Low | `data/normalized/espn/adp.json` | undrafted players tie | 815 of 1,050 entries are now exactly 170 with `undrafted: true`; they share one average overall rank (≈0 value) instead of being ordered by noise | was: adapter kept every ADP < 300 | `adapters/espn.js` (`ESPN_UNDRAFTED_ADP`, `ESPN_UNDRAFTED_MARGIN`) | — |
 | 11 | Trade note "Unavailable assets" lists raw ids (e.g. `P1f0ff3e3`), and a missing asset still counts as "Team A consolidates" | Low (UX) | `analyzeTrade` with an N/A player (e.g. Philip Rivers since 2.1.0, or a saved trade containing one) | player name; missing assets ignored for the consolidation note | raw cid; consolidation note fires | `trade.js` notes use ids; `playersA/B` count resolved assets only | `js/core/valuation/trade.js` | — |
 
-No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68/68 in the 2.1.0 session).
+No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68–69 in the 2.1.0 session).
 
 ## 20. Known model / data problems (not software bugs)
 
@@ -597,11 +606,12 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **68 tests, 68 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **69 tests, 69 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
 |---|---|---|
+| `adapters.test.js` | 1 | ESPN ADP undrafted-default collapse (stubbed HTTP; first adapter-level test) |
 | `identity.test.js` | 9 | normalizers, ID/name matching, suffixes/nicknames, team change, ambiguous never merged, conflicts, overrides, DEF, PlayerStore |
 | `ingestion.test.js` | 8 | CSV parsing (quotes, BOM, CRLF, malformed), delimiter detection, auto column mapping, required fields, duplicates, JSON uploads, pick labels |
 | `scoring.test.js` | 6 | PPR/half/std, QB scoring, TE premium, first downs, bonuses, K/DEF |
@@ -610,7 +620,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `valuation.test.js` | 15 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection |
 | `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
-Gaps: no test for adapters against recorded real responses, the HTTP API routes,
+Gaps: no test for most adapters against recorded real responses (only ESPN ADP, stubbed), the HTTP API routes,
 the UI (no E2E in repo), Sleeper league import, history/trends, the audit scripts. Browser E2E used during
 development lived in `/tmp/claude-0/*.cjs` (Playwright global install) and **is gone in a new container**.
 Manual checks still worth doing after UI changes: trade builder on mobile, import wizard end-to-end in the browser,
@@ -747,7 +757,6 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 | Priority | Task | Why it matters | Current state | Dependencies | Files |
 |---|---|---|---|---|---|
-| Medium | Filter ESPN's undrafted ADP placeholder in the adapter (bug #10) | removes fake deep ADP ranks feeding corroborated players | planned next commit | none | `adapters/espn.js` |
 | Medium | Make `audit-model` reproducible on fresh clones (bug #2) | model changes need before/after validation | crashes at compare | none | `scripts/audit-model.js`, `scripts/audit/compare.js`, `current.js` |
 | Medium | Mark/segment model versions in value history (bug #3) | trends show model changes as value moves | unfixed | none | `server/history.js`, `js/ui/views/player-modal.js` |
 | Medium | Commit a repo E2E smoke test (Playwright optional/dev-only) | UI regressions are currently uncaught | E2E only in /tmp | zero-dependency decision | new `tests/e2e/` or script |
@@ -763,9 +772,7 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 ## 35. Recommended next steps
 
-1. **ESPN undrafted-ADP placeholder (bug #10)** — owner-approved as the commit right after 2.1.0: drop ESPN ADP
-   entries at the placeholder in `adapters/espn.js` (source-specific logic belongs in the adapter). Verify: ADP list
-   distribution before/after, full-asset value diff, `npm test`.
+1. **Lint + optional E2E tooling** (owner-approved 2026-10-02, items 6–7 below) — next.
 2. **Make the audit reproducible (bug #2).** Add `--freeze` (copies `data/calculated/dataset.json` to
    `data/benchmark/dataset-frozen.json`), make `compare` print a clear message and skip (not throw) on a
    data_version mismatch, and still write `scorecard.csv`. *Verify:* run on a machine without the frozen file:
@@ -795,13 +802,13 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 # PICK UP HERE
 
 ```text
-Current state:            Model 2.1.0 (bug #1 fixed: ADP corroborates only). All 10 sources sync; 68/68 tests pass.
-Most important unfinished: Bug #10 ESPN undrafted-ADP placeholder (adapter filter, approved next commit);
-                          dev-only lint + optional E2E tooling (approved: no devDependencies, run via npx/global).
+Current state:            Model 2.1.0 (bug #1 fixed: ADP corroborates only); ESPN undrafted ADP collapsed to a tie
+                          (bug #10 fixed). All 10 sources sync; 69/69 tests pass.
+Most important unfinished: dev-only lint + optional E2E tooling (approved: no devDependencies, run via npx/global).
 Secondary:                Bug #2 audit-model fresh-clone crash; bug #3 history mixes model versions (now also
                           1.0.0/2.0.0/2.1.0); mobile nav; bug #11 trade-note ids.
 Known blockers:           None.
-Files to inspect first:   adapters/espn.js (fetchADP), scripts/audit-model.js, server/history.js
+Files to inspect first:   scripts/audit-model.js, scripts/audit/compare.js, server/history.js
 Tests to run first:       npm test   (expect 68/68)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
@@ -847,7 +854,7 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   (fast-forward; never force-push `main`).
 * Recent commits: `cb8e7ff` initial full app → `f80fcc6` CLAUDE.md → `7ac5d50` non-technical distribution →
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
-  model 2.1.0 (bug #1 fix, this update).
+  model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10, this update).
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
