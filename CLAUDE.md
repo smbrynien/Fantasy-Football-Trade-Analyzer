@@ -15,3 +15,10 @@
 - Architecture and model docs: `README.md`, `docs/DESIGN.md`, `docs/VALUATION_MODEL.md`, `docs/ADDING_A_SOURCE.md`
 - Never hard-code source names outside `adapters/` and `config/sources.json`; bump `model_version` in
   `config/model.json` whenever valuation formulas or defaults change.
+
+## Project handoff (keep current)
+
+- Read `docs/CLAUDE_CODE_HANDOFF.md` at the start of a session; it records the actual project state, known bugs and
+  the next task ("PICK UP HERE").
+- Update it in the same commit whenever architecture, features, formulas/defaults (with the `model_version` bump),
+  data sources, important bugs, priorities or blockers change.

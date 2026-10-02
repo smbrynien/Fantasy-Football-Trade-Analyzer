@@ -497,6 +497,10 @@ Prioritised (severity → change):
 
 ## 20. Remaining limitations
 
+* **Found after release (open):** in redraft, free agents whose only signal is a stale ADP still receive value
+  (63 players ≥ 100 in 12-team 1QB on 2026-10-02, e.g. Philip Rivers 417). Expected surplus gives deep curve
+  positions a positive tail and a lone ADP group is renormalized to full weight. The audit's checks covered top
+  players and extremes, not deep free agents. Tracked in `docs/CLAUDE_CODE_HANDOFF.md` §19 bug #1.
 * No free historical archives for projections, ADP or trade-market values → their weights are judgment.
 * The fair-value range (σ) is a signal-disagreement heuristic, not a calibrated interval; trade z-scores inherit that.
 * Dynasty backtests cover only four seasons (2020–2023) with three-season outcomes; ρ differences < 0.01 are noise.
