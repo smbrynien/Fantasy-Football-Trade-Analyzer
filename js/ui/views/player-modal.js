@@ -6,6 +6,7 @@ import { app, getValuations, activeProfile, playerData } from '../state.js';
 import { COMPONENT_LABELS, COMPONENT_ORDER } from '../../core/valuation/engine.js';
 import { diffAsset } from '../../core/valuation/explain.js';
 import { lineChart } from '../charts.js';
+import { modelMarkers, windowDelta, currentModelStart } from '../history-series.js';
 import { api, hasServer } from '../api.js';
 import { mean, median, sd } from '../../core/util/stats.js';
 import { scoreStats } from '../../core/scoring.js';
@@ -195,21 +196,21 @@ export function openPlayer(cid) {
         else {
           const xs = hist.entries.map((e) => new Date(e.t).getTime());
           const ser = (arr) => arr.map((v, i) => [xs[i], v]);
-          const delta = (arr, days) => {
-            const lastI = arr.length - 1;
-            if (arr[lastI] === null) return null;
-            const cutoff = xs[lastI] - days * 864e5;
-            let j = -1;
-            for (let i = 0; i < arr.length; i++) if (xs[i] >= cutoff && arr[i] !== null) { j = i; break; }
-            return j >= 0 && j < lastI ? arr[lastI] - arr[j] : null;
-          };
+          // Model values are only comparable within one model version: changes are measured since the current
+          // version started and the model line is broken at every model change (raw source series are not).
+          const markers = modelMarkers(hist.entries, xs);
+          const breaks = markers.map((m) => m.x);
+          const delta = (arr, days) => windowDelta(arr, xs, hist.entries, days);
+          const mdelta = (arr, days) => windowDelta(arr, xs, hist.entries, days, { sameModelOnly: false });
+          const since = currentModelStart(hist.entries);
           const span = xs[xs.length - 1] - xs[0];
           const dateFmt = (x) => (span < 2 * 864e5 ? new Date(x).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : new Date(x).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
           const key = app.mode === 'dynasty' ? 'd' : 'r';
           const mk = app.mode === 'dynasty' ? 'md' : 'mr';
-          wrap.append(h('div.kpis', {}, [[7, '7 day'], [30, '30 day'], [365, 'Season']].map(([d, l]) => h('div.kpi', {}, h('div.k', {}, `${l} change`), h('div.v', {}, fmtSigned(delta(s[key], d))), h('div.s', {}, `market ${fmtSigned(delta(s[mk], d))}`)))));
+          wrap.append(h('div.kpis', {}, [[7, '7 day'], [30, '30 day'], [365, 'Season']].map(([d, l]) => h('div.kpi', {}, h('div.k', {}, `${l} change`), h('div.v', {}, fmtSigned(delta(s[key], d))), h('div.s', {}, `market ${fmtSigned(mdelta(s[mk], d))}`)))));
           wrap.append(h('h3.mt', {}, 'Model value vs raw market value (reference league)'));
-          wrap.append(lineChart([{ label: 'Model value', color: 'var(--accent)', points: ser(s[key]) }, { label: 'FantasyCalc value (raw)', color: 'var(--market)', points: ser(s[mk]), dashed: true }], { xFormat: dateFmt, height: 200 }));
+          wrap.append(lineChart([{ label: 'Model value', color: 'var(--accent)', points: ser(s[key]), breaks }, { label: 'FantasyCalc value (raw)', color: 'var(--market)', points: ser(s[mk]), dashed: true }], { xFormat: dateFmt, height: 200, markers }));
+          if (markers.length) wrap.append(h('p.small.muted', {}, `The valuation model changed (dashed line: ${markers.map((m) => `${m.label} from ${dateFmt(m.x)}`).join(', ')}). Model values from different versions aren't comparable, so the line is broken there and the change figures above only count values since ${since.version} (${fmtTime(since.t)}). "Why did this value change?" below re-runs today's model on older data.`));
           wrap.append(h('h3.mt', {}, 'Consensus rank & projection'));
           wrap.append(lineChart([{ label: app.mode === 'dynasty' ? 'Dynasty ECR' : 'ROS ECR', color: 'var(--team-b)', points: ser(app.mode === 'dynasty' ? s.ed : s.er) }], { xFormat: dateFmt, height: 160, yFormat: (v) => v.toFixed(0) }));
           wrap.append(lineChart([{ label: 'ROS projected points (PPR)', color: 'var(--good)', points: ser(s.proj) }], { xFormat: dateFmt, height: 160 }));

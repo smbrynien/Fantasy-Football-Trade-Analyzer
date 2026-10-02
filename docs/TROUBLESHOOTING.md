@@ -18,7 +18,7 @@
 | FantasyCalc changed format | Quarantine will catch it. Fix `adapters/fantasycalc.js`; DP values and KTC import remain as market inputs. |
 | A player is missing a value | Player detail → Market & sources shows which signals exist. Check Data → Data quality → unmatched/ambiguous; resolve identity there. |
 | Two players merged/split incorrectly | Data quality → Ambiguous: choose the right player (stored in `data/players/overrides.json`). Edit that file to undo. |
-| Values changed a lot after an update | Player → Trends → "Why did this value change?" re-runs the model on an older snapshot with your current settings and lists the drivers. Check `model_version` in saved trades. |
+| Values changed a lot after an update | Player → Trends marks each model upgrade with a dashed line, breaks the model-value line there, and counts the 7/30-day/season changes only since the current model version. "Why did this value change?" re-runs the model on an older snapshot with your current settings and lists the drivers. Check `model_version` in saved trades. |
 | Dynasty values ignore aging curves | `config/calibration/` missing → run `npm run calibrate`. The Model page lists active calibration files. |
 | Want a clean slate | Stop the server, delete `data/` (except README.md), run `npm run sync`. Your profiles survive in browser storage; `data/user/` holds the server copy. |
 | Sync behind a proxy / TLS errors | Node's fetch honours the system CA bundle via `NODE_EXTRA_CA_CERTS=/path/ca.pem`. |

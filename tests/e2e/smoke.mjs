@@ -34,6 +34,13 @@ fs.mkdirSync(path.join(dataDir, 'calculated'), { recursive: true });
 const ds = makeDataset();
 ds.data_version = ds.data_version || 'e2e-fixture';
 fs.writeFileSync(path.join(dataDir, 'calculated', 'dataset.json'), JSON.stringify(ds));
+// Value history spanning a model change (handoff bug #3): the Trends tab must mark it and break the model line.
+const day = 864e5, t0 = Date.parse(ds.built_at || '2026-10-01T12:00:00Z') - 20 * day;
+fs.writeFileSync(path.join(dataDir, 'calculated', 'history.json'), JSON.stringify({
+  schema_version: 1,
+  entries: ['1.9.0', '1.9.0', 'e2e-model', 'e2e-model'].map((model_version, i) => ({ t: new Date(t0 + i * 5 * day).toISOString(), data_version: `e2e-${i}`, model_version, week: 4, season: 2026 })),
+  series: { TWR1: { name: 'Test WR 1', pos: 'WR', r: [9000, 9100, 7000, 7050], d: [9500, 9600, 8000, 8100], mr: [8000, 8100, 8200, 8300], md: [9000, 9000, 9100, 9200], er: [1, 1, 1, 1], ed: [1, 1, 1, 1], proj: [200, 198, 196, 195] } },
+}));
 
 // --- server ---
 const port = 5300 + Math.floor(Math.random() * 600);
@@ -83,6 +90,16 @@ try {
       await page.waitForTimeout(700);
       check((await page.locator('main, #app, body').first().innerText()).trim().length > 50, `${route} renders`);
     }
+    // Trends: model change marked, model line broken, change measured within the current model only.
+    await page.goto(`${base}/#/player/TWR1`);
+    await page.locator('.modal-body').waitFor({ timeout: 10000 });
+    await page.locator('.modal-body button', { hasText: 'Trends' }).first().click();
+    const firstChart = page.locator('.modal-body .chart').first();
+    await firstChart.waitFor({ timeout: 10000 });
+    check((await firstChart.locator('line.marker').count()) === 1, 'trends: model change marked on the value chart');
+    check((await firstChart.locator('polyline').count()) === 3, 'trends: model line broken at the change (2 runs) + market line');
+    const kpis = (await page.locator('.modal-body .kpis .kpi .v').allInnerTexts()).map((t) => t.trim());
+    check(kpis.length === 3 && kpis.every((t) => t === '+50'), `trends: 7/30-day/season change counted within the current model (+50 each, got ${kpis.join(', ')})`);
     check(errors.length === 0, `no console/page errors${errors.length ? `: ${errors.slice(0, 5).join(' | ')}` : ''}`);
     await page.close();
   }

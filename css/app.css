@@ -264,6 +264,8 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
 .chart text { font: 11px var(--font); fill: var(--muted); }
 .chart .grid { stroke: var(--border); stroke-width: 1; }
 .chart .axis { stroke: var(--border-strong); }
+.chart .marker { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .marker-label { font-size: 10px; }
 .legend { display: flex; gap: .75rem; flex-wrap: wrap; font-size: .78rem; color: var(--muted); }
 .legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; margin-right: .3rem; vertical-align: middle; }
 
