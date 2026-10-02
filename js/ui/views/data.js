@@ -36,6 +36,8 @@ function syncView(body) {
     const partial = auto.filter((x) => x.state === 'partial').length;
     const stale = auto.filter((x) => x.stale).length;
     const ls = s.last_sync;
+    if (s.recovered_files?.length) tableHost.append(h('div.banner', { style: { margin: '0 0 .75rem' } }, h('strong', {}, 'Recovered from unreadable files: '),
+      s.recovered_files.map((r) => `${r.file} (kept as ${r.moved_to})`).join('; '), '. The app rebuilt what it could; re-sync if values look incomplete.'));
     tableHost.append(h('div.sync-summary', {},
       kpi('Successful sources', `${ok}/${auto.length}`, partial ? `${partial} partial` : 'automated sources'),
       kpi('Failed sources', String(failed), failed ? 'see errors below' : 'none', failed ? 'st-error' : 'st-ok'),

@@ -55,6 +55,8 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 ```text
 Overall Status:  Working, tested. Model 2.1.1 (2.0.0 audit model + ADP corroboration rule + market list
                  format rules). ALL known bugs (§19 #1–#13) FIXED. Lint runs in CI.
+Bug audit:       Adversarial reliability audit IN PROGRESS — findings, root causes and tests in docs/BUG_AUDIT.md
+                 (server path traversal, crash vectors, CSRF, rebuild races, corrupt-file recovery fixed so far).
 
 Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
                  corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
@@ -840,6 +842,10 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 # PICK UP HERE
 
+> **Audit in progress:** read `docs/BUG_AUDIT.md` first — it lists what has been tested and fixed, and what is still
+> open in the audit. Server changes: static paths are resolved after decoding; state-changing API calls must be
+> same-origin `application/json`; non-loopback `Host` headers are refused unless `HOST` exposes the app.
+
 ```text
 Current state:            Model 2.1.1 (bug #1 fixed: ADP corroborates only; #4/#5 market list format rules); ESPN undrafted ADP collapsed to a tie
                           (bug #10); dev-only `npm run lint` (also in CI) + optional `npm run test:e2e`; audit-model
@@ -901,7 +907,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling → lint in CI +
   audit-model reproducibility (bug #2) → Trends model-version markers (bug #3) → model 2.1.1 market list
   format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11) → layout fixes (bugs #6, #7, #13) →
-  hygiene (bugs #8, #9, #12, this update). Every known bug is now fixed. CI (release.yml) succeeded for every 2.1.0-session push checked.
+  hygiene (bugs #8, #9, #12). Every known bug is now fixed. → bug-audit batch 1: server hardening + sync/storage
+  reliability (docs/BUG_AUDIT.md A1–A5, B1, C1, C2, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

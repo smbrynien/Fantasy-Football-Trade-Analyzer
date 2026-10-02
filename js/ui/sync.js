@@ -52,6 +52,7 @@ function pollProgress() {
       const ds = await loadDataset();
       if (ds) setDataset(ds);
     } catch (e) { toast(`Dataset reload failed: ${e.message}`, 'bad'); }
+    if (p.phase === 'failed' || (p.error && !p.summary)) { toast(`Sync failed: ${p.error || 'unknown error'}. Previous data is still in use.`, 'bad', 8000); return; }
     const s = p.summary;
     if (s) {
       const msg = `Sync finished: ${s.succeeded} ok${s.partial ? `, ${s.partial} partial` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.skipped ? `, ${s.skipped} fresh/skipped` : ''}.`;

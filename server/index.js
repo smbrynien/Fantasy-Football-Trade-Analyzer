@@ -7,9 +7,9 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { spawn } from 'node:child_process';
-import { ROOT, P } from './lib/paths.js';
+import { ROOT, P, DATA_DIR } from './lib/paths.js';
 import { loadEnv } from './lib/env.js';
-import { readJSON, writeJSON, readGzJSON } from './lib/store.js';
+import { readJSON, writeJSON, readGzJSON, recoveredFiles } from './lib/store.js';
 import { loadConfig } from './lib/config.js';
 import { runSync, rebuild, syncProgress, isSyncRunning } from './sync-engine.js';
 import { previewImport, commitImport, clearManualSource } from './import-service.js';
@@ -51,11 +51,24 @@ async function readBody(req, limit = 25e6) {
   });
 }
 
+/**
+ * Resolve a request path to a file under ROOT, or null. The allow-list is checked on the DECODED, normalized path
+ * relative to ROOT: checking the raw URL let `/js/..%2f.env` pass the `/js/` rule and escape to any file in the repo.
+ */
+function resolveStaticPath(urlPath) {
+  let decoded;
+  try { decoded = decodeURIComponent(urlPath === '/' ? '/index.html' : urlPath); } catch { return null; }
+  if (decoded.includes('\0')) return null;
+  const file = path.resolve(ROOT, `.${decoded}`);
+  const rel = path.relative(ROOT, file);
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  const clean = `/${rel.split(path.sep).join('/')}`;
+  return STATIC_ALLOW.some((re) => re.test(clean)) ? file : null;
+}
+
 async function serveStatic(req, res, urlPath) {
-  if (urlPath === '/') urlPath = '/index.html';
-  if (!STATIC_ALLOW.some((re) => re.test(urlPath))) return send(res, 404, { error: 'Not found' });
-  const file = path.normalize(path.join(ROOT, decodeURIComponent(urlPath)));
-  if (!file.startsWith(ROOT)) return send(res, 403, { error: 'Forbidden' });
+  const file = resolveStaticPath(urlPath);
+  if (!file) return send(res, 404, { error: 'Not found' });
   try {
     const data = await fsp.readFile(file);
     const ext = path.extname(file);
@@ -88,7 +101,8 @@ async function statusPayload() {
       due: ageH === null ? s.adapter !== 'manual' : ageH > (s.update_frequency_hours || 24),
     };
   });
-  return { app_version: APP_VERSION, sources, last_sync: lastSync, nfl_state: nflState, dataset: datasetMeta, sync_running: isSyncRunning(), progress: syncProgress() };
+  const recovered = recoveredFiles.map((r) => ({ file: path.relative(DATA_DIR, r.file), moved_to: path.relative(DATA_DIR, r.moved_to), error: r.error, at: r.at }));
+  return { app_version: APP_VERSION, sources, last_sync: lastSync, nfl_state: nflState, dataset: datasetMeta, sync_running: isSyncRunning(), progress: syncProgress(), recovered_files: recovered };
 }
 
 const routes = [];
@@ -139,7 +153,8 @@ route('GET', /^\/api\/trades$/, async () => (await readJSON(P.trades, { trades: 
 route('POST', /^\/api\/trades$/, async (req) => {
   const body = await readBody(req);
   const t = await readJSON(P.trades, { trades: [] });
-  const entry = { id: `t_${Date.now().toString(36)}`, saved_at: new Date().toISOString(), ...body };
+  // Server-assigned fields win: a client-supplied id could collide or be undeletable (DELETE only matches \w+).
+  const entry = { ...body, id: `t_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, saved_at: new Date().toISOString() };
   t.trades = [entry, ...t.trades].slice(0, 500);
   await writeJSON(P.trades, t);
   return { ok: true, id: entry.id };
@@ -166,9 +181,31 @@ route('GET', /^\/api\/export\/health\.csv$/, async () => {
   return { __raw: csv, type: 'text/csv; charset=utf-8', filename: 'data-source-health.csv' };
 });
 
+// Requests are only accepted for a loopback Host unless HOST deliberately exposes the app (DNS-rebinding guard), and
+// state-changing API calls must come from the app itself: same Origin (when the browser sends one) and a JSON body.
+// A cross-site page can otherwise POST text/plain "simple" requests that need no CORS preflight (sync, imports,
+// identity overrides, trades).
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
+const LOCAL_ONLY = LOOPBACK_HOSTS.has(HOST);
+const hostName = (h) => String(h || '').replace(/:\d+$/, '').toLowerCase();
+function requestRejection(req) {
+  if (LOCAL_ONLY && !LOOPBACK_HOSTS.has(hostName(req.headers.host))) return { status: 403, error: 'Forbidden host' };
+  if (req.method === 'GET' || req.method === 'HEAD') return null;
+  const origin = req.headers.origin;
+  if (origin && origin !== 'null') {
+    let o; try { o = new URL(origin); } catch { return { status: 403, error: 'Forbidden origin' }; }
+    if (o.host.toLowerCase() !== String(req.headers.host || '').toLowerCase()) return { status: 403, error: 'Cross-origin request refused' };
+  } else if (origin === 'null') return { status: 403, error: 'Cross-origin request refused' };
+  if ((req.method === 'POST' || req.method === 'PUT') && !/^application\/json\b/i.test(req.headers['content-type'] || '')) return { status: 415, error: 'Content-Type must be application/json' };
+  return null;
+}
+
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   try {
+    const rejected = requestRejection(req);
+    if (rejected) return send(res, rejected.status, { error: rejected.error });
+    let url;
+    try { url = new URL(req.url, 'http://localhost'); } catch { return send(res, 400, { error: 'Bad request' }); }
     if (url.pathname.startsWith('/api/')) {
       for (const r of routes) {
         const m = url.pathname.match(r.re);
@@ -181,7 +218,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 404, { error: `No route ${req.method} ${url.pathname}` });
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { error: 'Method not allowed' });
-    return serveStatic(req, res, url.pathname);
+    return await serveStatic(req, res, url.pathname);
   } catch (e) {
     const status = e.status || 500;
     if (status >= 500) console.error(e);

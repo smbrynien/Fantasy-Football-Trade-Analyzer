@@ -99,8 +99,12 @@ async function runSource(source, ctx, runStamp, log, factory = createAdapter) {
  */
 export async function runSync(opts = {}) {
   if (running) return running;
+  // Publish this run's progress before anything can fail: a sync that died early used to leave the PREVIOUS run's
+  // finished progress in place, which the UI then announced as this run's success.
+  const startedAt = new Date().toISOString();
+  progress = { running: true, started_at: startedAt, sources: {}, phase: 'starting' };
   running = (async () => {
-    const started = new Date();
+    const started = new Date(startedAt);
     const runStamp = started.toISOString().replace(/[:.]/g, '-');
     const config = opts.config || loadConfig();
     const logLines = [];
@@ -189,11 +193,27 @@ export async function runSync(opts = {}) {
     progress = { ...progress, running: false, phase: 'done', summary };
     return summary;
   })();
-  try { return await running; } finally { running = null; }
+  try {
+    return await running;
+  } catch (e) {
+    progress = { ...(progress || {}), running: false, phase: 'failed', error: e.message, summary: null };
+    throw e;
+  } finally { running = null; }
 }
 
-/** Player DB → dataset → quality report → snapshot → default values/history. */
-export async function rebuild(config, statusAll, state, log = () => {}) {
+/**
+ * Player DB → dataset → quality report → snapshot → default values/history.
+ * Rebuilds are serialized: a sync, a manual import, an identity override and /api/rebuild can all trigger one, and two
+ * interleaved rebuilds raced on the same output files (and on the value history).
+ */
+let rebuildChain = Promise.resolve();
+export function rebuild(...args) {
+  const run = rebuildChain.then(() => rebuildNow(...args));
+  rebuildChain = run.catch(() => {});
+  return run;
+}
+
+async function rebuildNow(config, statusAll, state, log = () => {}) {
   config = config || loadConfig();
   statusAll = statusAll || (await readJSON(P.sourceStatus, {}));
   state = state || (await readJSON(P.nflState, null)) || { season: new Date().getUTCFullYear(), week: 0, season_type: 'off' };

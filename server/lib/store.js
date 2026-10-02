@@ -12,24 +12,54 @@ export async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
 
+let tmpCounter = 0;
 export async function writeFileAtomic(file, data) {
   await ensureDir(path.dirname(file));
-  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
-  await fs.writeFile(tmp, data);
-  await fs.rename(tmp, file);
+  // Unique per write: pid + Date.now() alone collided when the same file was written twice in one millisecond
+  // (concurrent rebuilds), so one rename failed with ENOENT.
+  const tmp = `${file}.${process.pid}.${Date.now()}.${++tmpCounter}.${Math.random().toString(36).slice(2, 8)}.tmp`;
+  try {
+    await fs.writeFile(tmp, data);
+    await fs.rename(tmp, file);
+  } catch (e) {
+    await fs.rm(tmp, { force: true }).catch(() => {});
+    throw e;
+  }
 }
 
 export async function writeJSON(file, obj, { pretty = false } = {}) {
   await writeFileAtomic(file, JSON.stringify(obj, null, pretty ? 2 : 0));
 }
 
+/** Files that were unreadable (corrupt JSON/gzip) and were moved aside; reported by /api/status. */
+export const recoveredFiles = [];
+
+/**
+ * A corrupt file used to make every caller throw forever (one bad sources-status.json → /api/status 500 and no sync
+ * could ever run again). It is now moved aside to `<file>.corrupt-<time>` — the bytes are kept for inspection, never
+ * deleted — the caller gets its fallback, and the event is recorded.
+ */
+async function setAsideCorrupt(file, err) {
+  const movedTo = `${file}.corrupt-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  await fs.rename(file, movedTo).catch(() => {});
+  recoveredFiles.push({ file, moved_to: movedTo, error: String(err.message || err).slice(0, 200), at: new Date().toISOString() });
+  if (recoveredFiles.length > 50) recoveredFiles.shift();
+  console.warn(`  Warning: ${path.basename(file)} was unreadable (${err.message}); moved to ${path.basename(movedTo)} and continuing without it.`);
+}
+
 export async function readJSON(file, fallback = null) {
+  let txt;
   try {
-    const txt = await fs.readFile(file, 'utf8');
-    return JSON.parse(txt);
+    txt = await fs.readFile(file, 'utf8');
   } catch (e) {
     if (e.code === 'ENOENT') return fallback;
     throw new Error(`Failed to read ${file}: ${e.message}`);
+  }
+  try {
+    return JSON.parse(txt);
+  } catch (e) {
+    await setAsideCorrupt(file, e);
+    return fallback;
   }
 }
 
@@ -42,7 +72,9 @@ export async function writeGzJSON(file, obj) {
 }
 
 export async function readGzJSON(file, fallback = null) {
-  try { return JSON.parse((await gunzip(await fs.readFile(file))).toString('utf8')); } catch (e) { if (e.code === 'ENOENT') return fallback; throw e; }
+  let buf;
+  try { buf = await fs.readFile(file); } catch (e) { if (e.code === 'ENOENT') return fallback; throw e; }
+  try { return JSON.parse((await gunzip(buf)).toString('utf8')); } catch (e) { await setAsideCorrupt(file, e); return fallback; }
 }
 
 export async function writeGz(file, buf) {

@@ -9,7 +9,6 @@ export function h(tag, attrs = {}, ...children) {
     if (k === 'class') el.className = [el.className, v].filter(Boolean).join(' ');
     else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
     else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
-    else if (k === 'html') el.innerHTML = v;
     else if (k === 'dataset') Object.assign(el.dataset, v);
     else if (v === true) el.setAttribute(k, '');
     else el.setAttribute(k, v);

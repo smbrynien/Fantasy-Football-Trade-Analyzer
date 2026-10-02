@@ -111,3 +111,47 @@ test('snapshots and history are written for every build', () => {
   const h = read(P.history);
   assert.ok(h.entries.length >= 1);
 });
+
+test('concurrent rebuilds are serialized and all succeed (BUG_AUDIT B1)', async () => {
+  const before = read(P.history).entries.length;
+  const results = await Promise.allSettled([rebuild(), rebuild(), rebuild()]);
+  assert.deepEqual(results.map((r) => r.status), ['fulfilled', 'fulfilled', 'fulfilled'], results.map((r) => r.reason?.message).join(' | '));
+  const h = read(P.history);
+  const versions = h.entries.map((e) => e.data_version);
+  assert.equal(new Set(versions).size, versions.length, 'no duplicate history entries');
+  assert.ok(h.entries.length - before <= 1);
+  for (const s of Object.values(h.series)) assert.equal(s.r.length, h.entries.length, 'every series aligned with entries');
+});
+
+test('atomic writes: concurrent writes to one file never fail and leave no temp files (BUG_AUDIT B1)', async () => {
+  const { writeJSON } = await import('../server/lib/store.js');
+  const f = path.join(tmp, 'race', 'x.json');
+  await Promise.all(Array.from({ length: 20 }, (_, i) => writeJSON(f, { i })));
+  assert.ok(Number.isInteger(read(f).i));
+  assert.deepEqual(fs.readdirSync(path.dirname(f)), ['x.json']);
+});
+
+test('corrupt state/normalized files are moved aside, not fatal; sync and status recover (BUG_AUDIT C2)', async () => {
+  const { recoveredFiles } = await import('../server/lib/store.js');
+  fs.writeFileSync(P.sourceStatus, '{corrupt');
+  fs.writeFileSync(P.normalizedFile('good', 'market_value'), '{"records": [');
+  const s = await runSync({ config: makeConfig(), state, adapterFactory, sources: ['good'] });
+  assert.equal(s.results.good.status, 'ok', 'the source refetched and stored fresh data');
+  assert.ok(s.build, 'dataset rebuilt');
+  assert.ok(read(P.sourceStatus).good.last_success, 'status file rewritten');
+  const moved = recoveredFiles.map((r) => path.basename(r.file));
+  assert.ok(moved.includes('sources-status.json') && moved.includes('market_value.json'), moved.join(','));
+  for (const r of recoveredFiles) assert.ok(fs.existsSync(r.moved_to), 'corrupt bytes kept, not deleted');
+});
+
+test('a sync that fails early reports failure instead of the previous run\'s success (BUG_AUDIT C1)', async () => {
+  const { syncProgress } = await import('../server/sync-engine.js');
+  const bad = makeConfig();
+  bad.sources = null; // provoke an exception before any source runs
+  await assert.rejects(runSync({ config: bad, state, adapterFactory }));
+  const p = syncProgress();
+  assert.equal(p.running, false);
+  assert.equal(p.phase, 'failed');
+  assert.ok(p.error);
+  assert.equal(p.summary, null, 'no stale summary from the previous run');
+});
