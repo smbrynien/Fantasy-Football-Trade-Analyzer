@@ -75,8 +75,26 @@ export function toast(msg, kind = 'ok', ms = 4000) {
 
 export function openModal(content, { onClose, wide } = {}) {
   const root = document.getElementById('modal-root');
-  const close = () => { backdrop.remove(); document.removeEventListener('keydown', esc); if (onClose) onClose(); };
-  const esc = (e) => { if (e.key === 'Escape') close(); };
+  const opener = document.activeElement;
+  let closed = false;
+  const close = () => {
+    if (closed) return;
+    closed = true;
+    backdrop.remove();
+    document.removeEventListener('keydown', esc);
+    if (onClose) onClose();
+    // Accessibility: return focus to whatever opened the dialog (keyboard users otherwise land at the page top).
+    if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus({ preventScroll: true });
+  };
+  const esc = (e) => {
+    if (e.key === 'Escape') { if (backdrop === root.lastElementChild) close(); return; } // only the topmost dialog
+    if (e.key !== 'Tab') return;
+    // Keep Tab focus inside the dialog instead of moving to controls behind the backdrop.
+    const f = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.disabled && x.offsetParent !== null);
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  };
   const modal = h('div.modal', { role: 'dialog', 'aria-modal': 'true', style: wide ? { width: 'min(1200px, 100%)' } : null });
   const backdrop = h('div.modal-backdrop', { onclick: (e) => { if (e.target === backdrop) close(); } }, modal);
   append(modal, [typeof content === 'function' ? content(close) : content]);

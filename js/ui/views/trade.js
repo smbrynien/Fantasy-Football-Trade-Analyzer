@@ -4,7 +4,7 @@ import { h, clear, fmtValue, fmtSigned, fmtPct, fmtRange, fmtAge, posBadge, conf
 import { app, getValuations, load, save, activeProfile, playerData } from '../state.js';
 import { analyzeTrade } from '../../core/valuation/trade.js';
 import { COMPONENT_LABELS } from '../../core/valuation/engine.js';
-import { pickAssetId } from '../../core/pick-labels.js';
+import { pickAssetId, parsePickAssetId, pickDisplayName } from '../../core/pick-labels.js';
 import { assetSearchBox } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
 import { welcomeCard } from './help.js';
@@ -18,7 +18,10 @@ const SIGNAL_LABELS = { market: 'Market value', consensus: 'Expert consensus', p
 function tradeKey() { return `trade.${app.mode}`; }
 function getTrade() { return load(tradeKey(), { a: [], b: [] }); }
 function setTrade(t) { save(tradeKey(), t); }
-const assetName = (id) => playerData(id)?.name || id;
+const assetName = (id) => playerData(id)?.name || (String(id).startsWith('pick:') && parsePickAssetId(id) ? pickDisplayName(parsePickAssetId(id)) : id);
+// Generic picks (slot unknown, early/mid/late, projected range) can legitimately appear more than once — e.g. two
+// 2027 1sts owned from different teams. Players and exact slots (2027 1.04) are unique.
+const repeatable = (id) => /^pick:\d{4}:\d+(?::(?:early|mid|late|r\d+-\d+))?$/.test(id);
 
 export function renderTrade(root) {
   const result = getValuations();
@@ -53,7 +56,7 @@ export function renderTrade(root) {
   };
 
   function addAsset(side, a) {
-    if (trade.a.includes(a.id) || trade.b.includes(a.id)) { toast(`${a.name} is already in this trade.`, 'warn'); return; }
+    if (!repeatable(a.id) && (trade.a.includes(a.id) || trade.b.includes(a.id))) { toast(`${a.name} is already in this trade.`, 'warn'); return; }
     trade[side].push(a.id);
     rerender();
   }
@@ -68,14 +71,15 @@ export function renderTrade(root) {
       getResult: () => result,
       onPick: (a) => addAsset(side, a),
       includePicks: app.mode === 'dynasty',
-      exclude: () => new Set([...trade.a, ...trade.b]),
+      exclude: () => new Set([...trade.a, ...trade.b].filter((id) => !repeatable(id))),
       placeholder: app.mode === 'dynasty' ? 'Add player or pick (e.g. "jefferson", "det rb", "2027 1st", "1.04")' : 'Add player (name, team or position)',
     }));
     if (app.mode === 'dynasty' && result.picks) panel.append(pickAdder((a) => addAsset(side, a)));
     if (!assets.length) panel.append(h('div.empty-side', {}, 'No assets yet — search above to add players', app.mode === 'dynasty' ? ' or picks' : '', '.'));
     else {
       const ul = h('ul.asset-list');
-      for (const a of assets) ul.append(assetRow(a, () => { trade[side] = trade[side].filter((x) => x !== a.id); rerender(); }));
+      // Remove by position, not by id: removing one of two identical picks must leave the other.
+      ids.forEach((id, i) => { const a = result.getAsset(id); if (a) ul.append(assetRow(a, () => { trade[side].splice(i, 1); rerender(); })); });
       panel.append(ul);
     }
     return panel;

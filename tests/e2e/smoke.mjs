@@ -33,6 +33,13 @@ const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ffta-e2e-'));
 fs.mkdirSync(path.join(dataDir, 'calculated'), { recursive: true });
 const ds = makeDataset();
 ds.data_version = ds.data_version || 'e2e-fixture';
+// Injection probe (BUG_AUDIT §6): a source-provided name containing HTML/script must render as text, never execute.
+const XSS_NAME = '<img src=x onerror="window.__xss=1">Evil <b>Name</b> & "Co" \u00e9\u{1F3C8}';
+const xssTwin = JSON.parse(JSON.stringify(ds.players.find((p) => p.cid === 'TWR3')));
+Object.assign(xssTwin, { cid: 'XSS1', name: XSS_NAME, ids: {} });
+ds.players.push(xssTwin);
+const builtAt = new Date(ds.built_at || Date.now());
+const UPCOMING = builtAt.getUTCMonth() + 1 >= 9 ? builtAt.getUTCFullYear() + 1 : builtAt.getUTCFullYear();
 fs.writeFileSync(path.join(dataDir, 'calculated', 'dataset.json'), JSON.stringify(ds));
 // Value history spanning a model change (handoff bug #3): the Trends tab must mark it and break the model line.
 const day = 864e5, t0 = Date.parse(ds.built_at || '2026-10-01T12:00:00Z') - 20 * day;
@@ -110,6 +117,38 @@ try {
     check((await firstChart.locator('polyline').count()) === 3, 'trends: model line broken at the change (2 runs) + market line');
     const kpis = (await page.locator('.modal-body .kpis .kpi .v').allInnerTexts()).map((t) => t.trim());
     check(kpis.length === 3 && kpis.every((t) => t === '+50'), `trends: 7/30-day/season change counted within the current model (+50 each, got ${kpis.join(', ')})`);
+    // Injection: the hostile name is shown literally and nothing executed.
+    await page.goto(`${base}/#/player/XSS1`);
+    await page.locator('.modal-body').waitFor({ timeout: 10000 });
+    const modalText = await page.locator('.modal').first().innerText();
+    check(modalText.includes('<img src=x') && !(await page.evaluate(() => window.__xss)), 'injection: HTML in a player name renders as text and never executes');
+    // Navigating to another player replaces the modal (no stacking); closing it clears the #/player URL.
+    await page.goto(`${base}/#/player/TWR2`);
+    await page.waitForTimeout(400);
+    check((await page.locator('.modal').count()) === 1, `modals: one player modal at a time (open: ${await page.locator('.modal').count()})`);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+    check((await page.locator('.modal').count()) === 0 && !/#\/player\//.test(page.url()), 'modals: Escape closes it and the URL leaves #/player');
+
+    // Dynasty: the same generic pick can be added twice (two 2027 1sts); removing one keeps the other.
+    await page.evaluate(() => { localStorage.setItem('ffta.mode', '"dynasty"'); localStorage.setItem('ffta.trade.dynasty', '{"a":[],"b":[]}'); });
+    await page.goto(`${base}/#/trade`); await page.reload();
+    const dynBox = page.locator('.trade-side').first().locator('input[type=search]');
+    await dynBox.waitFor({ timeout: 15000 });
+    for (let k = 0; k < 2; k++) {
+      await dynBox.fill(`${UPCOMING} 1st`);
+      const opt = page.locator('.search-results [role=option]').first();
+      await opt.waitFor({ timeout: 5000 });
+      await opt.dispatchEvent('mousedown');
+      await page.waitForTimeout(300);
+    }
+    const rows = page.locator('.trade-side').first().locator('.asset-list > *');
+    check((await rows.count()) === 2, `dynasty: the same generic pick can be added twice (rows: ${await rows.count()})`);
+    await rows.first().locator('button.x').click();
+    await page.waitForTimeout(300);
+    check((await page.locator('.trade-side').first().locator('.asset-list > *').count()) === 1, 'dynasty: removing one duplicate pick keeps the other');
+    await page.evaluate(() => { localStorage.setItem('ffta.mode', '"redraft"'); });
+
     check(errors.length === 0, `no console/page errors${errors.length ? `: ${errors.slice(0, 5).join(' | ')}` : ''}`);
     await page.close();
   }

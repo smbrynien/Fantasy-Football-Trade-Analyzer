@@ -45,7 +45,12 @@ function dispersion(list) {
   return { n: r.length, median: median(r), mean: mean(r), best: Math.min(...r), worst: Math.max(...r), sd: r.length > 1 ? sd(r) : 0 };
 }
 
+// One player modal at a time: opening another (link, #/player/<id> navigation, back/forward) used to stack modals,
+// and Escape then closed all of them.
+let closeOpenPlayer = null;
+
 export function openPlayer(cid) {
+  if (closeOpenPlayer) closeOpenPlayer();
   const red = getValuations('redraft');
   const dyn = getValuations('dynasty');
   const p = playerData(cid);
@@ -224,7 +229,15 @@ export function openPlayer(cid) {
     },
   };
 
-  const close = openModal(h('div', {}, head, h('div.modal-body', {}, tabsEl, body)));
+  const close = openModal(h('div', {}, head, h('div.modal-body', {}, tabsEl, body)), {
+    onClose: () => {
+      if (closeOpenPlayer === close) closeOpenPlayer = null;
+      // Opened from a #/player/<id> link: leave the URL on the page underneath, so reopening the same link works
+      // (the hash must change) and a refresh doesn't reopen a modal the user closed.
+      if (/^#\/player\//.test(location.hash)) history.replaceState(null, '', '#/trade');
+    },
+  });
+  closeOpenPlayer = close;
   show('overview');
 }
 

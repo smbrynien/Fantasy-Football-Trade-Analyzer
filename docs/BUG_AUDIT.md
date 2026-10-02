@@ -159,3 +159,32 @@ regression test, verification.
 * **Verification:** full value diff on the frozen dataset, 7 presets × both modes × in-season/preseason: **0 player
   values changed**; only future-class picks adjacent to inversions moved (pooled, e.g. 2028 2.12/3.01 → 593/593);
   upcoming class unchanged. **Test:** "picks: value never increases with a later slot, round or season".
+
+### T1 · Medium · Trade builder — Two identical generic picks could not be entered
+* **Steps:** dynasty → add "2027 1st" to Team A → add "2027 1st" again (owning two 2027 1sts is common). **Actual:**
+  "already in this trade" and the pick disappeared from search results; removing a pick removed every copy.
+* **Root cause:** duplicate prevention (and search exclusion and removal) worked on asset ids, but a generic pick id
+  (`pick:2027:1`, buckets, ranges) is not unique the way a player or an exact slot is.
+* **Fix:** generic picks may repeat; players and exact slots stay unique; removal is by position. Pick ids dropped from
+  a stored trade are named ("2027 1st"), not shown as `pick:2027:1`. **File:** `js/ui/views/trade.js`.
+* **Test:** E2E "dynasty: the same generic pick can be added twice" / "removing one duplicate pick keeps the other".
+  Property check in the audit: 800 random trades × 2 modes — order-invariant, swap-antisymmetric, deterministic,
+  finite, package adjustment never adds value (no defects found in the engine itself).
+
+### U1 · Medium · Navigation — Player modals stacked; closing left a stale `#/player/…` URL
+* **Steps:** open `#/player/A`, then navigate to `#/player/B` (link, back/forward). **Actual:** two modals stacked,
+  Escape closed both; after closing, the URL still said `#/player/B`, so the same link no longer reopened it (no
+  hashchange) and a refresh reopened a modal the user had closed. Found when the E2E test hit two `.modal-body`s.
+* **Fix:** one player modal at a time; closing a hash-opened modal replaces the URL with the page underneath; Escape
+  closes only the topmost dialog. **Files:** `js/ui/views/player-modal.js`, `js/ui/dom.js`.
+* **Test:** E2E "modals: one player modal at a time" and "Escape closes it and the URL leaves #/player" (the old UI
+  fails at the first stacked modal).
+
+### U2 · Low · Accessibility — Dialogs lost focus on close and let Tab escape behind the backdrop
+* **Fix:** focus returns to the element that opened the dialog; Tab/Shift+Tab cycle inside it. **File:** `js/ui/dom.js`.
+  Verified manually with Playwright keyboard navigation; covered indirectly by the modal E2E checks.
+
+### S1 · Info (verified, no defect) — Injection through data
+* A player named `<img src=x onerror="window.__xss=1">Evil <b>Name</b> & "Co" é🏈` renders literally in the player
+  modal and lists; nothing executes (`h()` builds text nodes; the unused `innerHTML` branch was removed in batch 1).
+  **Test:** E2E "injection: HTML in a player name renders as text and never executes".

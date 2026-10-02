@@ -910,7 +910,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11) → layout fixes (bugs #6, #7, #13) →
   hygiene (bugs #8, #9, #12). Every known bug is now fixed. → bug-audit batch 1: server hardening + sync/storage
   reliability (docs/BUG_AUDIT.md A1–A5, B1, C1, C2) → batch 2: import validation, CSV export formula injection,
-  identity conflicts, pick validity + monotone pick curves (model 2.1.2; I1–I3, ID1–ID2, P1–P2, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  identity conflicts, pick validity + monotone pick curves (model 2.1.2; I1–I3, ID1–ID2, P1–P2) → batch 3: duplicate
+  generic picks, single player modal + URL, dialog focus, injection probe (T1, U1, U2, S1, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
