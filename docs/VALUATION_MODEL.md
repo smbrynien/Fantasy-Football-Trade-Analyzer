@@ -89,7 +89,7 @@ Values display rounded to 10 with an approximate fair-value range.
 | **Projection** | ROS projections from each projection source (Sleeper/Rotowire weekly, ESPN weekly, manual), summed over the remaining weeks (completed games excluded) | Re-scored with your scoring (TE premium, first downs, bonuses) → weighted mean of points → surplus |
 | **Production** | Weekly actual stats (nflverse; Sleeper fallback) scored with your settings, blended 75/25 with **opportunity-based expected points** (targets/carries/attempts × league-average points per opportunity at the position), regressed toward last season's PPG with 2 pseudo-games (players without a last season: ≥3 games required, regressed to the positional median), × remaining games × **availability** (QB .80, RB .77, WR .83, TE .82) × strength-of-schedule, minus injury games | surplus |
 | **Consensus** | ROS/redraft expert rankings (FantasyPros ECR, manual rankings) | **Positional-rank mapping**: k-th RB by experts → value of the k-th RB on your league's curve |
-| **Market** | Redraft trade values in the best-matching format (FantasyCalc, manual) | Positional-rank mapping |
+| **Market** | Redraft trade values in the best-matching format (FantasyCalc, manual): same QB format required (a source with only 1QB lists is **not used** in Superflex/2QB leagues and vice versa — shown on the player's Market & sources tab), then closest PPR, team count and **TE premium** (a list's `tep` vs your `bonus_rec_te`) | Positional-rank mapping |
 | **ADP** | Redraft ADP (Sleeper, FFC, ESPN, manual) in the matching scoring/QB format | Overall-rank mapping. **Corroborating only** (2.1.0): a player whose only usable signal is ADP gets no value (N/A) |
 | **Trend** | Market source's own 30-day trend | displayed only (weight 0 since 2.0: no evidence it predicts outcomes, and it is already in the market level) |
 
@@ -185,6 +185,7 @@ is in [MODEL_AUDIT.md](MODEL_AUDIT.md); candidate models are compared in [MODEL_
 | 1.0.0 | initial model |
 | 2.0.0 | audit: expected surplus; consensus-dominant redraft weights; production x .25 / k 2 / availability / median prior with ≥3 games; trend display-only; DP player values weight 0; dynasty weights .25/.35/.40/0, aging power 2, prior k 20, evidence gate; least-squares exponential rookie slot curve; top-12 scale anchor |
 | 2.1.0 | redraft: ADP is corroborating only (`redraft.adp_requires_corroboration`); ADP-only players are N/A instead of being valued from deep ADP ranks. No other value changes (verified on the frozen 2026-10-02 dataset: all 7 presets × both modes × in-season/preseason, only ADP-only assets removed) |
+| 2.1.1 | market list selection: lists in the wrong QB format are excluded (were used silently when a source had nothing else) and reported in `meta.excluded_market_lists`; TE-premium lists matched to the league's `bonus_rec_te` (always preferred `tep: 0` before). No value change on current data (no source lacks a format; no TEP lists): verified 0 changes across all presets/modes/phases |
 
 `model_version` (config/model.json) changes whenever formulas/defaults change; `data_version` identifies the data
 snapshot; `settings_hash` the league + effective model. All three are stored with every calculation and export.

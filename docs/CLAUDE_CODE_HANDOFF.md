@@ -36,7 +36,7 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 
 | Capability | Status |
 |---|---|
-| Redraft valuation | **Implemented** (model 2.1.0; bug #1 ADP-only values fixed) |
+| Redraft valuation | **Implemented** (model 2.1.1; bug #1 ADP-only values fixed) |
 | Dynasty valuation | **Implemented** |
 | Rookie / future pick values | **Implemented** |
 | Trade analyzer (multi-asset, packages, uncertainty) | **Implemented** |
@@ -53,8 +53,8 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 ## 2. Current project status
 
 ```text
-Overall Status:  Working, tested. Model 2.1.0 (2.0.0 audit model + ADP corroboration rule). Bugs #1, #2, #3,
-                 #10 FIXED. Lint runs in CI.
+Overall Status:  Working, tested. Model 2.1.1 (2.0.0 audit model + ADP corroboration rule + market list
+                 format rules). Bugs #1–#5, #10 FIXED. Lint runs in CI.
 
 Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
                  corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
@@ -69,7 +69,7 @@ Player Database: Implemented. 17 external ID systems, never merges ambiguous pla
 Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool works on fresh clones: `--freeze`,
                  `--out=DIR`, before/after skipped with instructions on data mismatch (bug #2 fixed).
 UX Audit:        Not done. Known UX issues in §16.
-Testing:         75/75 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
+Testing:         77/77 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
                  (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions: lint → tests → build → publish ZIPs on every push to main (lint step added in
@@ -90,7 +90,7 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --failed` | Retry only failed/partial/quarantined sources | inferred |
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
-| `npm test` | `node --test tests/*.test.js` — 75 tests, offline | **yes, 75/75** |
+| `npm test` | `node --test tests/*.test.js` — 77 tests, offline | **yes, 77/77** |
 | `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`). **CI runs it before the tests; a lint error blocks the release** | **yes, clean** |
 | `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360 px and 390 px: trade 1-for-1 with verdict, every main route, player Trends with a seeded two-model history (marker, broken line, within-model change), no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
 | `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--freeze`, `--snapshot-before`, `--out=DIR`). `--freeze`/`--snapshot-before` without `--only` do only that (no backtests) | yes (fresh clone, mismatch and full before/after workflow; §17 item 10) |
@@ -306,7 +306,7 @@ Planned (not implemented): Yahoo, FantasyPros API (`.env.example` placeholders o
 * **Weaknesses:** name-only sources (FFC, manual imports) depend on name/team matching; fuzzy matches need
   review; no automatic retirement detection.
 
-## 11. Current redraft model (model 2.1.0) — `js/core/valuation/redraft.js`
+## 11. Current redraft model (model 2.1.1) — `js/core/valuation/redraft.js`
 
 Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your** scoring:
 
@@ -432,7 +432,9 @@ Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your**
 | Sleeper league import | league ID → scoring + roster | Settings |
 
 TE premium raises TE production/projection points and the replacement TE alike (effect is in surplus).
-Known gap: market list choice ignores TE premium (`signals.js marketMismatch` always prefers `tep: 0` lists).
+Market list choice (`signals.js marketMismatch`, since 2.1.1): wrong QB format → list excluded (reported in
+`meta.excluded_market_lists` and on the player's Market & sources tab); then closest PPR (×10), team count (×0.5) and
+TE premium (`|tep − bonus_rec_te|` ×5).
 
 ## 16. Current UI / UX
 
@@ -509,6 +511,12 @@ No formal usability audit has been done.
     data change) instead of −60 (which included the model upgrade); Justin Tucker shows his last 2.0.0 value, then
     the marker. Tests: `tests/history-series.test.js` (3); E2E seeds a two-model history and checks marker, broken
     line and all three KPIs — the E2E Trends checks fail on the old UI (+50/−1,950/−1,950).
+12. **Model 2.1.1 — bugs #4 and #5 fixed** (`signals.js`): a source whose only lists are in the wrong QB format is
+    excluded instead of silently used (`meta.excluded_market_lists`, note on the player's Market & sources tab); TEP
+    lists are matched to the league's `bonus_rec_te`. Validation: 0 value changes across all 28 preset × mode × phase
+    sets on the frozen dataset (current data has both QB formats for every source and no TEP lists, so only imports
+    are affected); monotonicity 75/0 (`audit-model --only=current --out=<scratch>`). 2 new tests in
+    `valuation.test.js` (both fail on 2.1.0).
 
 ## 18. What is currently in progress
 
@@ -527,8 +535,8 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 | 1 | ~~Free agents valued from stale ADP alone in redraft~~ **FIXED in model 2.1.0** | was High | handoff snippet (PICK UP HERE) | ADP-only players N/A | now 3 FA ≥100 in 12-team 1QB in season (Tyreek Hill 297, Zane Gonzalez 217, Odell Beckham 186 — all corroborated by consensus; kept deliberately, owner decision 2026-10-02); 0 ADP-only assets | was: placeholder/stale deep ADP ranks × expected-surplus tail × lone-group renormalization | `redraft.js` (`adp_requires_corroboration`), `config/model.json` | — |
 | 2 | ~~`npm run audit-model` crashes on a fresh clone~~ **FIXED** (2.1.0 session) | was Medium | `FFTA_DATA_DIR=<empty dir> node scripts/audit-model.js --only=current,compare` | skip or explain | exit 0 with instructions; mismatched baseline → skip with instructions | was: no freeze command, `compareSnapshots` threw, `loadFrozenDataset` read a missing file | `scripts/audit-model.js`, `scripts/audit/{compare,current}.js`, `tests/audit-tool.test.js` | — |
 | 3 | ~~Value history mixes model versions~~ **FIXED** (2.1.0 session) | was Medium | Player → Trends with history spanning a model change | model changes marked | dashed marker + label at each change, model-value line broken there, 7/30-day/season change measured within the current model version (market change still across versions), explanatory note | was: `server/history.js` recorded `model_version` per entry but the UI ignored it | `js/ui/history-series.js`, `js/ui/charts.js` (`markers`, series `breaks`), `js/ui/views/player-modal.js`, `css/app.css` | — |
-| 4 | Format-mismatched market lists used silently | Low (no current impact: FantasyCalc provides SF lists) | a source with only 1QB lists in an SF league | warn or exclude | `formatMismatch: true` is set but never read | unfinished guard | `js/core/valuation/signals.js` L35 | — |
-| 5 | TE-premium market lists never preferred | Low | TEP league with a source that publishes TEP values (KTC import with `tep`) | prefer the matching TEP list | always prefers `tep: 0` | `marketMismatch` uses `Math.abs(rec.tep − 0)` | `signals.js` L12 | none |
+| 4 | ~~Format-mismatched market lists used silently~~ **FIXED in model 2.1.1** | Low (no current impact: FantasyCalc provides SF lists) | a source with only 1QB lists in an SF league | warn or exclude | `formatMismatch: true` is set but never read | unfinished guard | `js/core/valuation/signals.js` L35 | — |
+| 5 | ~~TE-premium market lists never preferred~~ **FIXED in model 2.1.1** | Low | TEP league with a source that publishes TEP values (KTC import with `tep`) | prefer the matching TEP list | always prefers `tep: 0` | `marketMismatch` uses `Math.abs(rec.tep − 0)` | `signals.js` L12 | none |
 | 6 | Mobile header nav clipped | Low (UX) | 390 px viewport | all tabs reachable visibly | tabs cut off at "Setti…" | nav overflow styling | `css/app.css`, `index.html` | swipe/scroll the nav |
 | 7 | Rookie prospect table wider than desktop viewport | Low (UX) | `#/rookies` at 1360 px | fits or scrolls clearly | last column cut | many columns | `js/ui/views/rookies.js`, `css/app.css` | horizontal scroll |
 | 8 | `js/core/version.js` comment references `js/core/schema.js migrate*`, which doesn't exist | Low (doc/code) | read file | migration helpers exist, or no reference | no schema migration code at all | aspirational comment | `js/core/version.js` | — |
@@ -608,7 +616,7 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 ## 24. Model version / data version
 
 ```text
-Model version:   2.1.0          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
+Model version:   2.1.1          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
 App version:     1.0.0          js/core/version.js APP_VERSION and package.json "version" (release tag v<version>-build.<n>)
 Schemas:         NORMALIZED_SCHEMA_VERSION 1, DATASET_SCHEMA_VERSION 1 (js/core/version.js); history.json schema_version 1;
                  config files carry their own schema_version
@@ -638,7 +646,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **75 tests, 75 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **77 tests, 77 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
@@ -651,7 +659,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `scoring.test.js` | 6 | PPR/half/std, QB scoring, TE premium, first downs, bonuses, K/DEF |
 | `sync.test.js` | 7 | partial failures, exclusive failover, retry failed, freshness skip, quarantine keeps previous, stale flag, snapshots/history |
 | `trade.test.js` | 8 | 1-for-1, 2-for-1, 3-for-2 package math, disable package, player vs picks, z-score verdict, missing ids, dynasty age notes |
-| `valuation.test.js` | 15 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection |
+| `valuation.test.js` | 17 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection, market list QB-format exclusion, TEP list preference |
 | `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
 Optional browser E2E: `npm run test:e2e` (`tests/e2e/smoke.mjs`, not matched by the `npm test` glob; §3). It covers
@@ -793,7 +801,6 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 | Priority | Task | Why it matters | Current state | Dependencies | Files |
 |---|---|---|---|---|---|
 | Medium | Mobile nav + wide-table UX fixes (bugs #6, #7) | many users on phones | unfixed | none | `css/app.css`, `js/app.js`, `js/ui/views/rookies.js` |
-| Low | Use `formatMismatch` and TEP list preference (bugs #4, #5) | correctness for future sources/imports | unfixed | none | `signals.js` |
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
 | Low | Trade notes: names instead of raw ids; ignore missing assets in the consolidation note (bug #11) | clarity | unfixed | none | `trade.js` |
@@ -811,25 +818,22 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 4. *(done — optional E2E smoke test, §26)*. Possible extension: import wizard, player modal, dynasty pick adder.
 5. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
    `STATIC_ALLOW` and render it in `js/ui/views/model.js`.
-6. **signals.js correctness:** honour `formatMismatch` (skip or flag the list and lower confidence) and prefer
-   TEP lists when the league has a TE premium (`bonus_rec_te` > 0). Add tests.
-7. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
+6. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
     dead weight in redraft). Measure size and valuation time before and after.
-8. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
+7. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
 
 # PICK UP HERE
 
 ```text
-Current state:            Model 2.1.0 (bug #1 fixed: ADP corroborates only); ESPN undrafted ADP collapsed to a tie
+Current state:            Model 2.1.1 (bug #1 fixed: ADP corroborates only; #4/#5 market list format rules); ESPN undrafted ADP collapsed to a tie
                           (bug #10); dev-only `npm run lint` (also in CI) + optional `npm run test:e2e`; audit-model
-                          reproducible (bug #2); Trends marks model changes (bug #3). All 10 sources sync; 75/75
+                          reproducible (bug #2); Trends marks model changes (bug #3). All 10 sources sync; 77/77
                           tests, lint clean, E2E pass.
 Most important unfinished: Mobile header nav clipped at 390 px (bug #6, §35 item 1), then rookies table width (#7).
-Secondary:                trade-note ids (#11), sync-test temp-dir leak (#12), audit scorecard on Model page,
-                          signals.js formatMismatch/TEP (#4, #5).
+Secondary:                trade-note ids (#11), sync-test temp-dir leak (#12), audit scorecard on Model page.
 Known blockers:           None.
 Files to inspect first:   css/app.css (header/nav), index.html, js/app.js, js/ui/views/rookies.js
-Tests to run first:       npm test (expect 75/75); npm run lint (clean); npm run test:e2e (pass or SKIP)
+Tests to run first:       npm test (expect 77/77); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
                           assigned branch and main (CLAUDE.md).
@@ -877,7 +881,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
 * Recent commits: `cb8e7ff` initial full app → `f80fcc6` CLAUDE.md → `7ac5d50` non-technical distribution →
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
   model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling → lint in CI +
-  audit-model reproducibility (bug #2) → Trends model-version markers (bug #3, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  audit-model reproducibility (bug #2) → Trends model-version markers (bug #3) → model 2.1.1 market list
+  format rules (bugs #4, #5, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

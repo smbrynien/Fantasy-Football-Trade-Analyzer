@@ -139,6 +139,8 @@ export function openPlayer(cid) {
       sections.push(h('h3', {}, 'Market values (raw, each source\'s own scale)'));
       sections.push(pd.market?.length ? h('table.data', {}, h('thead', {}, h('tr', {}, h('th', {}, 'Source'), h('th', {}, 'Format'), h('th.num', {}, 'Value'), h('th.num', {}, 'Rank'), h('th.num', {}, '30-day trend'), h('th', {}, 'As of'))),
         h('tbody', {}, pd.market.map((m) => h('tr', {}, h('td', {}, SRC_NAME(m.src)), h('td.small', {}, fmtMk(m)), h('td.num.market-v', {}, fmtValue(m.value)), h('td.num', {}, m.rank ?? '—'), h('td.num', { class: m.trend30 > 0 ? 'trend-up' : m.trend30 < 0 ? 'trend-down' : '' }, m.trend30 === null ? '—' : fmtSigned(m.trend30)), h('td.small.muted', {}, timeAgo(m.as_of)))))) : h('p.muted', {}, 'No market values.'));
+      const excluded = ((app.mode === 'dynasty' ? dyn : red).meta.excluded_market_lists || []).filter((x) => (pd.market || []).some((m) => m.src === x.src));
+      if (excluded.length) sections.push(h('p.small.muted', {}, `Not used in this league: ${excluded.map((x) => `${SRC_NAME(x.src)} (only ${String(x.meta?.qb || '1qb').toUpperCase()} lists)`).join(', ')} — lists in the other QB format misprice quarterbacks.`));
       const ranks = pd.rankings || [];
       sections.push(h('h3.mt', {}, 'Rankings'));
       if (ranks.length) {

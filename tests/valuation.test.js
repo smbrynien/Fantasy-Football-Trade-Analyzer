@@ -165,3 +165,35 @@ test('IR players absent from in-season projections get zero projection, not miss
   assert.equal(a.groups.projection, 0);
   assert.ok(a.value < red.assets.get('TRB2').value * 0.6);
 });
+
+// Handoff bugs #4/#5: market list format selection.
+import { collectMarket } from '../js/core/valuation/signals.js';
+
+const withExtraMarket = (base, make) => {
+  const d2 = deepClone(base);
+  for (const p of d2.players) if (p.market?.length) p.market.push(...make(p));
+  return d2;
+};
+
+test('market lists: a source with only wrong-QB-format lists is excluded and reported, not used silently', () => {
+  // Reversed values make any use of this list obvious.
+  const d2 = withExtraMarket(ds, (p) => [{ src: 'manual_market', dynasty: false, qb: '1qb', ppr: 1, teams: 12, value: 10000 - (p.market[0]?.value || 0) }]);
+  const sf = computeValuations({ dataset: d2, league: preset('preset_12_sf_ppr'), mode: 'redraft', config });
+  assert.deepEqual(sf.meta.excluded_market_lists.map((x) => [x.src, x.reason, x.meta.qb]), [['manual_market', 'qb_format', '1qb']]);
+  for (const a of sf.assets.values()) assert.ok(!(a.details?.market || []).some((s) => s.src === 'manual_market'), `${a.name} used a 1QB list in SF`);
+  const one = computeValuations({ dataset: d2, league: preset('preset_12_1qb_ppr'), mode: 'redraft', config });
+  assert.deepEqual(one.meta.excluded_market_lists, []);
+  assert.ok([...one.assets.values()].some((a) => (a.details?.market || []).some((s) => s.src === 'manual_market')), 'the 1QB list is used in a 1QB league');
+});
+
+test('market lists: TE-premium lists are preferred in TE-premium leagues and avoided otherwise', () => {
+  const d2 = withExtraMarket(ds, (p) => [0, 0.5, 1].map((tep) => ({ src: 'ktc', dynasty: true, qb: '1qb', ppr: 1, teams: 12, tep, value: (p.market[0]?.value || 0) + tep * (p.position === 'TE' ? 1000 : 0) })));
+  const chosenTep = (scoring) => collectMarket(d2, { dynasty: true, league: { qb_format: '1qb', teams: 12 }, scoring: { rec: 1, ...scoring } }).get('ktc').meta.tep;
+  assert.equal(chosenTep({}), 0);
+  assert.equal(chosenTep({ bonus_rec_te: 0.5 }), 0.5);
+  assert.equal(chosenTep({ bonus_rec_te: 1 }), 1);
+  const league = { ...preset('preset_dyn_12_1qb'), scoring: { bonus_rec_te: 1 } };
+  const r = computeValuations({ dataset: d2, league, mode: 'dynasty', config });
+  const te = r.assets.get('TTE1');
+  assert.equal(te.details.market.find((s) => s.src === 'ktc').raw.tep, 1);
+});

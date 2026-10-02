@@ -97,6 +97,8 @@ export function computeValuations({ dataset, league: leagueIn, mode, config }) {
     phase,
     compute_ms: Date.now() - t0,
     reference_league: sameAsRef ? 'same as your league' : `${refLeague.teams}-team ${refLeague.qb_format.toUpperCase()} ${refLeague.scoring_preset.toUpperCase()}`,
+    // Market sources left out because they only publish lists in the other QB format (signals.collectMarket).
+    excluded_market_lists: userRun.marketLists?.excluded || [],
   };
 
   const result = {
