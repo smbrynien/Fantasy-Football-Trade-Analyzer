@@ -7,6 +7,7 @@ import { COMPONENT_LABELS } from '../../core/valuation/engine.js';
 import { pickAssetId } from '../../core/pick-labels.js';
 import { assetSearchBox } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
+import { welcomeCard } from './help.js';
 import { api, hasServer } from '../api.js';
 import { toCSV } from '../../core/util/csv.js';
 import { describeScoring } from '../../core/scoring.js';
@@ -28,6 +29,11 @@ export function renderTrade(root) {
   const sides = h('div.trade-layout');
   const summary = h('div.trade-summary');
   const history = h('div.panel.mt.no-print');
+  if (!load('welcomeDismissed', false)) {
+    const card = welcomeCard(() => { save('welcomeDismissed', true); card.remove(); });
+    card.classList.add('no-print');
+    root.append(card);
+  }
   root.append(
     h('div.print-only', {}, h('h2', {}, `Trade analysis — ${app.mode.toUpperCase()} — ${activeProfile().name}`)),
     sides, summary, history,

@@ -12,8 +12,9 @@ import { renderData } from './ui/views/data.js';
 import { renderSettings } from './ui/views/settings.js';
 import { renderModel } from './ui/views/model.js';
 import { openPlayer } from './ui/views/player-modal.js';
+import { renderHelp } from './ui/views/help.js';
 
-const VIEWS = { trade: renderTrade, players: renderPlayers, compare: renderCompare, rookies: renderRookies, data: renderData, settings: renderSettings, model: renderModel };
+const VIEWS = { trade: renderTrade, players: renderPlayers, compare: renderCompare, rookies: renderRookies, data: renderData, settings: renderSettings, model: renderModel, help: renderHelp };
 const viewEl = document.getElementById('view');
 let current = null;
 let cleanup = null;
@@ -33,7 +34,7 @@ function render() {
   if (cleanup) { try { cleanup(); } catch { /* ignore */ } cleanup = null; }
   clear(viewEl);
   if (!app.config) return;
-  if (!app.dataset && !['data', 'settings', 'model'].includes(current.view)) {
+  if (!app.dataset && !['data', 'settings', 'model', 'help'].includes(current.view)) {
     viewEl.append(emptyState());
     return;
   }
@@ -45,14 +46,25 @@ function render() {
   }
 }
 
+let lastProgress = null;
 function emptyState() {
+  if (app.syncing) {
+    const all = Object.values(lastProgress?.sources || {});
+    const done = all.filter((x) => !['queued', 'fetching'].includes(x.phase)).length;
+    const pct = lastProgress?.phase === 'building' ? 95 : all.length ? Math.max(5, (done / all.length) * 90) : 5;
+    return h('div.panel.center', { style: { padding: '2.5rem 1rem' } },
+      h('h2', {}, 'Getting your data ready…'),
+      h('p.muted', {}, 'Downloading rankings, projections, statistics and trade values. This takes about 30 seconds the first time.'),
+      h('div.progress-line', { style: { maxWidth: '420px', margin: '1rem auto' } }, h('span', { style: { width: `${pct}%` } })),
+      h('p.small.muted', {}, lastProgress?.phase === 'building' ? 'Almost done — calculating values…' : `${done} of ${all.length || '…'} sources done`));
+  }
   return h('div.panel.center', { style: { padding: '2.5rem 1rem' } },
     h('h2', {}, 'No data yet'),
-    h('p.muted', {}, 'Click "Sync All" to download rankings, projections, statistics and market values from all configured sources.'),
+    h('p.muted', {}, 'Press the button to download rankings, projections, statistics and trade values (about 30 seconds).'),
     hasServer()
-      ? h('button.btn.btn-primary', { onclick: () => startSync({ force: true }) }, '⟳ Sync All Data')
-      : h('p', {}, 'The sync server is not running. In a terminal run ', h('code', {}, 'npm start'), ' and reload this page.'),
-    h('p.small.muted.mt', {}, 'You can also import data manually under ', h('a', { href: '#/data/import' }, 'Data → Manual Import'), '.'));
+      ? h('button.btn.btn-primary', { style: { fontSize: '1.05rem', padding: '.75rem 1.4rem' }, onclick: () => startSync({ force: true }) }, '⟳ Download data')
+      : h('p', {}, 'The app\'s engine is not running. Close this tab and double-click ', h('strong', {}, '"Start Trade Analyzer"'), ' in the app folder.'),
+    h('p.small.muted.mt', {}, 'No internet right now? You can also import a file under ', h('a', { href: '#/data/import' }, 'Data → Manual Import'), '. Need help? See the ', h('a', { href: '#/help' }, 'Help page'), '.'));
 }
 
 function renderHeader() {
@@ -89,7 +101,7 @@ function renderBanner() {
   const b = document.getElementById('banner');
   const msgs = [];
   let cls = '';
-  if (!hasServer()) { msgs.push('Read-only mode: the local sync server is not running, so data cannot be refreshed. Values use the cached dataset.'); cls = 'info'; }
+  if (!hasServer()) { msgs.push('Read-only mode: the app\'s engine is not running, so data cannot be refreshed (values use the saved data). To refresh, double-click "Start Trade Analyzer" in the app folder.'); cls = 'info'; }
   if (app.dataset) {
     const ageH = (Date.now() - new Date(app.dataset.built_at).getTime()) / 36e5;
     if (ageH > 72) { msgs.push(`Data is ${Math.round(ageH / 24)} days old — click Sync All to refresh.`); cls = ''; }
@@ -103,6 +115,7 @@ function renderBanner() {
 }
 
 async function boot() {
+  if (location.protocol === 'file:') return; // index.html shows how to start the app properly
   await detectServer();
   try {
     app.config = await loadConfig();
@@ -128,6 +141,8 @@ async function boot() {
       btn.classList.toggle('spinning', Boolean(detail && detail.running));
       btn.disabled = Boolean(detail && detail.running);
       btn.querySelector('.lbl').textContent = detail && detail.running ? 'Syncing…' : 'Sync All';
+      lastProgress = detail;
+      if (!app.dataset && current && !['data', 'settings', 'model', 'help'].includes(current.view)) render();
       return;
     }
     if (evt === 'status') { renderDataPill(); renderBanner(); if (current && current.view === 'data') render(); return; }

@@ -1,0 +1,56 @@
+# Builds ready-to-run downloads (app + bundled Node.js) on every push to main and publishes them as the
+# latest GitHub Release, so non-technical users can always use:
+#   https://github.com/<owner>/<repo>/releases/latest/download/TradeAnalyzer-Windows.zip  (and -Mac / -Linux)
+name: Build downloads
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build ZIPs
+        run: bash scripts/package-release.sh
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}-build.${GITHUB_RUN_NUMBER}"
+          cat > notes.md <<NOTES
+          ## Download and run — no installation needed
+
+          | Your computer | Download |
+          |---|---|
+          | **Windows** | [TradeAnalyzer-Windows.zip](https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/TradeAnalyzer-Windows.zip) |
+          | **Mac** (Apple Silicon or Intel) | [TradeAnalyzer-Mac.zip](https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/TradeAnalyzer-Mac.zip) |
+          | **Linux** | [TradeAnalyzer-Linux.zip](https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/TradeAnalyzer-Linux.zip) |
+
+          Unzip it, open the folder, and double-click **Start Trade Analyzer**. See *HOW TO START.txt* inside.
+
+          Built from ${GITHUB_SHA::7}.
+          NOTES
+          gh release create "$TAG" dist/*.zip --title "Trade Analyzer ${VERSION} (build ${GITHUB_RUN_NUMBER})" --notes-file notes.md --target "$GITHUB_SHA" --latest
+          # Keep only the 3 newest builds so the Releases page stays tidy.
+          gh release list --limit 100 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[3:] | .[].tagName' \
+            | while read -r old; do gh release delete "$old" --yes --cleanup-tag || true; done

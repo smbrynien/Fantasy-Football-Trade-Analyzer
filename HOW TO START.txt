@@ -1,0 +1,74 @@
+FANTASY FOOTBALL TRADE ANALYZER — HOW TO START
+==============================================
+
+You do NOT need to know anything about coding. Nothing to install.
+
+---------------------------------------------------------------
+WINDOWS
+---------------------------------------------------------------
+1. If you haven't already: right-click the ZIP file you downloaded and choose
+   "Extract All...", then open the extracted folder.
+   (Running it from inside the ZIP without extracting will not work.)
+2. Double-click:   Start Trade Analyzer (Windows).bat
+3. If Windows shows a blue box "Windows protected your PC":
+   click "More info", then "Run anyway". (This appears for any file
+   downloaded from the internet that isn't from a big software company.)
+4. A black window opens and the app opens in your web browser.
+   The first time, it downloads football data (about 30 seconds).
+5. KEEP THE BLACK WINDOW OPEN while you use the app.
+   To quit, close the black window.
+
+---------------------------------------------------------------
+MAC
+---------------------------------------------------------------
+1. Double-click the ZIP file you downloaded (it unzips into a folder).
+   Open that folder.
+2. Double-click:   Start Trade Analyzer (Mac).command
+3. If the Mac says it "cannot be opened because it is from an
+   unidentified developer" / "Apple could not verify...":
+     - Click "Done" (or "OK").
+     - Open System Settings → Privacy & Security, scroll down, and
+       click "Open Anyway" next to "Start Trade Analyzer (Mac).command".
+     - Double-click the file again and choose "Open".
+   (Older macOS: right-click the file → "Open" → "Open".)
+   You only need to do this once.
+4. A Terminal window opens and the app opens in your web browser.
+   The first time, it downloads football data (about 30 seconds).
+5. KEEP THE TERMINAL WINDOW OPEN while you use the app.
+   To quit, close the Terminal window.
+
+---------------------------------------------------------------
+LINUX
+---------------------------------------------------------------
+1. Unzip the download and open the folder.
+2. Right-click "Start Trade Analyzer (Linux).sh" → "Run as a Program"
+   (or open a terminal in the folder and run:  ./"Start Trade Analyzer (Linux).sh")
+3. Open http://localhost:5177 if your browser does not open by itself.
+
+---------------------------------------------------------------
+USING IT
+---------------------------------------------------------------
+- At the top, choose REDRAFT (this season only) or DYNASTY (keeper/long-term).
+- Choose your league type in the drop-down at the top (or set your exact
+  league under Settings).
+- On the Trade page, type player names under "Team A receives" and
+  "Team B receives". The verdict and the reasons appear underneath.
+- Click any player name to see why they have that value.
+- The Help tab inside the app answers common questions.
+
+Next time, just double-click the same "Start Trade Analyzer" file again.
+Data refreshes automatically when it is more than 12 hours old, or press
+the green "Sync All" button.
+
+---------------------------------------------------------------
+TROUBLESHOOTING
+---------------------------------------------------------------
+- "Nothing happens" / the browser doesn't open: look at the black/Terminal
+  window — it shows an address like http://localhost:5177. Type that into
+  your web browser.
+- "Download failed": check your internet connection and double-click the
+  Start file again.
+- You opened "index.html" and see "Almost there!": close that tab and use
+  the Start file instead (index.html can't run on its own).
+- Want to start completely fresh? Close the app and delete the "data"
+  folder inside the app folder, then start again.

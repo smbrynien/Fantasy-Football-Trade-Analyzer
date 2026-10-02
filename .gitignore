@@ -13,3 +13,4 @@ data/players/
 !data/README.md
 # research downloads
 scripts/.cache/
+dist/

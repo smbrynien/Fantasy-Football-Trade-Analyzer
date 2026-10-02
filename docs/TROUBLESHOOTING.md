@@ -2,6 +2,11 @@
 
 | Symptom | Cause / fix |
 |---|---|
+| Double-clicking "Start Trade Analyzer" does nothing (Mac) | macOS blocks unsigned scripts from the internet: System Settings → Privacy & Security → *Open Anyway*, or right-click → *Open*. |
+| Windows "protected your PC" | *More info* → *Run anyway* (shown for any downloaded script). |
+| Launcher says "Download failed" | Only when the bundled engine is missing (source ZIP): it fetches Node.js from nodejs.org once. Check the connection; or install Node 18+ yourself. |
+| "Almost there!" page | `index.html` was opened directly; use the Start file instead (browsers block the app's modules on `file://`). |
+| App already running | Starting it again just opens the existing window's address. A busy port makes the server try the next 10 ports. |
 | Page says "No data yet" | First run: click **Sync All** (or `npm run sync`). Takes ~10–30 s and ~90 MB. |
 | Banner "Read-only mode" | You opened the files without the server. Run `npm start` and use the printed URL. |
 | "Port 5177 in use" | `PORT=5180 npm start` (or set PORT in `.env`). |

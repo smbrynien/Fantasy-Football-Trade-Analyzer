@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { spawn } from 'node:child_process';
 import { ROOT, P } from './lib/paths.js';
 import { loadEnv } from './lib/env.js';
 import { readJSON, writeJSON, readGzJSON } from './lib/store.js';
@@ -188,9 +189,71 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, HOST, () => {
-  const has = fs.existsSync(P.dataset);
-  console.log(`\n  Fantasy Football Trade Analyzer ${APP_VERSION}`);
-  console.log(`  ➜  http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}\n`);
-  console.log(has ? '  Cached dataset found — the app works offline; click "Sync All" to refresh.' : '  No data yet — open the app and click "Sync All" (or run `npm run sync`).');
-});
+// ---------------------------------------------------------------- startup
+const OPEN_BROWSER = process.argv.includes('--open') || process.env.FFTA_OPEN === '1';
+const AUTO_SYNC = !process.argv.includes('--no-auto-sync') && process.env.FFTA_NO_AUTOSYNC !== '1';
+// Refresh automatically on launch when the cached data is older than this (0 = never).
+const AUTO_REFRESH_HOURS = Number(process.env.FFTA_AUTO_REFRESH_HOURS ?? 12);
+
+function openBrowser(url) {
+  const [cmd, args] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '""', url]]
+    : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];
+  try {
+    const p = spawn(cmd, args, { stdio: 'ignore', detached: true, windowsHide: true });
+    p.on('error', () => console.log(`  Open this address in your web browser: ${url}`));
+    p.unref();
+  } catch {
+    console.log(`  Open this address in your web browser: ${url}`);
+  }
+}
+
+async function isOurServer(port) {
+  try {
+    const r = await fetch(`http://127.0.0.1:${port}/api/health`, { signal: AbortSignal.timeout(1500) });
+    const j = await r.json();
+    return Boolean(j && j.ok && j.app_version);
+  } catch { return false; }
+}
+
+function maybeAutoSync() {
+  if (!AUTO_SYNC) return;
+  let ageH = Infinity;
+  try { ageH = (Date.now() - fs.statSync(P.dataset).mtimeMs) / 36e5; } catch { /* no data yet */ }
+  const first = ageH === Infinity;
+  if (!first && !(AUTO_REFRESH_HOURS > 0 && ageH > AUTO_REFRESH_HOURS)) return;
+  console.log(first ? '  First launch: downloading football data (about 30 seconds)…' : `  Data is ${Math.round(ageH)} hours old: refreshing in the background…`);
+  runSync({}).then((s) => {
+    console.log(`  Data ready: ${s.succeeded} sources updated${s.failed ? `, ${s.failed} unavailable (the app keeps working without them)` : ''}.`);
+  }).catch((e) => console.log(`  Data download failed (${e.message}). Check your internet connection, then click "Sync All" in the app.`));
+}
+
+function start(port, attemptsLeft) {
+  const onError = async (e) => {
+    if (e.code === 'EADDRINUSE') {
+      if (await isOurServer(port)) {
+        const url = `http://localhost:${port}`;
+        console.log(`\n  The Trade Analyzer is already running at ${url} — opening it.`);
+        if (OPEN_BROWSER) openBrowser(url);
+        setTimeout(() => process.exit(0), 800);
+        return;
+      }
+      if (attemptsLeft > 0) return start(port + 1, attemptsLeft - 1);
+    }
+    console.error(`\n  Could not start the server: ${e.message}`);
+    process.exit(1);
+  };
+  server.once('error', onError);
+  server.listen(port, HOST, () => {
+    server.off('error', onError);
+    const url = `http://${HOST === '0.0.0.0' || HOST === '127.0.0.1' ? 'localhost' : HOST}:${port}`;
+    const has = fs.existsSync(P.dataset);
+    console.log(`\n  Fantasy Football Trade Analyzer ${APP_VERSION}`);
+    console.log(`  ➜  ${url}\n`);
+    console.log(has ? '  Cached data found — the app also works offline.' : '  No data yet — it will download automatically.');
+    console.log('  Keep this window open while you use the app. Close it (or press Ctrl+C) to stop.\n');
+    if (OPEN_BROWSER) openBrowser(url);
+    maybeAutoSync();
+  });
+}
+
+start(PORT, process.env.PORT ? 0 : 10);

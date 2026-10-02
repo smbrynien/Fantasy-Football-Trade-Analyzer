@@ -37,6 +37,7 @@
       <a href="#/data" data-view="data">Data</a>
       <a href="#/settings" data-view="settings">Settings</a>
       <a href="#/model" data-view="model">Model</a>
+      <a href="#/help" data-view="help">Help</a>
     </nav>
   </header>
   <div id="banner" class="banner" hidden></div>
@@ -44,6 +45,19 @@
   <div id="modal-root"></div>
   <div id="toast-root" aria-live="polite"></div>
   <noscript>This application requires JavaScript.</noscript>
+  <script>
+    // Opened by double-clicking index.html? Browsers block the app's modules from file:// — explain what to do instead.
+    if (location.protocol === 'file:') {
+      document.getElementById('view').innerHTML =
+        '<div class="panel" style="max-width:640px;margin:2rem auto;font-size:1.05rem">' +
+        '<h2>Almost there!</h2>' +
+        '<p>This page can\'t be opened directly. Please close this tab and go back to the app folder, then double-click:</p>' +
+        '<ul><li><strong>Windows:</strong> Start Trade Analyzer (Windows).bat</li>' +
+        '<li><strong>Mac:</strong> Start Trade Analyzer (Mac).command</li>' +
+        '<li><strong>Linux:</strong> Start Trade Analyzer (Linux).sh</li></ul>' +
+        '<p>The app will open in your browser automatically. See <em>HOW TO START.txt</em> in the same folder for simple step-by-step help.</p></div>';
+    }
+  </script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

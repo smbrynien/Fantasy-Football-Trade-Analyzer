@@ -17,20 +17,48 @@ website's trade values — tuned to **your** league's scoring, roster and size.
 
 More screenshots: [dynasty trade with picks](docs/img/trade-dynasty.png) · ["Why this value?"](docs/img/modal-why.png) · [sync dashboard](docs/img/data.png) · [mobile](docs/img/mobile-trade.png)
 
-## Quick start
+## Download & run (no coding needed)
+
+1. **Download** the version for your computer (one click):
+
+   | Your computer | Download |
+   |---|---|
+   | 🪟 **Windows** | [**TradeAnalyzer-Windows.zip**](https://github.com/smbrynien/Fantasy-Football-Trade-Analyzer/releases/latest/download/TradeAnalyzer-Windows.zip) |
+   | 🍎 **Mac** (Apple Silicon or Intel) | [**TradeAnalyzer-Mac.zip**](https://github.com/smbrynien/Fantasy-Football-Trade-Analyzer/releases/latest/download/TradeAnalyzer-Mac.zip) |
+   | 🐧 **Linux** | [**TradeAnalyzer-Linux.zip**](https://github.com/smbrynien/Fantasy-Football-Trade-Analyzer/releases/latest/download/TradeAnalyzer-Linux.zip) |
+
+2. **Unzip** it (Windows: right-click → *Extract All…*; Mac: double-click the ZIP) and open the folder.
+3. **Double-click "Start Trade Analyzer"** (the Windows `.bat`, Mac `.command` or Linux `.sh` file).
+   The app opens in your web browser and downloads the latest football data by itself (~30 seconds the first time).
+4. **Keep the small black/Terminal window open** while you use the app. Close it to quit.
+
+Nothing to install — each download already contains everything it needs.
+First time only, your computer may warn about a file from the internet:
+* **Windows** "Windows protected your PC" → *More info* → *Run anyway*.
+* **Mac** "cannot be opened / could not verify" → *System Settings → Privacy & Security* → *Open Anyway* (older macOS:
+  right-click the file → *Open*).
+
+Step-by-step help with troubleshooting: [HOW TO START.txt](HOW%20TO%20START.txt) (also inside the download).
+The in-app **Help** tab answers common questions.
+
+> Also works from GitHub's green **Code → Download ZIP** button: the Start file then downloads its engine (Node.js,
+> ~30–45 MB) automatically the first time.
+
+## Quick start (developers)
 
 ```bash
-git clone <this repo> && cd Fantasy-Football-Trade-Analyzer
-npm start                     # → http://127.0.0.1:5177
+git clone https://github.com/smbrynien/Fantasy-Football-Trade-Analyzer && cd Fantasy-Football-Trade-Analyzer
+npm start                     # → http://localhost:5177 (Node 18+; no npm install needed)
 ```
 
-Open the URL, click **Sync All** (first sync ≈ 10–30 s, ≈ 90 MB). That's it.
+On first launch the data downloads automatically (`--no-auto-sync` / `FFTA_NO_AUTOSYNC=1` to disable;
+`FFTA_AUTO_REFRESH_HOURS` controls refresh-on-launch, default 12). `npm start -- --open` also opens the browser.
 
 Other commands:
 
 | Command | What it does |
 |---|---|
-| `npm start` | Start the local server + app (port `PORT`, default 5177) |
+| `npm start` | Start the local server + app (port `PORT`, default 5177; next free port if busy) |
 | `npm run sync` | Sync all sources from the terminal (prints a status table) |
 | `npm run sync -- --force` | Re-download everything |
 | `npm run sync -- --failed` | Retry only failed/partial sources |
@@ -38,10 +66,15 @@ Other commands:
 | `npm run rebuild` | Rebuild dataset/values from cached data (no network) |
 | `npm run calibrate` | Re-derive aging curves, attrition, draft priors, rookie slot curve from historical data |
 | `npm run backtest` | Evaluate consensus rankings vs actual production → `reports/backtest.json` |
+| `npm run package` | Build the ready-to-run ZIPs into `dist/` (what the release workflow publishes) |
 | `npm test` | Run the automated test suite (offline) |
 
 Optional settings: copy `.env.example` to `.env` (port, bind address, user agent, timeouts). No default source needs
 an API key. Keep `HOST=127.0.0.1` unless you deliberately want to open it to your phone on the LAN (`HOST=0.0.0.0`).
+
+**Releases:** every push to `main` runs `.github/workflows/release.yml` — tests, builds the three ZIPs (app + bundled
+Node.js `.node-version`) and publishes them as the latest GitHub Release, so the download links above always point at
+the newest version.
 
 ## Using it
 

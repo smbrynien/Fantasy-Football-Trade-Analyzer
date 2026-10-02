@@ -330,3 +330,11 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
   .print-only { display: block !important; }
 }
 .print-only { display: none; }
+
+/* ---------- welcome / help ---------- */
+.welcome { border-left: 4px solid #16a34a; margin-bottom: 1rem; }
+.welcome-steps { margin: .75rem 0 .25rem 1.2rem; padding: 0; font-size: .95rem; }
+.welcome-steps li { margin: .45rem 0; }
+details.qa { border-bottom: 1px solid var(--border); padding: .5rem 0; }
+details.qa summary { font-size: .95rem; }
+details.qa p { margin: .4rem 0 .2rem 1rem; color: var(--muted); }
