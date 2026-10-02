@@ -814,8 +814,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
 7. Never fabricate data, never scrape sources whose terms forbid it, never commit `data/` or `.env`.
 8. The container is ephemeral: `/tmp` helpers (E2E scripts, the ESLint config) and `data/` (git-ignored) won't
    exist in a new session; run `npm run sync` to get data.
-9. Update this file whenever the project state changes significantly (see below), and add new bugs, decisions or
-   architectural changes here.
+9. Update this file after **any** change to the project (owner's standing instruction in `CLAUDE.md`), in the same
+   commit, and add new bugs, decisions or architectural changes here.
 
 ## 38. Git / version control state (at handoff)
 
@@ -824,7 +824,7 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   handoff commit. Both are pushed per `CLAUDE.md`.
 * Working tree: clean before adding this file (no uncommitted work to protect).
 * Recent commits: `cb8e7ff` initial full app → `f80fcc6` CLAUDE.md → `7ac5d50` non-technical distribution →
-  `464841f` model audit + 2.0.0 → (this handoff).
+  `464841f` model audit + 2.0.0 → `ac054d8` this handoff → CLAUDE.md rule "update the handoff after any change".
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
 ## 39. Confidence in this handoff
@@ -849,8 +849,9 @@ were listed from the repository tree.
 
 ## 41–42. Maintaining this handoff
 
-Keep it a project-state document, not a code dump: summarize and link to files. **Update
-`docs/CLAUDE_CODE_HANDOFF.md` in the same commit** whenever:
+Keep it a project-state document, not a code dump: summarize and link to files. **Standing owner instruction
+(recorded in `CLAUDE.md`): after ANY change to the project, update `docs/CLAUDE_CODE_HANDOFF.md` in the same commit
+so it reflects the current status.** Pay particular attention when:
 
 * architecture changes, or major features are added/removed
 * formulas or defaults change (with the `model_version` bump)

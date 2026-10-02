@@ -20,5 +20,8 @@
 
 - Read `docs/CLAUDE_CODE_HANDOFF.md` at the start of a session; it records the actual project state, known bugs and
   the next task ("PICK UP HERE").
-- Update it in the same commit whenever architecture, features, formulas/defaults (with the `model_version` bump),
-  data sources, important bugs, priorities or blockers change.
+- **Standing instruction from the repository owner: after ANY change to the project, update
+  `docs/CLAUDE_CODE_HANDOFF.md` so it reflects the current status** — in the same commit, before pushing. At minimum
+  refresh the status (§2), known bugs (§19), backlog and next steps (§34–35), PICK UP HERE and git state (§38), plus
+  any section the change touches (architecture, features, formulas/defaults with the `model_version` bump, data
+  sources, priorities, blockers). A change is not finished until the handoff matches the code.
