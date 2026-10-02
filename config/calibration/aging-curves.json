@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T13:33:02.795Z",
+  "generated_at": "2026-10-02T18:58:21.487Z",
   "method": "Delta method on PPR PPG: consecutive seasons with >=6 games, kept when either season >=5 PPG (symmetric selection avoids building regression-to-the-mean into the curve), weighted by harmonic-mean games, 3-pt smoothed, anchored at mean PPG of ages 24-28; ages without >=15 pairs follow the shape of the default curve, and every age is shrunk toward the default curve with weight n/(n+80) (n = pairs observed). Survivorship bias (decliners leave the sample) is partly offset by attrition.json.",
   "sample": {
     "seasons": "2006-2025",

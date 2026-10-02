@@ -1,5 +1,5 @@
 // Sync engine with fake adapters in an isolated data directory.
-import { test, before } from 'node:test';
+import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -8,6 +8,7 @@ import { loadTestConfig } from './fixtures/make-dataset.js';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ffta-sync-'));
 process.env.FFTA_DATA_DIR = tmp;
+after(() => fs.rmSync(tmp, { recursive: true, force: true }));
 const { runSync, rebuild } = await import('../server/sync-engine.js');
 const { P } = await import('../server/lib/paths.js');
 const read = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));

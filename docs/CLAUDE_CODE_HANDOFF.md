@@ -2,7 +2,7 @@
 
 > **Read this first in any new session.** It records the *actual* state of the repository as inspected on
 > **2026-10-02**. Originally written at commit `464841f` ("Model audit and valuation model 2.0.0"); last updated with
-> the 2.1.0 session (bugs #1, #2, #3, #10; lint/E2E; lint in CI) — see §38 for the git state.
+> the 2.1.0 session (all known bugs #1–#13 fixed; lint/E2E; lint in CI; model 2.1.1) — see §38 for the git state.
 > The code is the source of truth. Verify anything here before acting on it, and **update this file** when the
 > project's state changes (see §42 "Maintaining this handoff").
 >
@@ -54,7 +54,7 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 
 ```text
 Overall Status:  Working, tested. Model 2.1.1 (2.0.0 audit model + ADP corroboration rule + market list
-                 format rules). Bugs #1–#5, #10 FIXED. Lint runs in CI.
+                 format rules). ALL known bugs (§19 #1–#13) FIXED. Lint runs in CI.
 
 Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
                  corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
@@ -531,6 +531,13 @@ No formal usability audit has been done.
     E2E now runs 1360/721/390 px and checks no sideways page scroll, Sync visible and all tabs on screen — the old
     CSS fails at 721 px (334 px overflow) and 390 px (5 tabs cut). `eslint.config.mjs` gained a Node+browser block
     for `tests/e2e/**` (`page.evaluate` callbacks).
+15. **Bugs #8, #9, #12 fixed (hygiene).** #8: `js/core/version.js` no longer points at a non-existent
+    `js/core/schema.js`; it states the truth (schema versions are written, never read; no migration code — add reader
+    handling when bumping). #9: `npm run calibrate` re-run (≈23 s from the cached history). First run in a throwaway
+    worktree: all six calibration files came out identical to the committed ones apart from `generated_at` (and the
+    position of the hand-added `fit` block in `rookie-slot-curve.json`), so the audit's in-place refit is exactly what
+    the generator produces; the committed files are now the generator's output. Full value diff: 24,892 assets, 0
+    changes → no `model_version` bump. #12: `tests/sync.test.js` removes its temp data dir after the suite.
 
 ## 18. What is currently in progress
 
@@ -553,12 +560,14 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 | 5 | ~~TE-premium market lists never preferred~~ **FIXED in model 2.1.1** | Low | TEP league with a source that publishes TEP values (KTC import with `tep`) | prefer the matching TEP list | always prefers `tep: 0` | `marketMismatch` uses `Math.abs(rec.tep − 0)` | `signals.js` L12 | none |
 | 6 | ~~Mobile header nav clipped~~ **FIXED** (2.1.0 session) | Low (UX) | 390 px viewport | all tabs reachable visibly | tabs cut off at "Setti…" | nav overflow styling | `css/app.css`, `index.html` | swipe/scroll the nav |
 | 7 | ~~Rookie prospect table wider than desktop viewport~~ **FIXED** (2.1.0 session) | Low (UX) | `#/rookies` at 1360 px | fits or scrolls clearly | last column cut | many columns | `js/ui/views/rookies.js`, `css/app.css` | horizontal scroll |
-| 8 | `js/core/version.js` comment references `js/core/schema.js migrate*`, which doesn't exist | Low (doc/code) | read file | migration helpers exist, or no reference | no schema migration code at all | aspirational comment | `js/core/version.js` | — |
-| 9 | `config/calibration/rookie-slot-curve.json` `generated_at` predates its current shape | Low | compare `generated_at` with git history | timestamp of the LS-exponential refit | shape was refit in place from `raw_mean_by_rank` during the audit; `generated_at` still 13:33 | manual refit | that file; `npm run calibrate` regenerates consistently | rerun `npm run calibrate` |
+| 8 | ~~`js/core/version.js` comment references `js/core/schema.js migrate*`, which doesn't exist~~ **FIXED** (2.1.0 session) | Low (doc/code) | read file | migration helpers exist, or no reference | no schema migration code at all | aspirational comment | `js/core/version.js` | — |
+| 9 | ~~`config/calibration/rookie-slot-curve.json` `generated_at` predates its current shape~~ **FIXED** (2.1.0 session) | Low | compare `generated_at` with git history | timestamp of the LS-exponential refit | shape was refit in place from `raw_mean_by_rank` during the audit; `generated_at` still 13:33 | manual refit | that file; `npm run calibrate` regenerates consistently | rerun `npm run calibrate` |
 | 10 | ~~ESPN ADP placeholder (≈168–170) treated as a real ADP~~ **FIXED in the adapter** (after 2.1.0) | was Low | `data/normalized/espn/adp.json` | undrafted players tie | 815 of 1,050 entries are now exactly 170 with `undrafted: true`; they share one average overall rank (≈0 value) instead of being ordered by noise | was: adapter kept every ADP < 300 | `adapters/espn.js` (`ESPN_UNDRAFTED_ADP`, `ESPN_UNDRAFTED_MARGIN`) | — |
 | 11 | ~~Trade note "Unavailable assets" lists raw ids, and a missing asset still counts as "Team A consolidates"~~ **FIXED** (2.1.0 session) | was Low | `analyzeTrade` with an N/A player (e.g. Philip Rivers) | names; no false consolidation | note names the player (`names` option: function or map; falls back to the id); unavailable non-pick ids count as players (value 0), so a 1-for-1 with an N/A player no longer charges the other side a package adjustment; a side with only unavailable assets is no longer "incomplete"; the live trade builder tells you by name (toast) when it drops unavailable assets, and saved-trade "Now" uses the same names/counting | was: notes used ids; player count only included resolved assets | `js/core/valuation/trade.js`, `js/ui/views/trade.js`, `tests/trade.test.js` | — |
 | 13 | Header overflowed the page between 721 and ~1090 px (found while fixing #6) — **FIXED** (2.1.0 session) | was Medium (UX: Sync button off-screen on tablets/small laptops, page scrolled sideways on every route) | 800 px viewport, any page | header fits | right-hand controls (651 px) pushed the page 67–370 px sideways | no breakpoint between 720 px (phone layout) and desktop | `css/app.css` (≤1120 px: brand text hidden, header wraps; ≤960 px: data-pill text and Sync label hidden, as on phones) | — |
-| 12 | `npm test` leaves one `ffta-sync-*` temp dir per run in the OS temp folder | Low (test hygiene) | run `npm test`, list `$TMPDIR/ffta-sync-*` | removed after the suite | stays | `tests/sync.test.js` creates it with `mkdtemp` and never removes it | `tests/sync.test.js` | delete them by hand |
+| 12 | ~~`npm test` leaves one `ffta-sync-*` temp dir per run in the OS temp folder~~ **FIXED** (2.1.0 session) | Low (test hygiene) | run `npm test`, list `$TMPDIR/ffta-sync-*` | removed after the suite | stays | `tests/sync.test.js` creates it with `mkdtemp` and never removes it | `tests/sync.test.js` | delete them by hand |
+
+**All known bugs (#1–#13) are fixed as of the 2.1.0 session; none open.** Record new ones here.
 
 No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68–72 in the 2.1.0 session).
 
@@ -577,7 +586,7 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
   ~25–39 free agents ≥100 in SF leagues from **projection alone** (e.g. Derek Carr, Teddy Bridgewater), because
   last summer's season projections are still in the dataset. This is an artifact of forcing the phase; in a real
   preseason the projections are current. Worth re-checking in the next real preseason (August).
-* **Rookie curve** smooths the historical drop after pick 2 (1.01–1.02 mean 228 vs fit 177); class strength is
+* **Rookie curve** (now exactly reproducible by `npm run calibrate`) smooths the historical drop after pick 2 (1.01–1.02 mean 228 vs fit 177); class strength is
   not modelled (CV .28 across 4 classes).
 * **Dynasty backtest** covers only 2020–2023 (4 seasons); ρ differences < .01 are noise.
 * **Not validated:** injury games-lost table, SoS strength (inconclusive), K/DEF values, dynasty discount rates,
@@ -817,7 +826,6 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 |---|---|---|---|---|---|
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
-| Low | Schema migration helpers or remove the stale comment (bug #8) | doc/code consistency | stale comment | none | `js/core/version.js` |
 | Research | Calibrate σ (± ranges) against outcomes; archive projections/markets for future backtests | trust in verdicts | not started | months of snapshots | `confidence.js`, snapshots |
 | Research | 3+-player package adjustment; roster-specific valuation | multi-player trades are the weakest area | evidence insufficient | simulation work | `trade.js`, `scripts/audit/current.js` |
 
@@ -837,10 +845,12 @@ Current state:            Model 2.1.1 (bug #1 fixed: ADP corroborates only; #4/#
                           (bug #10); dev-only `npm run lint` (also in CI) + optional `npm run test:e2e`; audit-model
                           reproducible (bug #2); Trends marks model changes (bug #3). All 10 sources sync; 78/78
                           tests, lint clean, E2E pass.
-Most important unfinished: remaining small bugs #8, #9, #12 (doc/metadata/test hygiene), then §35 item 3.
-Secondary:                audit scorecard on Model page; dataset pruning decision; UX audit (none done yet).
+Most important unfinished: No known bugs. Next by value: §35 item 3 (audit scorecard on the Model page), item 4
+                          (prune ADP-only players from dataset.json — ≈45% of rows carry no redraft value), a first
+                          usability audit (none exists, §21), and the research items in §34 (σ calibration, 3+-player
+                          packages, roster-specific valuation).
 Known blockers:           None.
-Files to inspect first:   js/core/version.js, config/calibration/rookie-slot-curve.json, tests/sync.test.js
+Files to inspect first:   js/ui/views/model.js, server/index.js (STATIC_ALLOW), server/dataset-builder.js
 Tests to run first:       npm test (expect 78/78); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
@@ -890,8 +900,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
   model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling → lint in CI +
   audit-model reproducibility (bug #2) → Trends model-version markers (bug #3) → model 2.1.1 market list
-  format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11) → layout fixes (bugs #6, #7, #13, this
-  update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11) → layout fixes (bugs #6, #7, #13) →
+  hygiene (bugs #8, #9, #12, this update). Every known bug is now fixed. CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
@@ -909,8 +919,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   import, Settings override round-trips, retry button, snapshots view, bugs #4/#5 impact.
 * **Documented, not independently verified:** the historical numbers in §27 were produced earlier in this same
   project session by the audit scripts (reproducible with `npm run audit-model`), not re-run while writing this.
-* **Doc/code discrepancies found:** `js/core/version.js` references a non-existent `js/core/schema.js`; the
-  rookie-slot-curve `generated_at` predates its shape; `docs/MODEL_AUDIT.md` doesn't mention bug #1 (added to its §20
+* **Doc/code discrepancies found (2.0.0 session; both fixed in 2.1.0):** `js/core/version.js` referenced a non-existent
+  `js/core/schema.js`; the rookie-slot-curve `generated_at` predated its shape; `docs/MODEL_AUDIT.md` doesn't mention bug #1 (added to its §20
   with this handoff); README/docs didn't mention that there was no lint command (resolved: `npm run lint` exists and
   is in the README). 2.1.0 session: §9 listed wrong state file names (fixed: `sources-status.json`,
   `quality-report.json`); the handoff skips from §35 to §38 (no §36–37).
