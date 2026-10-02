@@ -1,0 +1,19 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 1.0.0",
+  "checks": 75,
+  "failures": 3,
+  "failed": [
+    {
+      "name": "projection +15% does not lower value: Emmett Johnson",
+      "detail": "293 → 285"
+    },
+    {
+      "name": "projection +15% does not lower value: Najee Harris",
+      "detail": "253 → 252"
+    },
+    {
+      "name": "2 years younger does not lower dynasty value: Jahmyr Gibbs (24.5)",
+      "detail": "11968 → 11754"
+    }
+  ]
+}

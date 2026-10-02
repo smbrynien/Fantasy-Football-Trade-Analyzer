@@ -1,0 +1,988 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 1.0.0",
+  "note": "Within-position Spearman correlations between raw signals (ranks/ADP negated so higher = better), averaged over QB/RB/WR/TE.",
+  "matrix": {
+    "fc_dyn": {
+      "fc_dyn": {
+        "rho": 1,
+        "n": 397
+      },
+      "dp_dyn": {
+        "rho": 0.943,
+        "n": 391
+      },
+      "fp_dyn_pos": {
+        "rho": 0.945,
+        "n": 391
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.929,
+        "n": 313
+      },
+      "fc_red": {
+        "rho": 0.901,
+        "n": 197
+      },
+      "fp_ros_pos": {
+        "rho": 0.933,
+        "n": 356
+      },
+      "adp_sleeper": {
+        "rho": 0.877,
+        "n": 254
+      },
+      "adp_espn": {
+        "rho": 0.824,
+        "n": 395
+      },
+      "adp_ffc": {
+        "rho": 0.821,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.862,
+        "n": 339
+      },
+      "proj_espn": {
+        "rho": 0.87,
+        "n": 308
+      },
+      "ppg_season": {
+        "rho": 0.727,
+        "n": 327
+      },
+      "ppg_last": {
+        "rho": 0.813,
+        "n": 299
+      }
+    },
+    "dp_dyn": {
+      "fc_dyn": {
+        "rho": 0.943,
+        "n": 391
+      },
+      "dp_dyn": {
+        "rho": 1,
+        "n": 662
+      },
+      "fp_dyn_pos": {
+        "rho": 0.99,
+        "n": 662
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.963,
+        "n": 324
+      },
+      "fc_red": {
+        "rho": 0.837,
+        "n": 197
+      },
+      "fp_ros_pos": {
+        "rho": 0.91,
+        "n": 372
+      },
+      "adp_sleeper": {
+        "rho": 0.913,
+        "n": 281
+      },
+      "adp_espn": {
+        "rho": 0.728,
+        "n": 617
+      },
+      "adp_ffc": {
+        "rho": 0.721,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.839,
+        "n": 409
+      },
+      "proj_espn": {
+        "rho": 0.836,
+        "n": 351
+      },
+      "ppg_season": {
+        "rho": 0.703,
+        "n": 391
+      },
+      "ppg_last": {
+        "rho": 0.874,
+        "n": 422
+      }
+    },
+    "fp_dyn_pos": {
+      "fc_dyn": {
+        "rho": 0.945,
+        "n": 391
+      },
+      "dp_dyn": {
+        "rho": 0.99,
+        "n": 662
+      },
+      "fp_dyn_pos": {
+        "rho": 1,
+        "n": 662
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.959,
+        "n": 324
+      },
+      "fc_red": {
+        "rho": 0.845,
+        "n": 197
+      },
+      "fp_ros_pos": {
+        "rho": 0.919,
+        "n": 372
+      },
+      "adp_sleeper": {
+        "rho": 0.913,
+        "n": 281
+      },
+      "adp_espn": {
+        "rho": 0.717,
+        "n": 617
+      },
+      "adp_ffc": {
+        "rho": 0.713,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.843,
+        "n": 409
+      },
+      "proj_espn": {
+        "rho": 0.835,
+        "n": 351
+      },
+      "ppg_season": {
+        "rho": 0.704,
+        "n": 391
+      },
+      "ppg_last": {
+        "rho": 0.868,
+        "n": 422
+      }
+    },
+    "adp_dyn_sleeper": {
+      "fc_dyn": {
+        "rho": 0.929,
+        "n": 313
+      },
+      "dp_dyn": {
+        "rho": 0.963,
+        "n": 324
+      },
+      "fp_dyn_pos": {
+        "rho": 0.959,
+        "n": 324
+      },
+      "adp_dyn_sleeper": {
+        "rho": 1,
+        "n": 442
+      },
+      "fc_red": {
+        "rho": 0.809,
+        "n": 193
+      },
+      "fp_ros_pos": {
+        "rho": 0.862,
+        "n": 303
+      },
+      "adp_sleeper": {
+        "rho": 0.949,
+        "n": 273
+      },
+      "adp_espn": {
+        "rho": 0.832,
+        "n": 341
+      },
+      "adp_ffc": {
+        "rho": 0.786,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.808,
+        "n": 287
+      },
+      "proj_espn": {
+        "rho": 0.793,
+        "n": 262
+      },
+      "ppg_season": {
+        "rho": 0.561,
+        "n": 273
+      },
+      "ppg_last": {
+        "rho": 0.825,
+        "n": 253
+      }
+    },
+    "fc_red": {
+      "fc_dyn": {
+        "rho": 0.901,
+        "n": 197
+      },
+      "dp_dyn": {
+        "rho": 0.837,
+        "n": 197
+      },
+      "fp_dyn_pos": {
+        "rho": 0.845,
+        "n": 197
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.809,
+        "n": 193
+      },
+      "fc_red": {
+        "rho": 1,
+        "n": 197
+      },
+      "fp_ros_pos": {
+        "rho": 0.949,
+        "n": 197
+      },
+      "adp_sleeper": {
+        "rho": 0.839,
+        "n": 184
+      },
+      "adp_espn": {
+        "rho": 0.92,
+        "n": 197
+      },
+      "adp_ffc": {
+        "rho": 0.904,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.899,
+        "n": 196
+      },
+      "proj_espn": {
+        "rho": 0.896,
+        "n": 191
+      },
+      "ppg_season": {
+        "rho": 0.692,
+        "n": 191
+      },
+      "ppg_last": {
+        "rho": 0.741,
+        "n": 174
+      }
+    },
+    "fp_ros_pos": {
+      "fc_dyn": {
+        "rho": 0.933,
+        "n": 356
+      },
+      "dp_dyn": {
+        "rho": 0.91,
+        "n": 372
+      },
+      "fp_dyn_pos": {
+        "rho": 0.919,
+        "n": 372
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.862,
+        "n": 303
+      },
+      "fc_red": {
+        "rho": 0.949,
+        "n": 197
+      },
+      "fp_ros_pos": {
+        "rho": 1,
+        "n": 376
+      },
+      "adp_sleeper": {
+        "rho": 0.897,
+        "n": 245
+      },
+      "adp_espn": {
+        "rho": 0.874,
+        "n": 374
+      },
+      "adp_ffc": {
+        "rho": 0.911,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.933,
+        "n": 328
+      },
+      "proj_espn": {
+        "rho": 0.923,
+        "n": 296
+      },
+      "ppg_season": {
+        "rho": 0.764,
+        "n": 312
+      },
+      "ppg_last": {
+        "rho": 0.817,
+        "n": 296
+      }
+    },
+    "adp_sleeper": {
+      "fc_dyn": {
+        "rho": 0.877,
+        "n": 254
+      },
+      "dp_dyn": {
+        "rho": 0.913,
+        "n": 281
+      },
+      "fp_dyn_pos": {
+        "rho": 0.913,
+        "n": 281
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.949,
+        "n": 273
+      },
+      "fc_red": {
+        "rho": 0.839,
+        "n": 184
+      },
+      "fp_ros_pos": {
+        "rho": 0.897,
+        "n": 245
+      },
+      "adp_sleeper": {
+        "rho": 1,
+        "n": 886
+      },
+      "adp_espn": {
+        "rho": 0.892,
+        "n": 327
+      },
+      "adp_ffc": {
+        "rho": 0.954,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.837,
+        "n": 240
+      },
+      "proj_espn": {
+        "rho": 0.805,
+        "n": 222
+      },
+      "ppg_season": {
+        "rho": 0.591,
+        "n": 231
+      },
+      "ppg_last": {
+        "rho": 0.842,
+        "n": 232
+      }
+    },
+    "adp_espn": {
+      "fc_dyn": {
+        "rho": 0.824,
+        "n": 395
+      },
+      "dp_dyn": {
+        "rho": 0.728,
+        "n": 617
+      },
+      "fp_dyn_pos": {
+        "rho": 0.717,
+        "n": 617
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.832,
+        "n": 341
+      },
+      "fc_red": {
+        "rho": 0.92,
+        "n": 197
+      },
+      "fp_ros_pos": {
+        "rho": 0.874,
+        "n": 374
+      },
+      "adp_sleeper": {
+        "rho": 0.892,
+        "n": 327
+      },
+      "adp_espn": {
+        "rho": 1,
+        "n": 960
+      },
+      "adp_ffc": {
+        "rho": 0.989,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.81,
+        "n": 455
+      },
+      "proj_espn": {
+        "rho": 0.842,
+        "n": 383
+      },
+      "ppg_season": {
+        "rho": 0.729,
+        "n": 461
+      },
+      "ppg_last": {
+        "rho": 0.747,
+        "n": 511
+      }
+    },
+    "adp_ffc": {
+      "fc_dyn": {
+        "rho": 0.821,
+        "n": 15
+      },
+      "dp_dyn": {
+        "rho": 0.721,
+        "n": 15
+      },
+      "fp_dyn_pos": {
+        "rho": 0.713,
+        "n": 15
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.786,
+        "n": 15
+      },
+      "fc_red": {
+        "rho": 0.904,
+        "n": 15
+      },
+      "fp_ros_pos": {
+        "rho": 0.911,
+        "n": 15
+      },
+      "adp_sleeper": {
+        "rho": 0.954,
+        "n": 15
+      },
+      "adp_espn": {
+        "rho": 0.989,
+        "n": 15
+      },
+      "adp_ffc": {
+        "rho": 1,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.843,
+        "n": 15
+      },
+      "proj_espn": {
+        "rho": 0.846,
+        "n": 15
+      },
+      "ppg_season": {
+        "rho": 0.729,
+        "n": 15
+      },
+      "ppg_last": null
+    },
+    "proj_sleeper": {
+      "fc_dyn": {
+        "rho": 0.862,
+        "n": 339
+      },
+      "dp_dyn": {
+        "rho": 0.839,
+        "n": 409
+      },
+      "fp_dyn_pos": {
+        "rho": 0.843,
+        "n": 409
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.808,
+        "n": 287
+      },
+      "fc_red": {
+        "rho": 0.899,
+        "n": 196
+      },
+      "fp_ros_pos": {
+        "rho": 0.933,
+        "n": 328
+      },
+      "adp_sleeper": {
+        "rho": 0.837,
+        "n": 240
+      },
+      "adp_espn": {
+        "rho": 0.81,
+        "n": 455
+      },
+      "adp_ffc": {
+        "rho": 0.843,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 1,
+        "n": 456
+      },
+      "proj_espn": {
+        "rho": 0.93,
+        "n": 371
+      },
+      "ppg_season": {
+        "rho": 0.785,
+        "n": 410
+      },
+      "ppg_last": {
+        "rho": 0.839,
+        "n": 360
+      }
+    },
+    "proj_espn": {
+      "fc_dyn": {
+        "rho": 0.87,
+        "n": 308
+      },
+      "dp_dyn": {
+        "rho": 0.836,
+        "n": 351
+      },
+      "fp_dyn_pos": {
+        "rho": 0.835,
+        "n": 351
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.793,
+        "n": 262
+      },
+      "fc_red": {
+        "rho": 0.896,
+        "n": 191
+      },
+      "fp_ros_pos": {
+        "rho": 0.923,
+        "n": 296
+      },
+      "adp_sleeper": {
+        "rho": 0.805,
+        "n": 222
+      },
+      "adp_espn": {
+        "rho": 0.842,
+        "n": 383
+      },
+      "adp_ffc": {
+        "rho": 0.846,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.93,
+        "n": 371
+      },
+      "proj_espn": {
+        "rho": 1,
+        "n": 383
+      },
+      "ppg_season": {
+        "rho": 0.78,
+        "n": 369
+      },
+      "ppg_last": {
+        "rho": 0.796,
+        "n": 319
+      }
+    },
+    "ppg_season": {
+      "fc_dyn": {
+        "rho": 0.727,
+        "n": 327
+      },
+      "dp_dyn": {
+        "rho": 0.703,
+        "n": 391
+      },
+      "fp_dyn_pos": {
+        "rho": 0.704,
+        "n": 391
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.561,
+        "n": 273
+      },
+      "fc_red": {
+        "rho": 0.692,
+        "n": 191
+      },
+      "fp_ros_pos": {
+        "rho": 0.764,
+        "n": 312
+      },
+      "adp_sleeper": {
+        "rho": 0.591,
+        "n": 231
+      },
+      "adp_espn": {
+        "rho": 0.729,
+        "n": 461
+      },
+      "adp_ffc": {
+        "rho": 0.729,
+        "n": 15
+      },
+      "proj_sleeper": {
+        "rho": 0.785,
+        "n": 410
+      },
+      "proj_espn": {
+        "rho": 0.78,
+        "n": 369
+      },
+      "ppg_season": {
+        "rho": 1,
+        "n": 461
+      },
+      "ppg_last": {
+        "rho": 0.691,
+        "n": 362
+      }
+    },
+    "ppg_last": {
+      "fc_dyn": {
+        "rho": 0.813,
+        "n": 299
+      },
+      "dp_dyn": {
+        "rho": 0.874,
+        "n": 422
+      },
+      "fp_dyn_pos": {
+        "rho": 0.868,
+        "n": 422
+      },
+      "adp_dyn_sleeper": {
+        "rho": 0.825,
+        "n": 253
+      },
+      "fc_red": {
+        "rho": 0.741,
+        "n": 174
+      },
+      "fp_ros_pos": {
+        "rho": 0.817,
+        "n": 296
+      },
+      "adp_sleeper": {
+        "rho": 0.842,
+        "n": 232
+      },
+      "adp_espn": {
+        "rho": 0.747,
+        "n": 511
+      },
+      "adp_ffc": null,
+      "proj_sleeper": {
+        "rho": 0.839,
+        "n": 360
+      },
+      "proj_espn": {
+        "rho": 0.796,
+        "n": 319
+      },
+      "ppg_season": {
+        "rho": 0.691,
+        "n": 362
+      },
+      "ppg_last": {
+        "rho": 1,
+        "n": 511
+      }
+    }
+  },
+  "pca": [
+    {
+      "pos": "QB",
+      "n": 28,
+      "signals": [
+        "fc_dyn",
+        "dp_dyn",
+        "fp_dyn_pos",
+        "fc_red",
+        "fp_ros_pos",
+        "adp_sleeper",
+        "proj_sleeper",
+        "proj_espn",
+        "ppg_season"
+      ],
+      "varianceExplained": [
+        0.801,
+        0.11,
+        0.045,
+        0.017,
+        0.015,
+        0.007,
+        0.003,
+        0.002,
+        0.001
+      ],
+      "effectiveIndependentSignals": 1.525,
+      "components": [
+        {
+          "lambda": 7.205,
+          "loadings": {
+            "fc_dyn": 0.356,
+            "dp_dyn": 0.34,
+            "fp_dyn_pos": 0.344,
+            "fc_red": 0.363,
+            "fp_ros_pos": 0.358,
+            "adp_sleeper": 0.319,
+            "proj_sleeper": 0.335,
+            "proj_espn": 0.318,
+            "ppg_season": 0.253
+          }
+        },
+        {
+          "lambda": 0.989,
+          "loadings": {
+            "fc_dyn": -0.175,
+            "dp_dyn": -0.339,
+            "fp_dyn_pos": -0.342,
+            "fc_red": 0.137,
+            "fp_ros_pos": 0.17,
+            "adp_sleeper": -0.417,
+            "proj_sleeper": 0.187,
+            "proj_espn": 0.308,
+            "ppg_season": 0.621
+          }
+        },
+        {
+          "lambda": 0.409,
+          "loadings": {
+            "fc_dyn": 0.301,
+            "dp_dyn": 0.2,
+            "fp_dyn_pos": 0.2,
+            "fc_red": 0.059,
+            "fp_ros_pos": -0.169,
+            "adp_sleeper": -0.173,
+            "proj_sleeper": -0.43,
+            "proj_espn": -0.484,
+            "ppg_season": 0.59
+          }
+        }
+      ]
+    },
+    {
+      "pos": "RB",
+      "n": 54,
+      "signals": [
+        "fc_dyn",
+        "dp_dyn",
+        "fp_dyn_pos",
+        "fc_red",
+        "fp_ros_pos",
+        "adp_sleeper",
+        "proj_sleeper",
+        "proj_espn",
+        "ppg_season"
+      ],
+      "varianceExplained": [
+        0.916,
+        0.039,
+        0.022,
+        0.01,
+        0.005,
+        0.004,
+        0.002,
+        0.002,
+        0.001
+      ],
+      "effectiveIndependentSignals": 1.188,
+      "components": [
+        {
+          "lambda": 8.248,
+          "loadings": {
+            "fc_dyn": 0.337,
+            "dp_dyn": 0.334,
+            "fp_dyn_pos": 0.333,
+            "fc_red": 0.341,
+            "fp_ros_pos": 0.344,
+            "adp_sleeper": 0.336,
+            "proj_sleeper": 0.334,
+            "proj_espn": 0.332,
+            "ppg_season": 0.309
+          }
+        },
+        {
+          "lambda": 0.349,
+          "loadings": {
+            "fc_dyn": -0.216,
+            "dp_dyn": -0.423,
+            "fp_dyn_pos": -0.451,
+            "fc_red": 0.201,
+            "fp_ros_pos": -0.027,
+            "adp_sleeper": -0.178,
+            "proj_sleeper": 0.251,
+            "proj_espn": 0.298,
+            "ppg_season": 0.588
+          }
+        },
+        {
+          "lambda": 0.194,
+          "loadings": {
+            "fc_dyn": 0.276,
+            "dp_dyn": 0.122,
+            "fp_dyn_pos": 0.178,
+            "fc_red": -0.003,
+            "fp_ros_pos": -0.047,
+            "adp_sleeper": -0.257,
+            "proj_sleeper": -0.446,
+            "proj_espn": -0.428,
+            "ppg_season": 0.653
+          }
+        }
+      ]
+    },
+    {
+      "pos": "WR",
+      "n": 68,
+      "signals": [
+        "fc_dyn",
+        "dp_dyn",
+        "fp_dyn_pos",
+        "fc_red",
+        "fp_ros_pos",
+        "adp_sleeper",
+        "proj_sleeper",
+        "proj_espn",
+        "ppg_season"
+      ],
+      "varianceExplained": [
+        0.85,
+        0.1,
+        0.022,
+        0.011,
+        0.006,
+        0.004,
+        0.004,
+        0.002,
+        0.001
+      ],
+      "effectiveIndependentSignals": 1.364,
+      "components": [
+        {
+          "lambda": 7.649,
+          "loadings": {
+            "fc_dyn": 0.345,
+            "dp_dyn": 0.33,
+            "fp_dyn_pos": 0.336,
+            "fc_red": 0.354,
+            "fp_ros_pos": 0.354,
+            "adp_sleeper": 0.332,
+            "proj_sleeper": 0.337,
+            "proj_espn": 0.34,
+            "ppg_season": 0.263
+          }
+        },
+        {
+          "lambda": 0.901,
+          "loadings": {
+            "fc_dyn": -0.173,
+            "dp_dyn": -0.396,
+            "fp_dyn_pos": -0.347,
+            "fc_red": 0.083,
+            "fp_ros_pos": 0.058,
+            "adp_sleeper": -0.295,
+            "proj_sleeper": 0.266,
+            "proj_espn": 0.257,
+            "ppg_season": 0.678
+          }
+        },
+        {
+          "lambda": 0.198,
+          "loadings": {
+            "fc_dyn": 0.432,
+            "dp_dyn": 0.249,
+            "fp_dyn_pos": 0.281,
+            "fc_red": -0.07,
+            "fp_ros_pos": -0.129,
+            "adp_sleeper": -0.494,
+            "proj_sleeper": -0.411,
+            "proj_espn": -0.204,
+            "ppg_season": 0.443
+          }
+        }
+      ]
+    },
+    {
+      "pos": "TE",
+      "n": 25,
+      "signals": [
+        "fc_dyn",
+        "dp_dyn",
+        "fp_dyn_pos",
+        "fc_red",
+        "fp_ros_pos",
+        "adp_sleeper",
+        "proj_sleeper",
+        "proj_espn",
+        "ppg_season"
+      ],
+      "varianceExplained": [
+        0.74,
+        0.166,
+        0.05,
+        0.017,
+        0.013,
+        0.005,
+        0.005,
+        0.003,
+        0.001
+      ],
+      "effectiveIndependentSignals": 1.73,
+      "components": [
+        {
+          "lambda": 6.657,
+          "loadings": {
+            "fc_dyn": 0.353,
+            "dp_dyn": 0.33,
+            "fp_dyn_pos": 0.329,
+            "fc_red": 0.373,
+            "fp_ros_pos": 0.373,
+            "adp_sleeper": 0.333,
+            "proj_sleeper": 0.315,
+            "proj_espn": 0.335,
+            "ppg_season": 0.241
+          }
+        },
+        {
+          "lambda": 1.496,
+          "loadings": {
+            "fc_dyn": -0.243,
+            "dp_dyn": -0.395,
+            "fp_dyn_pos": -0.393,
+            "fc_red": 0.116,
+            "fp_ros_pos": 0.058,
+            "adp_sleeper": -0.246,
+            "proj_sleeper": 0.358,
+            "proj_espn": 0.349,
+            "ppg_season": 0.55
+          }
+        },
+        {
+          "lambda": 0.453,
+          "loadings": {
+            "fc_dyn": 0.355,
+            "dp_dyn": 0.165,
+            "fp_dyn_pos": 0.225,
+            "fc_red": 0.021,
+            "fp_ros_pos": -0.17,
+            "adp_sleeper": -0.503,
+            "proj_sleeper": -0.437,
+            "proj_espn": -0.084,
+            "ppg_season": 0.562
+          }
+        }
+      ]
+    }
+  ]
+}

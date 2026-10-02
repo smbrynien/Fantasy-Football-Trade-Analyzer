@@ -21,7 +21,7 @@ const COMPONENT_HELP = {
   prospect: 'Draft-capital prior: historical production of players drafted in this range at this career stage.',
   longevity: 'Seasons 2+ of the multi-year projection: aging curve, attrition risk, uncertainty and the dynasty discount rate.',
   injury: 'Expected games lost from the current injury designation.',
-  trend: 'Capped share of the market\'s own 30-day value trend.',
+  trend: 'Capped share of the market\'s own 30-day value trend (weight 0 by default since model 2.0: shown for information only).',
   historical: 'Historical rookie slot value (2020-2023 classes) scaled to the current class.',
   current_class: 'Current rookie class values at this slot (consensus rookie order, smoothed).',
 };
@@ -109,7 +109,7 @@ export function openPlayer(cid) {
         h('table.data', {}, h('thead', {}, h('tr', {}, h('th', {}, 'Signal'), h('th.num', {}, 'Value'), h('th.num', {}, 'Weight'), h('th', {}, 'Sources'))),
           h('tbody', {}, sig.map(([g, v]) => h('tr', {}, h('td', {}, COMPONENT_LABELS[g] || g), h('td.num', {}, v === null ? h('span.faint', {}, 'unavailable') : fmtValue(v)), h('td.num', {}, a.weights[g] !== undefined ? `${Math.round(a.weights[g] * 100)}%` : '—'), h('td.small', {}, sourceList(a, g)))))),
         a.leagueEffect !== null ? h('p.mt', {}, h('strong', {}, 'League-specific adjustment: '), `in the reference league (${res.meta.reference_league}) this player would be ${fmtValue(a.refValue)}; your settings change that by ${fmtSigned(a.leagueEffect)}.`) : null,
-        h('p.small.muted', {}, `Scale: 10,000 = most valuable asset in the reference league. Model ${res.meta.model_version} · data ${res.meta.data_version}. Values are approximate — differences under ~${fmtValue(a.sigma)} are within this asset's uncertainty.`),
+        h('p.small.muted', {}, `Scale: top-12 reference-league assets average 7,000 (the best asset ≈ 10,000). Model ${res.meta.model_version} · data ${res.meta.data_version}. Values are approximate — differences under ~${fmtValue(a.sigma)} are within this asset's uncertainty.`),
         h('h3.mt', {}, 'Confidence'), h('p', {}, confBadge(a.confidence), ' ', h('span.small.muted', {}, `score ${a.confidence?.score ?? '—'}/100 (heuristic: coverage, agreement, sample size, freshness, independence)`)),
         h('ul.small', {}, (a.confidence?.reasons || []).map((r) => h('li', {}, r))));
     },

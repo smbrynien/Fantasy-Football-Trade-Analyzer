@@ -1,0 +1,218 @@
+{
+  "label": "REAL HISTORICAL DATA",
+  "experiment": "E4 rookie slot value curve (leave-one-class-out)",
+  "classes": {
+    "2020": 74,
+    "2021": 75,
+    "2022": 74,
+    "2023": 91
+  },
+  "families": {
+    "isotonicAverage": {
+      "looMAE": 40.707,
+      "looBias": 0,
+      "looBiasTop12": 0.118,
+      "byClass": [
+        44.465,
+        35.678,
+        34.982,
+        47.702
+      ]
+    },
+    "exponential": {
+      "looMAE": 34.121,
+      "looBias": -21.466,
+      "looBiasTop12": -34.368,
+      "byClass": [
+        39.725,
+        24.001,
+        30.115,
+        42.642
+      ]
+    },
+    "power": {
+      "looMAE": 35.03,
+      "looBias": -22.975,
+      "looBiasTop12": -48.87,
+      "byClass": [
+        43.727,
+        26.498,
+        24.943,
+        44.951
+      ]
+    },
+    "linear": {
+      "looMAE": 32.309,
+      "looBias": -25.07,
+      "looBiasTop12": -47.713,
+      "byClass": [
+        38.748,
+        25.027,
+        22.81,
+        42.65
+      ]
+    },
+    "logarithmic": {
+      "looMAE": 34.741,
+      "looBias": -31.082,
+      "looBiasTop12": -73.692,
+      "byClass": [
+        39.39,
+        28.795,
+        23.377,
+        47.403
+      ]
+    },
+    "exponentialLS": {
+      "looMAE": 37.899,
+      "looBias": -5.236,
+      "looBiasTop12": 1.656,
+      "byClass": [
+        40.368,
+        34.705,
+        29.264,
+        47.257
+      ]
+    },
+    "linearLS": {
+      "looMAE": 36.732,
+      "looBias": -10.052,
+      "looBiasTop12": -2.725,
+      "byClass": [
+        41.12,
+        31.139,
+        26.412,
+        48.257
+      ]
+    }
+  },
+  "pooledCurve": [
+    {
+      "pick": 1,
+      "value": 227.891,
+      "dropToNext": 0
+    },
+    {
+      "pick": 2,
+      "value": 227.891,
+      "dropToNext": 108.971
+    },
+    {
+      "pick": 3,
+      "value": 118.92,
+      "dropToNext": 31.702
+    },
+    {
+      "pick": 4,
+      "value": 87.218,
+      "dropToNext": 15.991
+    },
+    {
+      "pick": 5,
+      "value": 71.228,
+      "dropToNext": 0
+    },
+    {
+      "pick": 6,
+      "value": 71.228,
+      "dropToNext": 0
+    },
+    {
+      "pick": 7,
+      "value": 71.228,
+      "dropToNext": 1.54
+    },
+    {
+      "pick": 8,
+      "value": 69.687,
+      "dropToNext": 0
+    },
+    {
+      "pick": 9,
+      "value": 69.687,
+      "dropToNext": 12.288
+    },
+    {
+      "pick": 10,
+      "value": 57.399,
+      "dropToNext": 0
+    },
+    {
+      "pick": 11,
+      "value": 57.399,
+      "dropToNext": 0
+    },
+    {
+      "pick": 12,
+      "value": 57.399,
+      "dropToNext": 20.712
+    },
+    {
+      "pick": 13,
+      "value": 36.688,
+      "dropToNext": 0
+    },
+    {
+      "pick": 14,
+      "value": 36.688,
+      "dropToNext": 0
+    },
+    {
+      "pick": 15,
+      "value": 36.688,
+      "dropToNext": 0
+    },
+    {
+      "pick": 16,
+      "value": 36.688,
+      "dropToNext": 0
+    },
+    {
+      "pick": 17,
+      "value": 36.688,
+      "dropToNext": 8.629
+    },
+    {
+      "pick": 18,
+      "value": 28.058,
+      "dropToNext": 0
+    },
+    {
+      "pick": 19,
+      "value": 28.058,
+      "dropToNext": 0
+    },
+    {
+      "pick": 20,
+      "value": 28.058,
+      "dropToNext": 8.645
+    },
+    {
+      "pick": 21,
+      "value": 19.413,
+      "dropToNext": 0
+    },
+    {
+      "pick": 22,
+      "value": 19.413,
+      "dropToNext": 0
+    },
+    {
+      "pick": 23,
+      "value": 19.413,
+      "dropToNext": 0
+    },
+    {
+      "pick": 24,
+      "value": 19.413,
+      "dropToNext": 0
+    }
+  ],
+  "classStrengthTop12": {
+    "2020": 105.223,
+    "2021": 90.74,
+    "2022": 67.227,
+    "2023": 132.535
+  },
+  "classStrengthCV": 0.276
+}

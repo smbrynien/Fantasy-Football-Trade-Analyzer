@@ -1,0 +1,118 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 1.0.0",
+  "note": "How much final values move when a component is removed (influence, NOT accuracy).",
+  "rows": [
+    {
+      "mode": "redraft",
+      "removed": "projection",
+      "spearman": 0.969,
+      "medianAbsPctChange": 0.074,
+      "p90AbsPctChange": 0.349,
+      "maxAbsPctChange": 1.347
+    },
+    {
+      "mode": "redraft",
+      "removed": "production",
+      "spearman": 0.906,
+      "medianAbsPctChange": 0.048,
+      "p90AbsPctChange": 1,
+      "maxAbsPctChange": 1
+    },
+    {
+      "mode": "redraft",
+      "removed": "consensus",
+      "spearman": 0.99,
+      "medianAbsPctChange": 0.043,
+      "p90AbsPctChange": 0.194,
+      "maxAbsPctChange": 0.488
+    },
+    {
+      "mode": "redraft",
+      "removed": "market",
+      "spearman": 0.998,
+      "medianAbsPctChange": 0.014,
+      "p90AbsPctChange": 0.087,
+      "maxAbsPctChange": 0.177
+    },
+    {
+      "mode": "redraft",
+      "removed": "adp",
+      "spearman": 0.966,
+      "medianAbsPctChange": 0.039,
+      "p90AbsPctChange": 0.25,
+      "maxAbsPctChange": 1
+    },
+    {
+      "mode": "redraft",
+      "removed": "trend",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0.04,
+      "p90AbsPctChange": 0.061,
+      "maxAbsPctChange": 0.061
+    },
+    {
+      "mode": "redraft",
+      "removed": "sos",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0.01,
+      "p90AbsPctChange": 0.034,
+      "maxAbsPctChange": 0.112
+    },
+    {
+      "mode": "redraft",
+      "removed": "injury",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0.01,
+      "p90AbsPctChange": 0.063,
+      "maxAbsPctChange": 0.217
+    },
+    {
+      "mode": "dynasty",
+      "removed": "fundamental",
+      "spearman": 0.786,
+      "medianAbsPctChange": 0.11,
+      "p90AbsPctChange": 1,
+      "maxAbsPctChange": 1
+    },
+    {
+      "mode": "dynasty",
+      "removed": "market",
+      "spearman": 0.991,
+      "medianAbsPctChange": 0.025,
+      "p90AbsPctChange": 0.107,
+      "maxAbsPctChange": 0.441
+    },
+    {
+      "mode": "dynasty",
+      "removed": "consensus",
+      "spearman": 0.99,
+      "medianAbsPctChange": 0.03,
+      "p90AbsPctChange": 0.11,
+      "maxAbsPctChange": 0.364
+    },
+    {
+      "mode": "dynasty",
+      "removed": "adp",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0.008,
+      "p90AbsPctChange": 0.022,
+      "maxAbsPctChange": 0.126
+    },
+    {
+      "mode": "dynasty",
+      "removed": "trend",
+      "spearman": 0.997,
+      "medianAbsPctChange": 0.025,
+      "p90AbsPctChange": 0.061,
+      "maxAbsPctChange": 0.061
+    },
+    {
+      "mode": "dynasty",
+      "removed": "injury",
+      "spearman": 1,
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0.002,
+      "maxAbsPctChange": 0.071
+    }
+  ]
+}

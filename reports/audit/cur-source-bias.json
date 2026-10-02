@@ -1,0 +1,222 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",
+  "note": "Positive premium = first source ranks that age group better than the second source does (percentile points within position).",
+  "rows": [
+    {
+      "comparison": "FantasyCalc dynasty vs FantasyPros dynasty ECR",
+      "pos": "QB",
+      "n": 68,
+      "rho": 0.928,
+      "youngPremium": -0.007,
+      "veteranPremium": 0.027,
+      "ageSlope": 0.006
+    },
+    {
+      "comparison": "FantasyCalc dynasty vs FantasyPros dynasty ECR",
+      "pos": "RB",
+      "n": 108,
+      "rho": 0.968,
+      "youngPremium": -0.003,
+      "veteranPremium": 0.029,
+      "ageSlope": 0.003
+    },
+    {
+      "comparison": "FantasyCalc dynasty vs FantasyPros dynasty ECR",
+      "pos": "WR",
+      "n": 148,
+      "rho": 0.947,
+      "youngPremium": -0.012,
+      "veteranPremium": 0.011,
+      "ageSlope": 0.004
+    },
+    {
+      "comparison": "FantasyCalc dynasty vs FantasyPros dynasty ECR",
+      "pos": "TE",
+      "n": 67,
+      "rho": 0.936,
+      "youngPremium": -0.022,
+      "veteranPremium": 0.076,
+      "ageSlope": 0.012
+    },
+    {
+      "comparison": "DynastyProcess vs FantasyPros dynasty ECR",
+      "pos": "QB",
+      "n": 90,
+      "rho": 0.991,
+      "youngPremium": 0.002,
+      "veteranPremium": 0.005,
+      "ageSlope": 0.001
+    },
+    {
+      "comparison": "DynastyProcess vs FantasyPros dynasty ECR",
+      "pos": "RB",
+      "n": 230,
+      "rho": 0.986,
+      "youngPremium": 0.008,
+      "veteranPremium": 0.002,
+      "ageSlope": 0.002
+    },
+    {
+      "comparison": "DynastyProcess vs FantasyPros dynasty ECR",
+      "pos": "WR",
+      "n": 222,
+      "rho": 0.991,
+      "youngPremium": -0.009,
+      "veteranPremium": 0.01,
+      "ageSlope": 0.002
+    },
+    {
+      "comparison": "DynastyProcess vs FantasyPros dynasty ECR",
+      "pos": "TE",
+      "n": 120,
+      "rho": 0.992,
+      "youngPremium": -0.013,
+      "veteranPremium": 0.006,
+      "ageSlope": 0.001
+    },
+    {
+      "comparison": "FantasyCalc redraft vs FantasyPros ROS ECR",
+      "pos": "QB",
+      "n": 34,
+      "rho": 0.948,
+      "youngPremium": 0,
+      "veteranPremium": 0.009,
+      "ageSlope": 0.001
+    },
+    {
+      "comparison": "FantasyCalc redraft vs FantasyPros ROS ECR",
+      "pos": "RB",
+      "n": 59,
+      "rho": 0.948,
+      "youngPremium": -0.03,
+      "veteranPremium": 0.033,
+      "ageSlope": 0.01
+    },
+    {
+      "comparison": "FantasyCalc redraft vs FantasyPros ROS ECR",
+      "pos": "WR",
+      "n": 77,
+      "rho": 0.963,
+      "youngPremium": -0.01,
+      "veteranPremium": 0.031,
+      "ageSlope": 0.005
+    },
+    {
+      "comparison": "FantasyCalc redraft vs FantasyPros ROS ECR",
+      "pos": "TE",
+      "n": 27,
+      "rho": 0.936,
+      "youngPremium": -0.024,
+      "veteranPremium": 0.019,
+      "ageSlope": 0.005
+    },
+    {
+      "comparison": "Sleeper ADP vs FantasyPros ROS ECR",
+      "pos": "QB",
+      "n": 33,
+      "rho": 0.824,
+      "youngPremium": 0.102,
+      "veteranPremium": 0.01,
+      "ageSlope": -0.006
+    },
+    {
+      "comparison": "Sleeper ADP vs FantasyPros ROS ECR",
+      "pos": "RB",
+      "n": 76,
+      "rho": 0.946,
+      "youngPremium": -0.015,
+      "veteranPremium": 0.02,
+      "ageSlope": 0.003
+    },
+    {
+      "comparison": "Sleeper ADP vs FantasyPros ROS ECR",
+      "pos": "WR",
+      "n": 100,
+      "rho": 0.892,
+      "youngPremium": 0.004,
+      "veteranPremium": -0.002,
+      "ageSlope": 0
+    },
+    {
+      "comparison": "Sleeper ADP vs FantasyPros ROS ECR",
+      "pos": "TE",
+      "n": 36,
+      "rho": 0.927,
+      "youngPremium": 0.019,
+      "veteranPremium": -0.038,
+      "ageSlope": -0.009
+    },
+    {
+      "comparison": "ESPN vs Sleeper/Rotowire ROS projection",
+      "pos": "QB",
+      "n": 35,
+      "rho": 0.878,
+      "youngPremium": -0.135,
+      "veteranPremium": 0.024,
+      "ageSlope": 0.002
+    },
+    {
+      "comparison": "ESPN vs Sleeper/Rotowire ROS projection",
+      "pos": "RB",
+      "n": 91,
+      "rho": 0.956,
+      "youngPremium": 0.019,
+      "veteranPremium": 0.009,
+      "ageSlope": 0
+    },
+    {
+      "comparison": "ESPN vs Sleeper/Rotowire ROS projection",
+      "pos": "WR",
+      "n": 155,
+      "rho": 0.947,
+      "youngPremium": -0.018,
+      "veteranPremium": -0.003,
+      "ageSlope": 0.003
+    },
+    {
+      "comparison": "ESPN vs Sleeper/Rotowire ROS projection",
+      "pos": "TE",
+      "n": 90,
+      "rho": 0.939,
+      "youngPremium": -0.027,
+      "veteranPremium": 0.001,
+      "ageSlope": -0.001
+    },
+    {
+      "comparison": "Season PPG vs FantasyPros ROS ECR",
+      "pos": "QB",
+      "n": 39,
+      "rho": 0.656,
+      "youngPremium": -0.1,
+      "veteranPremium": 0.031,
+      "ageSlope": 0.028
+    },
+    {
+      "comparison": "Season PPG vs FantasyPros ROS ECR",
+      "pos": "RB",
+      "n": 87,
+      "rho": 0.867,
+      "youngPremium": -0.024,
+      "veteranPremium": 0.048,
+      "ageSlope": 0.01
+    },
+    {
+      "comparison": "Season PPG vs FantasyPros ROS ECR",
+      "pos": "WR",
+      "n": 125,
+      "rho": 0.803,
+      "youngPremium": -0.031,
+      "veteranPremium": 0.018,
+      "ageSlope": 0.01
+    },
+    {
+      "comparison": "Season PPG vs FantasyPros ROS ECR",
+      "pos": "TE",
+      "n": 61,
+      "rho": 0.73,
+      "youngPremium": -0.047,
+      "veteranPremium": 0.116,
+      "ageSlope": 0.017
+    }
+  ]
+}

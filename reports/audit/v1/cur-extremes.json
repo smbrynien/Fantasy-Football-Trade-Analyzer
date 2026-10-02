@@ -1,0 +1,327 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 1.0.0",
+  "cases": [
+    {
+      "case": "elite young RB",
+      "name": "Jahmyr Gibbs",
+      "age": 24.5,
+      "redraft": 10000,
+      "dynasty1QB": 11968,
+      "dynastySF": 11763,
+      "dynastyMarket": 11660,
+      "dynastyFundamental": 12148
+    },
+    {
+      "case": "elite veteran RB (28+)",
+      "name": "Christian McCaffrey",
+      "age": 30.3,
+      "redraft": 6302,
+      "dynasty1QB": 5603,
+      "dynastySF": 5473,
+      "dynastyMarket": 5224,
+      "dynastyFundamental": 7077
+    },
+    {
+      "case": "aging star WR (30+)",
+      "name": "John Ross",
+      "age": 30.8,
+      "redraft": 0,
+      "dynasty1QB": 4042,
+      "dynastySF": 4005,
+      "dynastyMarket": 0,
+      "dynastyFundamental": 4042
+    },
+    {
+      "case": "young WR, little production",
+      "name": "Carnell Tate",
+      "age": 21.7,
+      "redraft": 838,
+      "dynasty1QB": 3958,
+      "dynastySF": 3930,
+      "dynastyMarket": 4192,
+      "dynastyFundamental": 4046
+    },
+    {
+      "case": "elite TE",
+      "name": "Brock Bowers",
+      "age": 23.8,
+      "redraft": 4941,
+      "dynasty1QB": 7244,
+      "dynastySF": 7310,
+      "dynastyMarket": 7694,
+      "dynastyFundamental": 6851
+    },
+    {
+      "case": "top QB (1QB)",
+      "name": "Josh Allen",
+      "age": 30.4,
+      "redraft": 4592,
+      "dynasty1QB": 6477,
+      "dynastySF": 9416,
+      "dynastyMarket": 6414,
+      "dynastyFundamental": 6414
+    },
+    {
+      "case": "injured (IR) star",
+      "name": "A.J. Brown",
+      "age": 29.3,
+      "redraft": 1130,
+      "dynasty1QB": 3394,
+      "dynastySF": 3362,
+      "dynastyMarket": 1798,
+      "dynastyFundamental": 0
+    },
+    {
+      "case": "rookie 1st-round WR",
+      "name": "Jordyn Tyson",
+      "age": 22.1,
+      "redraft": 205,
+      "dynasty1QB": 3652,
+      "dynastySF": 3643,
+      "dynastyMarket": 3912,
+      "dynastyFundamental": 3608
+    },
+    {
+      "case": "late-round rookie RB",
+      "name": "Adam Randall",
+      "age": 22.2,
+      "redraft": 0,
+      "dynasty1QB": 258,
+      "dynastySF": 216,
+      "dynastyMarket": 502,
+      "dynastyFundamental": 18
+    },
+    {
+      "case": "upcoming 1.01",
+      "name": "2027 1.01",
+      "dynasty1QB": 4968,
+      "dynastySF": 5105
+    },
+    {
+      "case": "upcoming early 1st",
+      "name": "2027 Early 1st",
+      "dynasty1QB": 4016,
+      "dynastySF": 4162
+    },
+    {
+      "case": "upcoming unknown 1st",
+      "name": "2027 1st",
+      "dynasty1QB": 2776,
+      "dynastySF": 2972
+    },
+    {
+      "case": "upcoming late 1st",
+      "name": "2027 Late 1st",
+      "dynasty1QB": 1831,
+      "dynastySF": 2045
+    },
+    {
+      "case": "next-year 1st",
+      "name": "2028 1st",
+      "dynasty1QB": 2189,
+      "dynastySF": 2419
+    }
+  ],
+  "fundamentalVsMarketDisagreements": [
+    {
+      "name": "Leonard Fournette",
+      "pos": "RB",
+      "age": 31.7,
+      "value": 1666,
+      "market": 0,
+      "fundamental": 3956,
+      "consensus": 0,
+      "gapPct": 768034250382555.1
+    },
+    {
+      "name": "Melvin Gordon",
+      "pos": "RB",
+      "age": 33.5,
+      "value": 1530,
+      "market": 0,
+      "fundamental": 3633,
+      "consensus": 0,
+      "gapPct": 705455351721444.1
+    },
+    {
+      "name": "Jonah Coleman",
+      "pos": "RB",
+      "age": 23.1,
+      "value": 1305,
+      "market": 2173,
+      "fundamental": 72,
+      "consensus": 2229,
+      "gapPct": -0.967
+    },
+    {
+      "name": "Antonio Williams",
+      "pos": "WR",
+      "age": 22.2,
+      "value": 1358,
+      "market": 2062,
+      "fundamental": 392,
+      "consensus": 2089,
+      "gapPct": -0.81
+    },
+    {
+      "name": "Blake Corum",
+      "pos": "RB",
+      "age": 25.9,
+      "value": 1573,
+      "market": 2090,
+      "fundamental": 652,
+      "consensus": 2591,
+      "gapPct": -0.688
+    },
+    {
+      "name": "Kyle Monangai",
+      "pos": "RB",
+      "age": 24.3,
+      "value": 1553,
+      "market": 1904,
+      "fundamental": 612,
+      "consensus": 2307,
+      "gapPct": -0.679
+    },
+    {
+      "name": "Travis Hunter",
+      "pos": "WR",
+      "age": 23.4,
+      "value": 1289,
+      "market": 1020,
+      "fundamental": 1706,
+      "consensus": 1172,
+      "gapPct": 0.673
+    },
+    {
+      "name": "Marvin Harrison Jr.",
+      "pos": "WR",
+      "age": 24.1,
+      "value": 2124,
+      "market": 3081,
+      "fundamental": 1172,
+      "consensus": 2837,
+      "gapPct": -0.62
+    },
+    {
+      "name": "Jaxson Dart",
+      "pos": "QB",
+      "age": 23.4,
+      "value": 1432,
+      "market": 1947,
+      "fundamental": 741,
+      "consensus": 1923,
+      "gapPct": -0.619
+    },
+    {
+      "name": "Bhayshul Tuten",
+      "pos": "RB",
+      "age": 23.6,
+      "value": 2851,
+      "market": 3633,
+      "fundamental": 1501,
+      "consensus": 3770,
+      "gapPct": -0.587
+    },
+    {
+      "name": "Jacory Croskey-Merritt",
+      "pos": "RB",
+      "age": 25.5,
+      "value": 1384,
+      "market": 1722,
+      "fundamental": 727,
+      "consensus": 2014,
+      "gapPct": -0.578
+    },
+    {
+      "name": "Jayden Higgins",
+      "pos": "WR",
+      "age": 23.8,
+      "value": 1599,
+      "market": 2146,
+      "fundamental": 935,
+      "consensus": 2129,
+      "gapPct": -0.565
+    },
+    {
+      "name": "Isaiah Likely",
+      "pos": "TE",
+      "age": 26.5,
+      "value": 1474,
+      "market": 1768,
+      "fundamental": 814,
+      "consensus": 1984,
+      "gapPct": -0.539
+    },
+    {
+      "name": "Jayden Reed",
+      "pos": "WR",
+      "age": 26.4,
+      "value": 1480,
+      "market": 1953,
+      "fundamental": 919,
+      "consensus": 2113,
+      "gapPct": -0.529
+    },
+    {
+      "name": "Jared Goff",
+      "pos": "QB",
+      "age": 32,
+      "value": 1842,
+      "market": 1486,
+      "fundamental": 2265,
+      "consensus": 1501,
+      "gapPct": 0.524
+    },
+    {
+      "name": "Makai Lemon",
+      "pos": "WR",
+      "age": 22.3,
+      "value": 2458,
+      "market": 3066,
+      "fundamental": 1498,
+      "consensus": 3730,
+      "gapPct": -0.511
+    },
+    {
+      "name": "Kyle Pitts",
+      "pos": "TE",
+      "age": 26,
+      "value": 1335,
+      "market": 1731,
+      "fundamental": 865,
+      "consensus": 1633,
+      "gapPct": -0.5
+    },
+    {
+      "name": "Travis Kelce",
+      "pos": "TE",
+      "age": 37,
+      "value": 1383,
+      "market": 1220,
+      "fundamental": 1815,
+      "consensus": 632,
+      "gapPct": 0.488
+    },
+    {
+      "name": "Brian Thomas Jr.",
+      "pos": "WR",
+      "age": 24,
+      "value": 2194,
+      "market": 2797,
+      "fundamental": 1458,
+      "consensus": 3042,
+      "gapPct": -0.479
+    },
+    {
+      "name": "Dak Prescott",
+      "pos": "QB",
+      "age": 33.2,
+      "value": 1869,
+      "market": 1505,
+      "fundamental": 2204,
+      "consensus": 1726,
+      "gapPct": 0.465
+    }
+  ]
+}

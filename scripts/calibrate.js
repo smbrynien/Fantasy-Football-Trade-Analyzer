@@ -15,7 +15,7 @@ import path from 'node:path';
 import { ROOT } from '../server/lib/paths.js';
 import { writeJSON, readJSONSync } from '../server/lib/store.js';
 import { loadSeasons, loadCSV, streamECRArchive, replacementBySeason } from './lib/history-data.js';
-import { mean, sd, isotonicDecreasing, median } from '../js/core/util/stats.js';
+import { mean, sd, median, fitExpDecay } from '../js/core/util/stats.js';
 import { toNumber } from '../js/core/util/csv.js';
 import { draftBucket } from '../js/core/valuation/dynasty.js';
 
@@ -211,14 +211,13 @@ for (const year of [2020, 2021, 2022, 2023]) {
 }
 const maxP = Math.min(72, Math.min(...Object.values(classes).map((c) => c.length)));
 const byP = Array.from({ length: maxP }, (_, i) => mean(Object.values(classes).map((c) => c[i]?.value).filter((v) => v !== undefined && v !== null)));
-// Smooth with a centred window that widens with p (later slots are noisier), then enforce monotonicity.
-const smooth = byP.map((_, i) => {
-  const h = Math.max(1, Math.round((i + 1) * 0.25));
-  return mean(byP.slice(Math.max(0, i - h), Math.min(byP.length, i + h + 1)));
-});
-const iso = isotonicDecreasing(smooth);
-const top12 = mean(iso.slice(0, 12));
-const shape = iso.map((v) => r3(Math.max(v / top12, 0.002)));
+// Parametric slot curve: least-squares exponential a·exp(−b(p−1)) on the per-rank means. The audit
+// (docs/MODEL_AUDIT.md, E4) found it beats the former smoothed-isotonic curve out of sample (leave-one-class-out MAE
+// 37.9 vs 40.7) while staying unbiased in level (top-12 bias +1.7); absolute-error fits were biased low by ~34.
+const fit = fitExpDecay(byP);
+const curve = byP.map((_, i) => fit.a * Math.exp(-fit.b * i));
+const top12 = mean(curve.slice(0, 12));
+const shape = curve.map((v) => r3(Math.max(v / top12, 0.002)));
 const bucketsP = [[1, 3], [4, 6], [7, 12], [13, 24], [25, 36], [37, 72]];
 const all = Object.values(classes).flat();
 const hitRates = bucketsP.map(([a, b]) => {
@@ -233,7 +232,7 @@ await writeJSON(path.join(OUT, 'attrition.json'), { generated_at: now, method: '
 await writeJSON(path.join(OUT, 'availability.json'), { generated_at: now, method: 'Mean share of games played next season by fantasy-relevant players who played >=4 games.', sample, by_position: avail }, { pretty: true });
 await writeJSON(path.join(OUT, 'year-over-year.json'), { generated_at: now, method: 'SD of next-season PPG change / mean PPG, players with >=8 games and >=8 PPG.', sample, cv: yoy }, { pretty: true });
 await writeJSON(path.join(OUT, 'draft-priors.json'), { generated_at: now, method: 'Mean PPR PPG of players with >=4 games in career year k, scaled by min(1, P(>=4 games)/position availability). Buckets: R1a picks 1-16, R1b 17-32, R2, R3, R4-5, R6-7, UDFA.', sample, priors, detail: priorDetail }, { pretty: true });
-await writeJSON(path.join(OUT, 'rookie-slot-curve.json'), { generated_at: now, method: 'FantasyPros rookie ECR (last summer scrape, Jun-Aug of the draft year) for the 2020-2023 classes; value = discounted (0.82) 3-season PPR surplus over 12-team replacement (QB12/RB30/WR42/TE12). Mean by class rank, smoothed, isotonic; shape normalised so mean of ranks 1-12 = 1.', classes: Object.fromEntries(Object.entries(classes).map(([y, c]) => [y, c.length])), shape, raw_mean_by_rank: byP.map(r3), hit_rates: hitRates, examples: Object.fromEntries(Object.entries(classes).map(([y, c]) => [y, c.slice(0, 15)])) }, { pretty: true });
+await writeJSON(path.join(OUT, 'rookie-slot-curve.json'), { generated_at: now, method: 'FantasyPros rookie ECR (last summer scrape, Jun-Aug of the draft year) for the 2020-2023 classes; value = discounted (0.82) 3-season PPR surplus over 12-team replacement (QB12/RB30/WR42/TE12). Mean by class rank, least-squares exponential fit a·exp(−b(p−1)); shape normalised so mean of ranks 1-12 = 1.', fit: { a: r3(fit.a), b: r3(fit.b) }, classes: Object.fromEntries(Object.entries(classes).map(([y, c]) => [y, c.length])), shape, raw_mean_by_rank: byP.map(r3), hit_rates: hitRates, examples: Object.fromEntries(Object.entries(classes).map(([y, c]) => [y, c.slice(0, 15)])) }, { pretty: true });
 
 console.log('\nAging (peak=1):'); for (const p of POS) console.log(' ', p, Object.entries(aging[p]).filter(([a]) => a % 2 === 0 && a >= 22 && a <= 36).map(([a, v]) => `${a}:${v}`).join(' '));
 console.log('Attrition:'); for (const p of POS) console.log(' ', p, Object.entries(hazard[p]).filter(([a]) => a % 2 === 0).map(([a, v]) => `${a}:${v}`).join(' '));

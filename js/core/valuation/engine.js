@@ -45,6 +45,20 @@ function sourceEnv(dataset, config) {
  * @param mode     'redraft' | 'dynasty'
  * @param config   { model, leagueDefaults, sources, calibration }
  */
+/**
+ * Points→value factor. v2 anchors the scale on the MEAN of the top-N reference-league assets (anchor_value) instead
+ * of the single top asset: normalising by one asset's own score made that asset's value non-monotone in its inputs
+ * (improving the #1 player could lower his value). anchor_value defaults to top_value × 0.7 (≈ 10,000 for the top asset).
+ */
+export function scaleFactor(refRun, scale) {
+  const scores = [...refRun.assets.values()].map((a) => a.score).filter((v) => v > 0).sort((a, b) => b - a);
+  if (!scores.length) return 1;
+  const n = scale.anchor_top_n || 1;
+  const top = scores.slice(0, n);
+  const anchor = scale.anchor_value ?? (n > 1 ? scale.top_value * 0.7 : scale.top_value);
+  return anchor / (top.reduce((a, b) => a + b, 0) / top.length);
+}
+
 export function computeValuations({ dataset, league: leagueIn, mode, config }) {
   const t0 = Date.now();
   const league = buildLeague(leagueIn, config.leagueDefaults);
@@ -58,9 +72,7 @@ export function computeValuations({ dataset, league: leagueIn, mode, config }) {
   const sameAsRef = stableHash({ ...refLeague, id: null, name: null }) === stableHash({ ...league, id: null, name: null });
   const refRun = sameAsRef ? userRun : run(dataset, refLeague, model, env);
 
-  let maxRef = 0;
-  for (const a of refRun.assets.values()) if (a.score > maxRef) maxRef = a.score;
-  const factor = maxRef > 0 ? model.scale.top_value / maxRef : 1;
+  const factor = scaleFactor(refRun, model.scale);
 
   const assets = new Map();
   for (const a of userRun.assets.values()) {

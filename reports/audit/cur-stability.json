@@ -1,0 +1,53 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",
+  "rows": [
+    {
+      "mode": "redraft",
+      "perturbation": "market ±5% noise",
+      "spearman": 1,
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0.005,
+      "maxAbsPctChange": 0.035
+    },
+    {
+      "mode": "redraft",
+      "perturbation": "ECR ±1 rank noise",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0.044,
+      "maxAbsPctChange": 0.092
+    },
+    {
+      "mode": "redraft",
+      "perturbation": "projections ±5% noise",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0.011,
+      "p90AbsPctChange": 0.029,
+      "maxAbsPctChange": 0.07
+    },
+    {
+      "mode": "dynasty",
+      "perturbation": "market ±5% noise",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0.002,
+      "p90AbsPctChange": 0.039,
+      "maxAbsPctChange": 0.097
+    },
+    {
+      "mode": "dynasty",
+      "perturbation": "ECR ±1 rank noise",
+      "spearman": 0.999,
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0.032,
+      "maxAbsPctChange": 0.138
+    },
+    {
+      "mode": "dynasty",
+      "perturbation": "projections ±5% noise",
+      "spearman": 1,
+      "medianAbsPctChange": 0.007,
+      "p90AbsPctChange": 0.016,
+      "maxAbsPctChange": 0.032
+    }
+  ]
+}

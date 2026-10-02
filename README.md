@@ -66,6 +66,7 @@ Other commands:
 | `npm run rebuild` | Rebuild dataset/values from cached data (no network) |
 | `npm run calibrate` | Re-derive aging curves, attrition, draft priors, rookie slot curve from historical data |
 | `npm run backtest` | Evaluate consensus rankings vs actual production → `reports/backtest.json` |
+| `npm run audit-model` | Full model audit: walk-forward backtests, correlations, ablations, stability, monotonicity, before/after → `reports/audit/` ([MODEL_AUDIT](docs/MODEL_AUDIT.md)) |
 | `npm run package` | Build the ready-to-run ZIPs into `dist/` (what the release workflow publishes) |
 | `npm test` | Run the automated test suite (offline) |
 
@@ -152,16 +153,19 @@ Nothing outside `/adapters` knows any source's raw format; sources are reference
    levels come from your teams × starters, FLEX/SUPERFLEX allocation and bench depth).
 2. Rankings and market values are mapped by **positional rank** onto your league's value curve — raw scales are never
    averaged.
-3. Signals are blended with transparent, phase-aware weights (preseason ↔ in-season) that renormalize over available
-   signals; the breakdown always sums to the value.
+3. Signals are blended with transparent weights chosen from walk-forward backtests (expert consensus leads all season)
+   that renormalize over available signals; the breakdown always sums to the value. Values use *expected* surplus
+   E[max(0, X − replacement)], so outcome uncertainty is priced.
 4. Dynasty projects 5 seasons with calibrated aging curves, attrition and draft-capital priors and values each season
    as E[max(0, X − replacement)] (uncertainty = upside for young players), discounted by team strategy.
 5. Rookie picks blend market pick values, a historical slot-value curve and the current rookie class; unknown slots
    integrate over possible slots; future classes are discounted.
-6. 10,000 = top asset in a 12-team 1QB PPR reference league; the same scale applies to every league.
+6. Scale: the top-12 assets of a 12-team 1QB PPR reference league average 7,000 (the best asset ≈ 10,000); the same
+   scale applies to every league.
 
 Full detail: [VALUATION_MODEL](docs/VALUATION_MODEL.md) · [DYNASTY_MODEL](docs/DYNASTY_MODEL.md) ·
-[ROOKIE_PICK_MODEL](docs/ROOKIE_PICK_MODEL.md).
+[ROOKIE_PICK_MODEL](docs/ROOKIE_PICK_MODEL.md). How the model was tested and why it changed in 2.0:
+[MODEL_AUDIT](docs/MODEL_AUDIT.md) · [MODEL_COMPARISON](docs/MODEL_COMPARISON.md).
 
 ## Configuration
 
@@ -185,7 +189,8 @@ IDP positions are already recognised by the normalizers; best-ball/auction/keepe
 
 * Undocumented endpoints (Sleeper projections/stats, ESPN) can change without notice — they are lower-priority,
   validated, and replaceable.
-* The FantasyPros ECR mirror updates weekly; DynastyProcess values are derived from that ECR (weighted accordingly).
+* The FantasyPros ECR mirror updates weekly; DynastyProcess player values are derived from that ECR (ρ 0.99), so they
+  are displayed but carry no weight.
 * No free historical trade-value or projection archives → value history starts with your first sync; projections are
   not backtested.
 * Custom K/DST scoring is not modelled (source fantasy points are used).

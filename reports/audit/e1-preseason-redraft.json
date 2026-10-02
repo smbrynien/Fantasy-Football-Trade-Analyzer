@@ -1,0 +1,1573 @@
+{
+  "label": "REAL HISTORICAL DATA",
+  "oppRates": {
+    "QB": {
+      "perTarget": 1.906,
+      "perCarry": 0.713,
+      "perPassAtt": 0.419
+    },
+    "TE": {
+      "perTarget": 1.757,
+      "perCarry": 0.898,
+      "perPassAtt": null
+    },
+    "WR": {
+      "perTarget": 1.726,
+      "perCarry": 0.836,
+      "perPassAtt": null
+    },
+    "RB": {
+      "perTarget": 1.541,
+      "perCarry": 0.621,
+      "perPassAtt": null
+    }
+  },
+  "experiment": "E1 preseason redraft (season PPR points)",
+  "scaleTest": [
+    {
+      "season": 2021,
+      "sigma": {
+        "QB": 74.306,
+        "RB": 70.806,
+        "WR": 68.296,
+        "TE": 45.753
+      },
+      "det": {
+        "mae": 28.913,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -10.85
+          },
+          {
+            "tier": "7-18",
+            "bias": -26.295
+          },
+          {
+            "tier": "19-36",
+            "bias": -10.495
+          },
+          {
+            "tier": "37-99",
+            "bias": -16.985
+          }
+        ]
+      },
+      "exp": {
+        "mae": 31.332,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -5.205
+          },
+          {
+            "tier": "7-18",
+            "bias": -12.696
+          },
+          {
+            "tier": "19-36",
+            "bias": 0.1
+          },
+          {
+            "tier": "37-99",
+            "bias": -1.735
+          }
+        ]
+      },
+      "emp": {
+        "mae": 31.002,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": 6.8
+          },
+          {
+            "tier": "7-18",
+            "bias": -15.099
+          },
+          {
+            "tier": "19-36",
+            "bias": 0.379
+          },
+          {
+            "tier": "37-99",
+            "bias": -4.342
+          }
+        ]
+      }
+    },
+    {
+      "season": 2022,
+      "sigma": {
+        "QB": 72.572,
+        "RB": 69.709,
+        "WR": 71.434,
+        "TE": 49.24
+      },
+      "det": {
+        "mae": 24.738,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -29.954
+          },
+          {
+            "tier": "7-18",
+            "bias": -4.5
+          },
+          {
+            "tier": "19-36",
+            "bias": -11.123
+          },
+          {
+            "tier": "37-99",
+            "bias": -9.48
+          }
+        ]
+      },
+      "exp": {
+        "mae": 29.123,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -24.477
+          },
+          {
+            "tier": "7-18",
+            "bias": 6.339
+          },
+          {
+            "tier": "19-36",
+            "bias": 0.177
+          },
+          {
+            "tier": "37-99",
+            "bias": 8.628
+          }
+        ]
+      },
+      "emp": {
+        "mae": 28.305,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -18.597
+          },
+          {
+            "tier": "7-18",
+            "bias": 5.605
+          },
+          {
+            "tier": "19-36",
+            "bias": 0.688
+          },
+          {
+            "tier": "37-99",
+            "bias": 6.357
+          }
+        ]
+      }
+    },
+    {
+      "season": 2023,
+      "sigma": {
+        "QB": 77.315,
+        "RB": 69.316,
+        "WR": 66.871,
+        "TE": 48.202
+      },
+      "det": {
+        "mae": 25.399,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": 2.816
+          },
+          {
+            "tier": "7-18",
+            "bias": -6.982
+          },
+          {
+            "tier": "19-36",
+            "bias": -16.795
+          },
+          {
+            "tier": "37-99",
+            "bias": -12.369
+          }
+        ]
+      },
+      "exp": {
+        "mae": 28.816,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": 8.016
+          },
+          {
+            "tier": "7-18",
+            "bias": 4.662
+          },
+          {
+            "tier": "19-36",
+            "bias": -4.575
+          },
+          {
+            "tier": "37-99",
+            "bias": 3.487
+          }
+        ]
+      },
+      "emp": {
+        "mae": 28.207,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": 12.73
+          },
+          {
+            "tier": "7-18",
+            "bias": 3.511
+          },
+          {
+            "tier": "19-36",
+            "bias": -3.186
+          },
+          {
+            "tier": "37-99",
+            "bias": 1.593
+          }
+        ]
+      }
+    },
+    {
+      "season": 2024,
+      "sigma": {
+        "QB": 83.809,
+        "RB": 71.065,
+        "WR": 64.909,
+        "TE": 50.259
+      },
+      "det": {
+        "mae": 27.697,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -13.718
+          },
+          {
+            "tier": "7-18",
+            "bias": -10.106
+          },
+          {
+            "tier": "19-36",
+            "bias": -11.068
+          },
+          {
+            "tier": "37-99",
+            "bias": -19.993
+          }
+        ]
+      },
+      "exp": {
+        "mae": 30.903,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -7.034
+          },
+          {
+            "tier": "7-18",
+            "bias": 2.02
+          },
+          {
+            "tier": "19-36",
+            "bias": 1.768
+          },
+          {
+            "tier": "37-99",
+            "bias": -5.382
+          }
+        ]
+      },
+      "emp": {
+        "mae": 30.738,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -3.462
+          },
+          {
+            "tier": "7-18",
+            "bias": 1.626
+          },
+          {
+            "tier": "19-36",
+            "bias": 2.809
+          },
+          {
+            "tier": "37-99",
+            "bias": -6.472
+          }
+        ]
+      }
+    },
+    {
+      "season": 2025,
+      "sigma": {
+        "QB": 83.992,
+        "RB": 72.334,
+        "WR": 65.247,
+        "TE": 52.523
+      },
+      "det": {
+        "mae": 29.029,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -20.873
+          },
+          {
+            "tier": "7-18",
+            "bias": -13.611
+          },
+          {
+            "tier": "19-36",
+            "bias": -20.546
+          },
+          {
+            "tier": "37-99",
+            "bias": -10.27
+          }
+        ]
+      },
+      "exp": {
+        "mae": 31.893,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -13.385
+          },
+          {
+            "tier": "7-18",
+            "bias": -1.322
+          },
+          {
+            "tier": "19-36",
+            "bias": -7.499
+          },
+          {
+            "tier": "37-99",
+            "bias": 4.468
+          }
+        ]
+      },
+      "emp": {
+        "mae": 31.672,
+        "biasByTier": [
+          {
+            "tier": "1-6",
+            "bias": -10.009
+          },
+          {
+            "tier": "7-18",
+            "bias": -1.354
+          },
+          {
+            "tier": "19-36",
+            "bias": -6.795
+          },
+          {
+            "tier": "37-99",
+            "bias": 4.021
+          }
+        ]
+      }
+    }
+  ],
+  "scaleSummary": {
+    "det": {
+      "mae": 27.155,
+      "biasByTier": [
+        {
+          "tier": "1-6",
+          "bias": -14.516
+        },
+        {
+          "tier": "7-18",
+          "bias": -12.299
+        },
+        {
+          "tier": "19-36",
+          "bias": -14.005
+        },
+        {
+          "tier": "37-99",
+          "bias": -13.819
+        }
+      ]
+    },
+    "exp": {
+      "mae": 30.413,
+      "biasByTier": [
+        {
+          "tier": "1-6",
+          "bias": -8.417
+        },
+        {
+          "tier": "7-18",
+          "bias": -0.199
+        },
+        {
+          "tier": "19-36",
+          "bias": -2.006
+        },
+        {
+          "tier": "37-99",
+          "bias": 1.893
+        }
+      ]
+    },
+    "emp": {
+      "mae": 29.985,
+      "biasByTier": [
+        {
+          "tier": "1-6",
+          "bias": -2.508
+        },
+        {
+          "tier": "7-18",
+          "bias": -1.142
+        },
+        {
+          "tier": "19-36",
+          "bias": -1.221
+        },
+        {
+          "tier": "37-99",
+          "bias": 0.231
+        }
+      ]
+    }
+  },
+  "snapshots": {
+    "2020": "2020-09-03",
+    "2021": "2021-09-03",
+    "2022": "2022-09-02",
+    "2023": "2023-09-01",
+    "2024": "2024-08-30",
+    "2025": "2025-08-08"
+  },
+  "results": [
+    {
+      "season": 2021,
+      "train": [
+        2020
+      ],
+      "fittedEcrWeight": 1,
+      "all": {
+        "n": 196,
+        "mae": 55.233,
+        "rho": 0.57,
+        "byPos": {
+          "QB": {
+            "n": 32,
+            "rho": 0.692,
+            "mae": 59.066
+          },
+          "RB": {
+            "n": 60,
+            "rho": 0.522,
+            "mae": 56.827
+          },
+          "WR": {
+            "n": 72,
+            "rho": 0.51,
+            "mae": 58.792
+          },
+          "TE": {
+            "n": 32,
+            "rho": 0.557,
+            "mae": 40.402
+          }
+        }
+      },
+      "sameSample": {
+        "ecr": {
+          "n": 168,
+          "mae": 55.001,
+          "rho": 0.562,
+          "byPos": {
+            "QB": {
+              "n": 26,
+              "rho": 0.703,
+              "mae": 55.809
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.516,
+              "mae": 56.225
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.495,
+              "mae": 60.388
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.535,
+              "mae": 40.986
+            }
+          }
+        },
+        "prodLastSeason": {
+          "n": 168,
+          "mae": 59.944,
+          "rho": 0.447,
+          "byPos": {
+            "QB": {
+              "n": 26,
+              "rho": 0.617,
+              "mae": 60.459
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.503,
+              "mae": 60.41
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.32,
+              "mae": 65.941
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.349,
+              "mae": 46.142
+            }
+          }
+        },
+        "prodLastSeasonWithUsage": {
+          "n": 168,
+          "mae": 60.919,
+          "rho": 0.486,
+          "byPos": {
+            "QB": {
+              "n": 26,
+              "rho": 0.653,
+              "mae": 63.881
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.523,
+              "mae": 61.406
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.337,
+              "mae": 66.771
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.43,
+              "mae": 45.266
+            }
+          }
+        },
+        "blend": {
+          "n": 168,
+          "mae": 55.001,
+          "rho": 0.557,
+          "byPos": {
+            "QB": {
+              "n": 26,
+              "rho": 0.691,
+              "mae": 55.809
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.517,
+              "mae": 56.225
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.491,
+              "mae": 60.388
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.527,
+              "mae": 40.986
+            }
+          }
+        }
+      }
+    },
+    {
+      "season": 2022,
+      "train": [
+        2020,
+        2021
+      ],
+      "fittedEcrWeight": 1,
+      "all": {
+        "n": 196,
+        "mae": 53.421,
+        "rho": 0.592,
+        "byPos": {
+          "QB": {
+            "n": 32,
+            "rho": 0.583,
+            "mae": 73.832
+          },
+          "RB": {
+            "n": 60,
+            "rho": 0.58,
+            "mae": 54.487
+          },
+          "WR": {
+            "n": 72,
+            "rho": 0.636,
+            "mae": 49.433
+          },
+          "TE": {
+            "n": 32,
+            "rho": 0.569,
+            "mae": 39.983
+          }
+        }
+      },
+      "sameSample": {
+        "ecr": {
+          "n": 168,
+          "mae": 53.249,
+          "rho": 0.592,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.521,
+              "mae": 71.706
+            },
+            "RB": {
+              "n": 46,
+              "rho": 0.611,
+              "mae": 55.094
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.67,
+              "mae": 49.338
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.565,
+              "mae": 40.047
+            }
+          }
+        },
+        "prodLastSeason": {
+          "n": 168,
+          "mae": 58.595,
+          "rho": 0.538,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.478,
+              "mae": 73.797
+            },
+            "RB": {
+              "n": 46,
+              "rho": 0.488,
+              "mae": 65.98
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.589,
+              "mae": 56.581
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.595,
+              "mae": 36.23
+            }
+          }
+        },
+        "prodLastSeasonWithUsage": {
+          "n": 168,
+          "mae": 59.153,
+          "rho": 0.552,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.567,
+              "mae": 73.812
+            },
+            "RB": {
+              "n": 46,
+              "rho": 0.519,
+              "mae": 64.419
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.541,
+              "mae": 58.778
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.581,
+              "mae": 37.193
+            }
+          }
+        },
+        "blend": {
+          "n": 168,
+          "mae": 53.249,
+          "rho": 0.591,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.522,
+              "mae": 71.706
+            },
+            "RB": {
+              "n": 46,
+              "rho": 0.611,
+              "mae": 55.094
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.668,
+              "mae": 49.338
+            },
+            "TE": {
+              "n": 30,
+              "rho": 0.562,
+              "mae": 40.047
+            }
+          }
+        }
+      }
+    },
+    {
+      "season": 2023,
+      "train": [
+        2020,
+        2021,
+        2022
+      ],
+      "fittedEcrWeight": 1,
+      "all": {
+        "n": 196,
+        "mae": 58.075,
+        "rho": 0.48,
+        "byPos": {
+          "QB": {
+            "n": 32,
+            "rho": 0.245,
+            "mae": 86.476
+          },
+          "RB": {
+            "n": 60,
+            "rho": 0.43,
+            "mae": 62.903
+          },
+          "WR": {
+            "n": 72,
+            "rho": 0.717,
+            "mae": 48.247
+          },
+          "TE": {
+            "n": 32,
+            "rho": 0.529,
+            "mae": 42.734
+          }
+        }
+      },
+      "sameSample": {
+        "ecr": {
+          "n": 170,
+          "mae": 59.104,
+          "rho": 0.495,
+          "byPos": {
+            "QB": {
+              "n": 28,
+              "rho": 0.329,
+              "mae": 84.33
+            },
+            "RB": {
+              "n": 51,
+              "rho": 0.408,
+              "mae": 65.166
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.711,
+              "mae": 50.266
+            },
+            "TE": {
+              "n": 28,
+              "rho": 0.531,
+              "mae": 42.721
+            }
+          }
+        },
+        "prodLastSeason": {
+          "n": 170,
+          "mae": 62.531,
+          "rho": 0.384,
+          "byPos": {
+            "QB": {
+              "n": 28,
+              "rho": 0.238,
+              "mae": 84.267
+            },
+            "RB": {
+              "n": 51,
+              "rho": 0.281,
+              "mae": 67.091
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.666,
+              "mae": 56.853
+            },
+            "TE": {
+              "n": 28,
+              "rho": 0.349,
+              "mae": 45.262
+            }
+          }
+        },
+        "prodLastSeasonWithUsage": {
+          "n": 170,
+          "mae": 62.325,
+          "rho": 0.389,
+          "byPos": {
+            "QB": {
+              "n": 28,
+              "rho": 0.212,
+              "mae": 87.273
+            },
+            "RB": {
+              "n": 51,
+              "rho": 0.339,
+              "mae": 65.992
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.709,
+              "mae": 55.5
+            },
+            "TE": {
+              "n": 28,
+              "rho": 0.294,
+              "mae": 46.056
+            }
+          }
+        },
+        "blend": {
+          "n": 170,
+          "mae": 59.104,
+          "rho": 0.497,
+          "byPos": {
+            "QB": {
+              "n": 28,
+              "rho": 0.334,
+              "mae": 84.33
+            },
+            "RB": {
+              "n": 51,
+              "rho": 0.404,
+              "mae": 65.166
+            },
+            "WR": {
+              "n": 63,
+              "rho": 0.713,
+              "mae": 50.266
+            },
+            "TE": {
+              "n": 28,
+              "rho": 0.535,
+              "mae": 42.721
+            }
+          }
+        }
+      }
+    },
+    {
+      "season": 2024,
+      "train": [
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "fittedEcrWeight": 1,
+      "all": {
+        "n": 196,
+        "mae": 59.139,
+        "rho": 0.448,
+        "byPos": {
+          "QB": {
+            "n": 32,
+            "rho": 0.408,
+            "mae": 68.477
+          },
+          "RB": {
+            "n": 60,
+            "rho": 0.6,
+            "mae": 65.202
+          },
+          "WR": {
+            "n": 72,
+            "rho": 0.491,
+            "mae": 55.136
+          },
+          "TE": {
+            "n": 32,
+            "rho": 0.294,
+            "mae": 47.44
+          }
+        }
+      },
+      "sameSample": {
+        "ecr": {
+          "n": 165,
+          "mae": 56.964,
+          "rho": 0.422,
+          "byPos": {
+            "QB": {
+              "n": 27,
+              "rho": 0.478,
+              "mae": 66.677
+            },
+            "RB": {
+              "n": 48,
+              "rho": 0.603,
+              "mae": 63.055
+            },
+            "WR": {
+              "n": 61,
+              "rho": 0.46,
+              "mae": 54.356
+            },
+            "TE": {
+              "n": 29,
+              "rho": 0.146,
+              "mae": 43.322
+            }
+          }
+        },
+        "prodLastSeason": {
+          "n": 165,
+          "mae": 62.649,
+          "rho": 0.359,
+          "byPos": {
+            "QB": {
+              "n": 27,
+              "rho": 0.377,
+              "mae": 75.755
+            },
+            "RB": {
+              "n": 48,
+              "rho": 0.487,
+              "mae": 72.554
+            },
+            "WR": {
+              "n": 61,
+              "rho": 0.341,
+              "mae": 59.227
+            },
+            "TE": {
+              "n": 29,
+              "rho": 0.229,
+              "mae": 41.253
+            }
+          }
+        },
+        "prodLastSeasonWithUsage": {
+          "n": 165,
+          "mae": 62.227,
+          "rho": 0.385,
+          "byPos": {
+            "QB": {
+              "n": 27,
+              "rho": 0.469,
+              "mae": 75.786
+            },
+            "RB": {
+              "n": 48,
+              "rho": 0.505,
+              "mae": 70.791
+            },
+            "WR": {
+              "n": 61,
+              "rho": 0.354,
+              "mae": 59.029
+            },
+            "TE": {
+              "n": 29,
+              "rho": 0.211,
+              "mae": 42.156
+            }
+          }
+        },
+        "blend": {
+          "n": 165,
+          "mae": 56.964,
+          "rho": 0.428,
+          "byPos": {
+            "QB": {
+              "n": 27,
+              "rho": 0.489,
+              "mae": 66.677
+            },
+            "RB": {
+              "n": 48,
+              "rho": 0.606,
+              "mae": 63.055
+            },
+            "WR": {
+              "n": 61,
+              "rho": 0.459,
+              "mae": 54.356
+            },
+            "TE": {
+              "n": 29,
+              "rho": 0.156,
+              "mae": 43.322
+            }
+          }
+        }
+      }
+    },
+    {
+      "season": 2025,
+      "train": [
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "fittedEcrWeight": 1,
+      "all": {
+        "n": 196,
+        "mae": 59.732,
+        "rho": 0.486,
+        "byPos": {
+          "QB": {
+            "n": 32,
+            "rho": 0.313,
+            "mae": 77.893
+          },
+          "RB": {
+            "n": 60,
+            "rho": 0.704,
+            "mae": 63.335
+          },
+          "WR": {
+            "n": 72,
+            "rho": 0.504,
+            "mae": 57.343
+          },
+          "TE": {
+            "n": 32,
+            "rho": 0.422,
+            "mae": 40.191
+          }
+        }
+      },
+      "sameSample": {
+        "ecr": {
+          "n": 168,
+          "mae": 61.919,
+          "rho": 0.454,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.29,
+              "mae": 79.873
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.705,
+              "mae": 66.203
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.512,
+              "mae": 58.65
+            },
+            "TE": {
+              "n": 27,
+              "rho": 0.308,
+              "mae": 41.701
+            }
+          }
+        },
+        "prodLastSeason": {
+          "n": 168,
+          "mae": 64.787,
+          "rho": 0.32,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.131,
+              "mae": 79.882
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.563,
+              "mae": 75.248
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.458,
+              "mae": 59.262
+            },
+            "TE": {
+              "n": 27,
+              "rho": 0.129,
+              "mae": 41.718
+            }
+          }
+        },
+        "prodLastSeasonWithUsage": {
+          "n": 168,
+          "mae": 63.556,
+          "rho": 0.351,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.118,
+              "mae": 78.968
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.571,
+              "mae": 73.948
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.484,
+              "mae": 58.619
+            },
+            "TE": {
+              "n": 27,
+              "rho": 0.232,
+              "mae": 38.907
+            }
+          }
+        },
+        "blend": {
+          "n": 168,
+          "mae": 61.919,
+          "rho": 0.453,
+          "byPos": {
+            "QB": {
+              "n": 30,
+              "rho": 0.287,
+              "mae": 79.873
+            },
+            "RB": {
+              "n": 49,
+              "rho": 0.703,
+              "mae": 66.203
+            },
+            "WR": {
+              "n": 62,
+              "rho": 0.514,
+              "mae": 58.65
+            },
+            "TE": {
+              "n": 27,
+              "rho": 0.308,
+              "mae": 41.701
+            }
+          }
+        }
+      }
+    }
+  ],
+  "scale": [
+    {
+      "pos": "QB",
+      "ranks": "1-1",
+      "n": 6,
+      "meanPoints": 359.243,
+      "meanSurplus": 93.05,
+      "medianSurplus": 94.66,
+      "sdSurplus": 44.222,
+      "pBelowRepl": 0
+    },
+    {
+      "pos": "QB",
+      "ranks": "2-2",
+      "n": 6,
+      "meanPoints": 317.237,
+      "meanSurplus": 60.553,
+      "medianSurplus": 51.36,
+      "sdSurplus": 47.713,
+      "pBelowRepl": 0.167
+    },
+    {
+      "pos": "QB",
+      "ranks": "3-3",
+      "n": 6,
+      "meanPoints": 273.91,
+      "meanSurplus": 56.737,
+      "medianSurplus": 16.06,
+      "sdSurplus": 77.973,
+      "pBelowRepl": 0.5
+    },
+    {
+      "pos": "QB",
+      "ranks": "4-6",
+      "n": 18,
+      "meanPoints": 276.096,
+      "meanSurplus": 41.192,
+      "medianSurplus": 6.88,
+      "sdSurplus": 52.82,
+      "pBelowRepl": 0.5
+    },
+    {
+      "pos": "QB",
+      "ranks": "7-12",
+      "n": 36,
+      "meanPoints": 251.017,
+      "meanSurplus": 29.796,
+      "medianSurplus": 0,
+      "sdSurplus": 40.739,
+      "pBelowRepl": 0.528
+    },
+    {
+      "pos": "QB",
+      "ranks": "13-18",
+      "n": 36,
+      "meanPoints": 242.831,
+      "meanSurplus": 18.281,
+      "medianSurplus": 0,
+      "sdSurplus": 28.719,
+      "pBelowRepl": 0.611
+    },
+    {
+      "pos": "QB",
+      "ranks": "19-24",
+      "n": 36,
+      "meanPoints": 191.805,
+      "meanSurplus": 11.304,
+      "medianSurplus": 0,
+      "sdSurplus": 24.817,
+      "pBelowRepl": 0.806
+    },
+    {
+      "pos": "QB",
+      "ranks": "25-36",
+      "n": 48,
+      "meanPoints": 159.439,
+      "meanSurplus": 2.692,
+      "medianSurplus": 0,
+      "sdSurplus": 8.983,
+      "pBelowRepl": 0.896
+    },
+    {
+      "pos": "RB",
+      "ranks": "1-1",
+      "n": 6,
+      "meanPoints": 230.693,
+      "meanSurplus": 111.503,
+      "medianSurplus": 104.98,
+      "sdSurplus": 122.405,
+      "pBelowRepl": 0.5
+    },
+    {
+      "pos": "RB",
+      "ranks": "2-2",
+      "n": 6,
+      "meanPoints": 193.55,
+      "meanSurplus": 65.877,
+      "medianSurplus": 40.53,
+      "sdSurplus": 87.863,
+      "pBelowRepl": 0.333
+    },
+    {
+      "pos": "RB",
+      "ranks": "3-3",
+      "n": 6,
+      "meanPoints": 271.383,
+      "meanSurplus": 124.56,
+      "medianSurplus": 95,
+      "sdSurplus": 65.471,
+      "pBelowRepl": 0
+    },
+    {
+      "pos": "RB",
+      "ranks": "4-6",
+      "n": 18,
+      "meanPoints": 280.182,
+      "meanSurplus": 141.372,
+      "medianSurplus": 132.88,
+      "sdSurplus": 77.826,
+      "pBelowRepl": 0.056
+    },
+    {
+      "pos": "RB",
+      "ranks": "7-12",
+      "n": 36,
+      "meanPoints": 226.354,
+      "meanSurplus": 84.56,
+      "medianSurplus": 82.7,
+      "sdSurplus": 61.448,
+      "pBelowRepl": 0.111
+    },
+    {
+      "pos": "RB",
+      "ranks": "13-18",
+      "n": 36,
+      "meanPoints": 190.532,
+      "meanSurplus": 56.859,
+      "medianSurplus": 52.75,
+      "sdSurplus": 48.784,
+      "pBelowRepl": 0.25
+    },
+    {
+      "pos": "RB",
+      "ranks": "19-24",
+      "n": 36,
+      "meanPoints": 160.723,
+      "meanSurplus": 37.006,
+      "medianSurplus": 20.65,
+      "sdSurplus": 44.577,
+      "pBelowRepl": 0.417
+    },
+    {
+      "pos": "RB",
+      "ranks": "25-36",
+      "n": 72,
+      "meanPoints": 135.517,
+      "meanSurplus": 24.931,
+      "medianSurplus": 0,
+      "sdSurplus": 36.414,
+      "pBelowRepl": 0.542
+    },
+    {
+      "pos": "RB",
+      "ranks": "37-48",
+      "n": 72,
+      "meanPoints": 103.212,
+      "meanSurplus": 11.382,
+      "medianSurplus": 0,
+      "sdSurplus": 25.5,
+      "pBelowRepl": 0.75
+    },
+    {
+      "pos": "RB",
+      "ranks": "49-72",
+      "n": 72,
+      "meanPoints": 91.557,
+      "meanSurplus": 6.852,
+      "medianSurplus": 0,
+      "sdSurplus": 18.139,
+      "pBelowRepl": 0.819
+    },
+    {
+      "pos": "WR",
+      "ranks": "1-1",
+      "n": 6,
+      "meanPoints": 262.677,
+      "meanSurplus": 130.86,
+      "medianSurplus": 149.75,
+      "sdSurplus": 89.11,
+      "pBelowRepl": 0.167
+    },
+    {
+      "pos": "WR",
+      "ranks": "2-2",
+      "n": 6,
+      "meanPoints": 256.353,
+      "meanSurplus": 112.92,
+      "medianSurplus": 95.46,
+      "sdSurplus": 60.959,
+      "pBelowRepl": 0
+    },
+    {
+      "pos": "WR",
+      "ranks": "3-3",
+      "n": 6,
+      "meanPoints": 261.347,
+      "meanSurplus": 119.163,
+      "medianSurplus": 121.6,
+      "sdSurplus": 81.348,
+      "pBelowRepl": 0.167
+    },
+    {
+      "pos": "WR",
+      "ranks": "4-6",
+      "n": 18,
+      "meanPoints": 269.166,
+      "meanSurplus": 133.104,
+      "medianSurplus": 157.4,
+      "sdSurplus": 88.81,
+      "pBelowRepl": 0.111
+    },
+    {
+      "pos": "WR",
+      "ranks": "7-12",
+      "n": 36,
+      "meanPoints": 222.753,
+      "meanSurplus": 85.061,
+      "medianSurplus": 83.5,
+      "sdSurplus": 54.015,
+      "pBelowRepl": 0.083
+    },
+    {
+      "pos": "WR",
+      "ranks": "13-18",
+      "n": 36,
+      "meanPoints": 198.613,
+      "meanSurplus": 63.713,
+      "medianSurplus": 69.35,
+      "sdSurplus": 60.778,
+      "pBelowRepl": 0.222
+    },
+    {
+      "pos": "WR",
+      "ranks": "19-24",
+      "n": 36,
+      "meanPoints": 191.841,
+      "meanSurplus": 58.438,
+      "medianSurplus": 65.6,
+      "sdSurplus": 46.183,
+      "pBelowRepl": 0.222
+    },
+    {
+      "pos": "WR",
+      "ranks": "25-36",
+      "n": 72,
+      "meanPoints": 170.835,
+      "meanSurplus": 45.471,
+      "medianSurplus": 31.5,
+      "sdSurplus": 51.598,
+      "pBelowRepl": 0.347
+    },
+    {
+      "pos": "WR",
+      "ranks": "37-48",
+      "n": 72,
+      "meanPoints": 145.44,
+      "meanSurplus": 27.827,
+      "medianSurplus": 8.05,
+      "sdSurplus": 35.911,
+      "pBelowRepl": 0.472
+    },
+    {
+      "pos": "WR",
+      "ranks": "49-72",
+      "n": 144,
+      "meanPoints": 111.903,
+      "meanSurplus": 12.172,
+      "medianSurplus": 0,
+      "sdSurplus": 26.796,
+      "pBelowRepl": 0.722
+    },
+    {
+      "pos": "TE",
+      "ranks": "1-1",
+      "n": 6,
+      "meanPoints": 243.677,
+      "meanSurplus": 98.393,
+      "medianSurplus": 98.95,
+      "sdSurplus": 69.125,
+      "pBelowRepl": 0
+    },
+    {
+      "pos": "TE",
+      "ranks": "2-2",
+      "n": 6,
+      "meanPoints": 182.633,
+      "meanSurplus": 42.567,
+      "medianSurplus": 25,
+      "sdSurplus": 60.115,
+      "pBelowRepl": 0.5
+    },
+    {
+      "pos": "TE",
+      "ranks": "3-3",
+      "n": 6,
+      "meanPoints": 178,
+      "meanSurplus": 43.367,
+      "medianSurplus": 40.05,
+      "sdSurplus": 41.283,
+      "pBelowRepl": 0.333
+    },
+    {
+      "pos": "TE",
+      "ranks": "4-6",
+      "n": 18,
+      "meanPoints": 155.156,
+      "meanSurplus": 29.25,
+      "medianSurplus": 0,
+      "sdSurplus": 47.97,
+      "pBelowRepl": 0.556
+    },
+    {
+      "pos": "TE",
+      "ranks": "7-12",
+      "n": 36,
+      "meanPoints": 141.981,
+      "meanSurplus": 16.197,
+      "medianSurplus": 0,
+      "sdSurplus": 31.018,
+      "pBelowRepl": 0.528
+    },
+    {
+      "pos": "TE",
+      "ranks": "13-18",
+      "n": 36,
+      "meanPoints": 120.819,
+      "meanSurplus": 8.261,
+      "medianSurplus": 0,
+      "sdSurplus": 13.612,
+      "pBelowRepl": 0.611
+    },
+    {
+      "pos": "TE",
+      "ranks": "19-24",
+      "n": 36,
+      "meanPoints": 107.493,
+      "meanSurplus": 6.283,
+      "medianSurplus": 0,
+      "sdSurplus": 19.463,
+      "pBelowRepl": 0.833
+    },
+    {
+      "pos": "TE",
+      "ranks": "25-36",
+      "n": 48,
+      "meanPoints": 84.802,
+      "meanSurplus": 4.694,
+      "medianSurplus": 0,
+      "sdSurplus": 13.88,
+      "pBelowRepl": 0.833
+    }
+  ],
+  "summary": {
+    "ecr": {
+      "meanRho": 0.505,
+      "meanMAE": 57.247
+    },
+    "prodLastSeason": {
+      "meanRho": 0.41,
+      "meanMAE": 61.701
+    },
+    "prodLastSeasonWithUsage": {
+      "meanRho": 0.433,
+      "meanMAE": 61.636
+    },
+    "blend": {
+      "meanRho": 0.505,
+      "meanMAE": 57.247
+    }
+  }
+}

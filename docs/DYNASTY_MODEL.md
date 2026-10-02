@@ -4,6 +4,14 @@ Question answered: *"What is this player's expected long-term fantasy asset valu
 production, age, future production, market value, scarcity and uncertainty?"* It is **not** redraft × age multiplier.
 
 Code: `js/core/valuation/dynasty.js`. Calibration: `scripts/calibrate.js` → `config/calibration/*.json`.
+Audit evidence: [MODEL_AUDIT.md §6](MODEL_AUDIT.md#6-dynasty-audit).
+
+**In plain English:** a dynasty value is the sum of what the player should add above a replacement-level player in each
+of the next five seasons. Each season counts less than the one before (more for contending teams), shrinks with the
+chance he is out of the league, and includes upside: an uncertain young player who *might* become a starter is worth
+more than his average forecast alone suggests. Age enters through measured position-specific growth and decline curves,
+not a flat multiplier. Because expert dynasty rankings proved more accurate than any formula, they carry the most
+weight; the formula supplies the league-specific magnitudes.
 
 ## 1. Current scoring rate μ₁ (league points per game)
 
@@ -14,16 +22,22 @@ Evidence-weighted average of:
 | Projection rate (ROS in season, season projection otherwise) | 1.0 |
 | Current-season production (actual blended with expected points) | min(1, games/8) |
 | Last season PPG (≥4 games) | 0.8 × min(1, games/8) |
-| **Draft-capital prior** for this career year | 10 / (10 + career games) |
+| **Draft-capital prior** for this career year | 20 / (20 + career games) |
 
 Priors are calibrated in PPR points and rescaled to your scoring by the league/PPR ratio of last-season points at the
 position.
+
+**Evidence gate (2.0):** after career year 1 a player needs at least one piece of current evidence (projection,
+current-season or last-season production). The draft prior alone no longer creates value: in 1.x about 40 retired or
+out-of-league veterans (John Ross, Todd Gurley, Larry Fitzgerald at 43) carried 1,000–4,300 dynasty value from their
+draft slot. Such players show N/A unless a market or ranking source still lists them. Incoming rookies (year 1) keep
+the prior.
 
 ## 2. Multi-year projection (default 5 seasons)
 
 For season t (age a+t−1):
 
-* **μₜ** = μ₁ × A(age)/A(age₀) — calibrated aging curve — blended toward the draft-capital trajectory
+* **μₜ** = μ₁ × (A(age)/A(age₀))^γ, γ = `aging_power` = 2 — calibrated aging curve — blended toward the draft-capital trajectory
   (career year k+t−1) with the prior's evidence share (young players develop toward what their draft slot historically
   produced).
 * **σₜ** = μₜ × √(cv₁² + (t−1)·g²) (+ rookie extra cv) — uncertainty grows every year.
@@ -51,18 +65,26 @@ startable).
 * **Draft-capital priors** — PPR PPG by position × bucket (R1 picks 1–16, R1 17–32, R2, R3, R4–5, R6–7, UDFA) × career
   year 1–5, scaled by participation.
 
-Survivorship bias remains in the aging curves (decliners leave the sample); attrition partly offsets it. Treat curves as
-reasonable priors, not truths.
+Survivorship bias remains in the delta-method curves (players who collapse leave the sample, so measured declines are
+too gentle). The audit measured it directly (walk-forward, curves re-fitted each season on earlier data only): with
+γ = 1 the fundamental model under-rated players ≤23 by 11 and over-rated 30+ by 9 percentile points; **γ = 2 removed
+the bias** (−2 / +2) without lowering rank accuracy. Hence `aging_power: 2`. Treat curves as reasonable priors, not
+truths.
 
 ## 4. Other signals
 
 | Signal | Source | Conversion |
 |---|---|---|
-| Market (0.30) | FantasyCalc dynasty (format-matched), DynastyProcess (0.35 within market: derived from FP ECR), KTC import | positional-rank mapping onto the fundamental curve |
-| Consensus (0.25) | FantasyPros dynasty positional ECR | positional-rank mapping |
-| ADP (0.05) | Sleeper dynasty startup ADP | overall-rank mapping |
-| Fundamental (0.40) | sections 1–3 | — |
-| Trend | FantasyCalc 30-day trend | ±6% cap |
+| Consensus (0.40) | FantasyPros dynasty positional ECR | positional-rank mapping onto the fundamental curve |
+| Market (0.35) | FantasyCalc dynasty (format-matched), KTC import; DynastyProcess values weight 0 (ρ 0.99 with FP ECR) | positional-rank mapping |
+| Fundamental (0.25) | sections 1–3 | — |
+| ADP (0) | Sleeper dynasty startup ADP — ρ 0.96 with ECR, so redundant; shown, adjustable | overall-rank mapping |
+| Trend | FantasyCalc 30-day trend | displayed only (weight 0) |
+
+Why .25 for the fundamental model: on 2020–2023 dynasty rankings scored against realised three-season surplus,
+FantasyPros dynasty ECR reached ρ 0.581, the fundamental model 0.502–0.506, and a 75/25 consensus/fundamental blend
+0.583 (best). The fundamental model still matters: it sets the *magnitudes* (league scoring, scarcity, horizon) that
+every ranking is mapped onto, it is the only signal for players no list covers, and it explains the value.
 | Injury | IR/PUP/NFI: −35% of year-1 contribution; Suspended −15% | explicit component |
 
 Components shown: Market, Consensus, Projection / Production / Prospect (year-1 fundamental split by evidence share),
@@ -71,5 +93,5 @@ reference league is shown separately.
 
 ## 5. Contracts, team situation, trade liquidity
 
-Not modelled directly in v1: free sources don't provide reliable contract data in a stable form, and team situation is
+Not modelled directly: free sources don't provide reliable contract data in a stable form, and team situation is
 already priced by market/consensus/projections. FantasyCalc's trade frequency is stored for future use.

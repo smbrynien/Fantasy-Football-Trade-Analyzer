@@ -157,8 +157,12 @@ export function renderSettings(root, args) {
           modelNum('Expected-points blend (0–1)', 'redraft.production.xfp_blend', { step: 0.05, min: 0, max: 1 }),
           modelNum('Schedule strength (0–1)', 'redraft.production.sos_strength', { step: 0.05, min: 0, max: 1 }),
           modelNum('Bench value fraction', 'redraft.bench_value_fraction', { step: 0.05, min: 0, max: 1 }),
-          modelNum('Market trend weight', 'redraft.trend.weight', { step: 0.05, min: 0 }),
+          modelNum('Games before production counts (no last season)', 'redraft.production.min_games_without_history', { step: 1, min: 1 }),
+          modelNum('Market trend weight', 'redraft.trend.weight', { step: 0.05, min: 0, help: '0 by default (model 2.0): no evidence the 30-day trend predicts outcomes' }),
           modelNum('Trend cap (share of value)', 'redraft.trend.cap_pct', { step: 0.01, min: 0 })),
+        h('h3.mt', {}, 'Outcome uncertainty (points SD per remaining game)'), h('p.small.muted', {}, 'Used for expected surplus E[max(0, X − replacement)]: players near replacement keep some upside value. Set to 0 for the deterministic v1 behaviour.'),
+        h('div.fields', {}, ['QB', 'RB', 'WR', 'TE'].flatMap((p) => [modelNum(`${p} preseason`, `redraft.uncertainty.sd_per_game.preseason.${p}`, { step: 0.1, min: 0 }), modelNum(`${p} in-season`, `redraft.uncertainty.sd_per_game.in_season.${p}`, { step: 0.1, min: 0 })])),
+        h('h3.mt', {}, 'Availability (expected share of remaining games played)'), h('div.fields', {}, ['QB', 'RB', 'WR', 'TE'].map((p) => modelNum(p, `redraft.production.availability.${p}`, { step: 0.01, min: 0, max: 1 }))),
         h('h3.mt', {}, 'Injury: expected games lost'), h('div.fields', {}, Object.keys(model.redraft.injury_games_lost).map((k) => modelNum(k, `redraft.injury_games_lost.${k}`, { step: 0.25, min: 0 }))));
     },
     dynasty() {
@@ -170,6 +174,8 @@ export function renderSettings(root, args) {
           modelNum('Discount — contending', 'dynasty.strategy_discount.contending', { step: 0.01, min: 0.3, max: 1 }),
           modelNum('Discount — balanced', 'dynasty.strategy_discount.balanced', { step: 0.01, min: 0.3, max: 1 }),
           modelNum('Discount — rebuilding', 'dynasty.strategy_discount.rebuilding', { step: 0.01, min: 0.3, max: 1 }),
+          modelNum('Aging-curve power', 'dynasty.aging_power', { step: 0.25, min: 0, help: '(A(age_t)/A(age_0))^power; 2 corrects the survivorship bias of delta-method curves' }),
+          modelNum('Draft-prior pseudo-games', 'dynasty.rate_evidence.prior_pseudo_games', { step: 1, min: 0 }),
           modelNum('Market trend weight', 'dynasty.trend.weight', { step: 0.05, min: 0 })),
         h('h3.mt', {}, 'Signal weights'), h('div.fields', {}, groups.map((g) => modelNum(g, `dynasty.weights.${g}`, { step: 0.05, min: 0 }))),
         h('h3.mt', {}, 'Uncertainty'), h('div.fields', {}, ['QB', 'RB', 'WR', 'TE'].map((p) => modelNum(`${p} year-1 CV`, `dynasty.uncertainty.cv_year1.${p}`, { step: 0.01, min: 0 })), ['QB', 'RB', 'WR', 'TE'].map((p) => modelNum(`${p} CV growth / yr`, `dynasty.uncertainty.annual_cv_growth.${p}`, { step: 0.01, min: 0 })), modelNum('Rookie extra CV', 'dynasty.uncertainty.rookie_extra_cv', { step: 0.01, min: 0 })),

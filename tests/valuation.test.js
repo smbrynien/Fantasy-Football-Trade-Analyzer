@@ -49,9 +49,11 @@ test('components sum to the final value for every asset', () => {
   }
 });
 
-test('scale: top reference-league asset = 10,000 and ranks are ordered', () => {
+test('scale: mean of the top-12 reference-league assets = 7,000 (top asset ≈ 10,000) and ranks are ordered', () => {
   const top = [...red.assets.values()].filter((a) => a.kind === 'player').sort((a, b) => b.value - a.value);
-  assert.ok(Math.abs(top[0].value - 10000) < 1);
+  const n = config.model.scale.anchor_top_n;
+  assert.ok(Math.abs(top.slice(0, n).reduce((s, a) => s + a.value, 0) / n - 7000) < 1);
+  assert.ok(top[0].value > 7000 && top[0].value < 15000);
   assert.equal(top[0].rank, 1);
   assert.ok(top[5].value <= top[4].value);
 });

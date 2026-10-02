@@ -2,6 +2,8 @@
 // waiver (last-rostered) levels and lineup-displacement levels — all derived from the league settings and
 // the current pool of player point estimates. This is where positional scarcity comes from.
 
+import { expectedSurplus } from '../util/stats.js';
+
 const DEDICATED = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
 const SKILL = ['QB', 'RB', 'WR', 'TE'];
 
@@ -75,10 +77,15 @@ export function computeLeagueStructure(pool, league) {
  * Surplus points: full credit above the starter replacement level, plus a fraction (bench value) of the band
  * between the waiver level and the replacement level. Continuous and monotone.
  */
-export function surplusPoints(points, position, structure, benchFraction) {
+export function surplusPoints(points, position, structure, benchFraction, sd = 0) {
   const r = structure.replacement[position];
   const w = structure.waiver[position];
   if (r === null || r === undefined || points === null || points === undefined) return null;
+  if (sd > 0 && points > 0) {
+    // Expected surplus under outcome uncertainty X ~ Normal(points, sd): E[max(0, X − r)] + β·(E[max(0, X − w)] − E[max(0, X − r)]).
+    const above = expectedSurplus(points, sd, r);
+    return above + benchFraction * Math.max(0, expectedSurplus(points, sd, w) - above);
+  }
   const above = Math.max(0, points - r);
   const band = Math.max(0, Math.min(points, r) - w);
   return above + benchFraction * band;

@@ -10,6 +10,7 @@ data/state/
 data/user/
 data/cache/
 data/players/
+data/benchmark/
 !data/README.md
 # research downloads
 scripts/.cache/

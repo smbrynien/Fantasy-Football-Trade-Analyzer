@@ -1,0 +1,149 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 1.0.0",
+  "rows": [
+    {
+      "name": "Josh Allen",
+      "pos": "QB",
+      "redraftRank": 17,
+      "redraft_proj_plus10pct": 0.231,
+      "redraft_market_plus10pct": -0.001,
+      "dynasty_age_plus1yr": -0.028,
+      "dynasty_market_plus10pct": 0
+    },
+    {
+      "name": "Patrick Mahomes",
+      "pos": "QB",
+      "redraftRank": 66,
+      "redraft_proj_plus10pct": 0.451,
+      "redraft_market_plus10pct": 0.04,
+      "dynasty_age_plus1yr": -0.014,
+      "dynasty_market_plus10pct": 0.004
+    },
+    {
+      "name": "Tommy DeVito",
+      "pos": "QB",
+      "redraftRank": 112,
+      "redraft_proj_plus10pct": 0,
+      "redraft_market_plus10pct": 0,
+      "dynasty_age_plus1yr": 0,
+      "dynasty_market_plus10pct": 1.2
+    },
+    {
+      "name": "Malik Willis",
+      "pos": "QB",
+      "redraftRank": 237,
+      "redraft_proj_plus10pct": 1.379,
+      "redraft_market_plus10pct": 0,
+      "dynasty_age_plus1yr": -0.011,
+      "dynasty_market_plus10pct": 0
+    },
+    {
+      "name": "Jahmyr Gibbs",
+      "pos": "RB",
+      "redraftRank": 1,
+      "redraft_proj_plus10pct": 0,
+      "redraft_market_plus10pct": 0,
+      "dynasty_age_plus1yr": 0.008,
+      "dynasty_market_plus10pct": -0.002
+    },
+    {
+      "name": "Derrick Henry",
+      "pos": "RB",
+      "redraftRank": 10,
+      "redraft_proj_plus10pct": 0.079,
+      "redraft_market_plus10pct": -0.003,
+      "dynasty_age_plus1yr": -0.008,
+      "dynasty_market_plus10pct": 0.019
+    },
+    {
+      "name": "Chuba Hubbard",
+      "pos": "RB",
+      "redraftRank": 35,
+      "redraft_proj_plus10pct": 0.135,
+      "redraft_market_plus10pct": 0.003,
+      "dynasty_age_plus1yr": -0.023,
+      "dynasty_market_plus10pct": 0.008
+    },
+    {
+      "name": "Travis Etienne",
+      "pos": "RB",
+      "redraftRank": 77,
+      "redraft_proj_plus10pct": 0.069,
+      "redraft_market_plus10pct": 0,
+      "dynasty_age_plus1yr": -0.029,
+      "dynasty_market_plus10pct": 0.023
+    },
+    {
+      "name": "Jaxon Smith-Njigba",
+      "pos": "WR",
+      "redraftRank": 2,
+      "redraft_proj_plus10pct": 0.116,
+      "redraft_market_plus10pct": -0.002,
+      "dynasty_age_plus1yr": -0.04,
+      "dynasty_market_plus10pct": 0.014
+    },
+    {
+      "name": "Chris Olave",
+      "pos": "WR",
+      "redraftRank": 13,
+      "redraft_proj_plus10pct": 0.082,
+      "redraft_market_plus10pct": 0.001,
+      "dynasty_age_plus1yr": -0.02,
+      "dynasty_market_plus10pct": 0.017
+    },
+    {
+      "name": "DeVonta Smith",
+      "pos": "WR",
+      "redraftRank": 34,
+      "redraft_proj_plus10pct": 0.108,
+      "redraft_market_plus10pct": 0.022,
+      "dynasty_age_plus1yr": -0.012,
+      "dynasty_market_plus10pct": 0.004
+    },
+    {
+      "name": "Stefon Diggs",
+      "pos": "WR",
+      "redraftRank": 73,
+      "redraft_proj_plus10pct": 0.158,
+      "redraft_market_plus10pct": -0.002,
+      "dynasty_age_plus1yr": -0.012,
+      "dynasty_market_plus10pct": 0.031
+    },
+    {
+      "name": "Trey McBride",
+      "pos": "TE",
+      "redraftRank": 12,
+      "redraft_proj_plus10pct": 0.079,
+      "redraft_market_plus10pct": 0.047,
+      "dynasty_age_plus1yr": -0.029,
+      "dynasty_market_plus10pct": 0.009
+    },
+    {
+      "name": "Travis Kelce",
+      "pos": "TE",
+      "redraftRank": 60,
+      "redraft_proj_plus10pct": 0.19,
+      "redraft_market_plus10pct": -0.003,
+      "dynasty_age_plus1yr": -0.045,
+      "dynasty_market_plus10pct": 0.061
+    },
+    {
+      "name": "Mark Andrews",
+      "pos": "TE",
+      "redraftRank": 140,
+      "redraft_proj_plus10pct": 0.618,
+      "redraft_market_plus10pct": 0.004,
+      "dynasty_age_plus1yr": -0.021,
+      "dynasty_market_plus10pct": 0.07
+    },
+    {
+      "name": "Marlin Klein",
+      "pos": "TE",
+      "redraftRank": 225,
+      "redraft_proj_plus10pct": 0,
+      "redraft_market_plus10pct": 0,
+      "dynasty_age_plus1yr": -0.046,
+      "dynasty_market_plus10pct": 0.388
+    }
+  ]
+}

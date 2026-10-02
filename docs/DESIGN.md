@@ -116,7 +116,7 @@ confidence; nothing is imputed.
 PPR) and once in the user's league. Components are reported in the reference league and the
 difference is the explicit "League-specific adjustment" line, so the breakdown always sums.
 
-**Scale.** 10,000 = top asset in the reference league; the same scale factor is used for the user's
+**Scale.** The mean of the top-12 reference-league assets = 7,000 (top asset ≈ 10,000); the same scale factor is used for the user's
 league so values are comparable across settings.
 
 **Dynasty.** Year-by-year (default 5) projection of points per game using position aging curves,

@@ -1,10 +1,50 @@
 # Valuation Model (common framework + redraft)
 
-Model version: see `model_version` in [`config/model.json`](../config/model.json). Every parameter mentioned here
-is configurable there or in **Settings** (per league profile, stored as `overrides`).
+Model version: see `model_version` in [`config/model.json`](../config/model.json) (2.0.0 after the
+[model audit](MODEL_AUDIT.md)). Every parameter mentioned here is configurable there or in **Settings** (per league
+profile, stored as `overrides`).
 
 Code: `js/core/valuation/` — `engine.js` (orchestration), `context.js` (inputs), `replacement.js` (scarcity),
 `mapping.js` + `blend.js` (normalization/blending), `redraft.js`, `dynasty.js`, `picks.js`, `confidence.js`, `trade.js`.
+
+## In plain English
+
+**What is being measured?** How much a player (or pick) helps a team in *your* league win, compared with the free
+player you could pick up instead. Redraft: points above that "replacement" player for the rest of this season.
+Dynasty: the same idea over the next five seasons, with later seasons counting less.
+
+**Why these inputs?** Each one sees something the others miss: expert rankings (the most accurate single input in
+every historical test), projections (stat-level forecasts you can re-score for your league), trade markets (what real
+managers pay), draft position (crowd opinion), and actual production (what has happened this season). Many sources
+are copies of each other — e.g. DynastyProcess values are built from the FantasyPros rankings — so copies get no extra
+weight.
+
+**How are they normalised?** Sources speak different languages (rank 14, value 6,200, ADP 31.5, 210 points). We never
+average those numbers. We only use each source's *order*: if experts rank a player as the 14th RB, he gets the value of
+the 14th-best RB in your league. Your league's math sets how much the 14th RB is worth.
+
+**How are they weighted?** By how well they predicted outcomes in walk-forward tests on 2018–2025 data: expert
+consensus gets the most weight all season (it never stopped beating "just use his stats" even late in the year);
+projections and market follow; actual production gets a small in-season weight. If a player lacks a source, the
+weights are re-spread over what he has and his confidence drops — nothing is invented.
+
+**Why does league format matter?** Value is points *above replacement*. In Superflex, 24+ QBs start, so the free QB is
+bad and every startable QB is precious. TE premium makes good TEs score more than the free TE. More teams or starters
+push replacement down and make depth more valuable.
+
+**Why does age matter in dynasty?** Players improve, peak and decline at different ages by position (RBs peak earliest),
+and some leave the league each year. We measured this on 20 years of data and discovered our first curves declined too
+gently (players who collapse leave the data), so the decline is now steeper — which removed a bias that over-rated
+27+-year-olds.
+
+**How are picks valued?** A pick is worth the average value of whoever it will become: today's trade-market prices
+for picks, how past rookie classes turned out by draft slot, and the strength of the current class. Unknown slots are
+averaged; picks in later years are discounted.
+
+**How is uncertainty handled?** Twice. (1) Outcome uncertainty is part of the value itself: a player who might beat
+the replacement player has some value even if his average forecast doesn't — measured from how far real seasons
+landed from forecasts. (2) The **±** next to each value shows how much the sources disagree. Trades are judged by the
+difference *relative* to that uncertainty ("close", "modest edge", "clear"), never by a raw number alone.
 
 ## 1. One currency: surplus points in YOUR league
 
@@ -23,14 +63,23 @@ remaining eligible players. For each position:
 * **waiver** = first unrostered player (bench spots allocated to QB/RB/WR/TE in proportion to starters),
 * **displacement** = the average team's worst starter (rank ≈ starters − teams/2), used by package adjustments.
 
-Surplus is continuous: `max(0, pts − replacement) + bench_value_fraction × clamp(pts − waiver, 0, replacement − waiver)`.
-Bench players are worth something (depth), starters much more. This is where positional scarcity, superflex QB
+Surplus is **expected surplus** (v2): rest-of-season points are uncertain, X ~ Normal(projected points, σ), and
+
+`surplus = E[max(0, X − replacement)] + bench_value_fraction × (E[max(0, X − waiver)] − E[max(0, X − replacement)])`
+
+with σ = SD-per-game × remaining games (`redraft.uncertainty.sd_per_game`, measured from 2018–2025 forecast errors:
+in season QB 5.5, RB 4.4, WR 4.3, TE 3.8; preseason 4.9/4.2/3.8/3.1). v1 used the deterministic
+`max(0, pts − replacement) + β·band`, which undervalued every tier by ~14 points because it ignored the chance of
+beating replacement (audit §5, E1b). A zero projection (ruled out) has no option value. Setting the SD to 0 restores the
+deterministic formula. Bench players are worth something (depth), starters much more. This is where positional scarcity, superflex QB
 scarcity, TE premium and league depth come from — no generic positional multipliers.
 
 ### Scale
 
-`value = surplus × factor`, `factor = 10,000 / (top surplus in the reference league: 12-team 1QB PPR)`. The same
-factor applies to your league, so a 14-team superflex QB can exceed 10,000 and values are comparable across leagues.
+`value = surplus × factor`, `factor = 7,000 / mean(surplus of the top-12 assets in the reference league: 12-team 1QB
+PPR)` — the best asset lands near 10,000. The same factor applies to your league, so a superflex QB can exceed 10,000
+and values are comparable across leagues. (v1 divided by the single top asset's surplus, which made that asset's value
+insensitive — even slightly non-monotone — in its own inputs.)
 Values display rounded to 10 with an approximate fair-value range.
 
 ## 2. Signals and how each is normalized
@@ -38,27 +87,30 @@ Values display rounded to 10 with an approximate fair-value range.
 | Signal | Inputs | Conversion |
 |---|---|---|
 | **Projection** | ROS projections from each projection source (Sleeper/Rotowire weekly, ESPN weekly, manual), summed over the remaining weeks (completed games excluded) | Re-scored with your scoring (TE premium, first downs, bonuses) → weighted mean of points → surplus |
-| **Production** | Weekly actual stats (nflverse; Sleeper fallback) scored with your settings, blended 60/40 with **opportunity-based expected points** (targets/carries/attempts × league-average points per opportunity at the position), regressed toward last season's PPG (or positional average) with 4 pseudo-games, × remaining games × strength-of-schedule, minus injury games | surplus |
+| **Production** | Weekly actual stats (nflverse; Sleeper fallback) scored with your settings, blended 75/25 with **opportunity-based expected points** (targets/carries/attempts × league-average points per opportunity at the position), regressed toward last season's PPG with 2 pseudo-games (players without a last season: ≥3 games required, regressed to the positional median), × remaining games × **availability** (QB .80, RB .77, WR .83, TE .82) × strength-of-schedule, minus injury games | surplus |
 | **Consensus** | ROS/redraft expert rankings (FantasyPros ECR, manual rankings) | **Positional-rank mapping**: k-th RB by experts → value of the k-th RB on your league's curve |
 | **Market** | Redraft trade values in the best-matching format (FantasyCalc, manual) | Positional-rank mapping |
 | **ADP** | Redraft ADP (Sleeper, FFC, ESPN, manual) in the matching scoring/QB format | Overall-rank mapping |
-| **Trend** | Market source's own 30-day trend | `weight × trend% × value`, capped (±5%) |
+| **Trend** | Market source's own 30-day trend | displayed only (weight 0 since 2.0: no evidence it predicts outcomes, and it is already in the market level) |
 
 Positional-rank mapping keeps each source's *ordering and sentiment* while the *magnitudes* come from your league's
 math — sources don't know your TE premium or bench size. Raw source values remain visible in the player view.
 
-Source weights inside a group (`source_weights`): FantasyCalc 1.0 (real trades), KTC 1.0, DynastyProcess 0.35 (derived
-from FantasyPros ECR → not independent), Sleeper/Rotowire projections 1.0, ESPN 0.8, manual 0.8–1.0. They are judgment
-defaults (no free history exists to fit them) and are user-adjustable.
+Source weights inside a group (`source_weights`): FantasyCalc 1.0 (real trades), KTC 1.0, **DynastyProcess player
+values 0** (a transform of FantasyPros ECR: within-position ρ = 0.99 — counting it would double-count consensus; still
+displayed; DP *pick* values keep 0.8), Sleeper/Rotowire projections 1.0, ESPN 0.8, manual 0.8–1.0. Apart from the DP
+finding these are judgment defaults (no free history exists to fit them) and are user-adjustable.
 
 ## 3. Blending and phase awareness
 
 `score = Σ wᵍ·signalᵍ / Σ wᵍ (available)` — weights renormalize over the signals a player actually has.
 Missing signals are never imputed; they lower confidence instead.
 
-Weights interpolate from the **preseason** set (projection .35, consensus .30, ADP .20, market .15, production 0) to the
-**in-season** set (projection .30, production .30, consensus .25, market .15, ADP 0) linearly between week 1 and
-week 8. Offseason/preseason use full-season projections for the upcoming season.
+Weights interpolate from the **preseason** set (consensus .40, projection .30, market .15, ADP .15, production 0) to the
+**in-season** set (consensus .45, projection .30, market .15, production .10, ADP 0) linearly between week 1 and
+week 8. Evidence (audit §5): expert consensus was the most accurate signal at every checkpoint (weeks 4–12, 2021–2024)
+and its fitted weight stayed 0.8–1.0 all season; v1's in-season production weight of .30 was not supported. The
+projection and market weights cannot be backtested (no archives) and are judgment. Offseason/preseason use full-season projections for the upcoming season.
 
 The breakdown always sums to the final value: `contributionᵍ = wᵍ·signalᵍ / Σw`. Production is split into
 "production" and "injury" (games lost × rate) so the injury effect is explicit.
@@ -101,7 +153,7 @@ This is not a statistical confidence interval and is labelled as such.
 * Every calculation carries model version, data version, settings hash, league and source timestamps; saved trades
   can be re-checked later ("Why changed?").
 
-## 6. Backtesting (`npm run backtest` → reports/backtest.json)
+## 6. Backtesting (`npm run backtest` → reports/backtest.json; full audit: `npm run audit-model`)
 
 Spearman correlation of preseason orderings with realised PPR points (2019–2025, FantasyPros ECR archive + nflverse):
 
@@ -114,9 +166,16 @@ Spearman correlation of preseason orderings with realised PPR points (2019–202
 
 Dynasty ECR vs realised 3-season surplus (2020–2023): ρ ≈ 0.56–0.62 vs 0.37–0.45 for last-season PPG.
 Consensus clearly adds information beyond production — and correlations far below 1 are why the app shows ranges
-and never claims precision. Projections, ADP and trade markets could not be backtested (no free history).
+and never claims precision. Projections, ADP and trade markets could not be backtested (no free history). The
+walk-forward audit (in-season checkpoints, dynasty with leak-free recalibration, rookie curve forms, value-scale bias)
+is in [MODEL_AUDIT.md](MODEL_AUDIT.md); candidate models are compared in [MODEL_COMPARISON.md](MODEL_COMPARISON.md).
 
 ## 7. Versioning
+
+| Version | Changes |
+|---|---|
+| 1.0.0 | initial model |
+| 2.0.0 | audit: expected surplus; consensus-dominant redraft weights; production x .25 / k 2 / availability / median prior with ≥3 games; trend display-only; DP player values weight 0; dynasty weights .25/.35/.40/0, aging power 2, prior k 20, evidence gate; least-squares exponential rookie slot curve; top-12 scale anchor |
 
 `model_version` (config/model.json) changes whenever formulas/defaults change; `data_version` identifies the data
 snapshot; `settings_hash` the league + effective model. All three are stored with every calculation and export.

@@ -2,6 +2,11 @@
 
 Code: `js/core/valuation/picks.js`. Parameters: `picks` in `config/model.json`; Settings → Rookie Pick Model.
 
+**In plain English:** a pick is worth the average value of whoever it will select. We combine what the trade market
+pays for picks, how past rookie classes actually turned out by draft position, and how good this year's class looks.
+If the exact slot isn't known yet, we average over the slots it could be; picks further in the future are worth a bit
+less because they take longer to pay off and are less certain.
+
 **Rookie pick value ≠ rookie prospect value.** A prospect is a specific drafted player (valued by the dynasty model).
 A pick is the expected value of *whoever it selects*. The Rookies & Picks view keeps them on separate tabs.
 
@@ -21,7 +26,13 @@ rookie #15; in a 12-team league it is #13. League size is therefore handled with
    reuse the upcoming season's slot shape scaled to that round value.
 2. **Historical slot curve H(p)** — FantasyPros rookie ECR (last summer scrape of the draft year) for the 2020–2023
    classes matched to nflverse production: discounted 3-season PPR surplus over 12-team replacement, averaged by class
-   rank, smoothed, isotonic, normalized (top-12 mean = 1), then scaled to the current class. Hit rates
+   rank, fitted with a **least-squares exponential** `a·e^(−b(p−1))` (b ≈ 0.118: each class position is worth ~11% less
+   than the one before), normalized (top-12 mean = 1), then scaled to the current class.
+   Why (audit E4, leave-one-class-out): the v1 smoothed-isotonic curve had the worst out-of-sample error (MAE 40.7);
+   least-squares exponential 37.9 with no level bias (+1.7 on top-12 picks). Curves fitted to minimise absolute error
+   looked better (32–35) but were biased low by 34–74 points on top-12 picks — they fit the *median* rookie (most bust),
+   while a pick's trade value must be its *mean*. Known trade-off: the smooth curve understates the historical cliff
+   after pick 2 (1.01–1.02 averaged 228 vs 177 fitted); market and current-class inputs (70% of the weight) keep it. Hit rates
    (top-24 season within 3 years): ranks 1–3 100%, 4–6 75%, 7–12 58%, 13–24 25%, 25–36 19%, 37+ 10% (small samples).
 3. **Current class C(p)** — model values of the most recent rookie class (by consensus rookie rank, isotonic).
    If that class is already drafted (e.g. pricing 2027 picks with 2026 rookies), its values are multiplied by

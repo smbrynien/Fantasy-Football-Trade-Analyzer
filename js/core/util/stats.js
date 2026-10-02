@@ -120,6 +120,25 @@ export function isotonicDecreasing(ys, ws) {
   return out;
 }
 
+/**
+ * Least-squares fit of y_p = a·exp(−b·(p−1)), p = 1..n (null ys skipped). Least squares targets the conditional mean,
+ * which is what additive values need (absolute-error fits target the median and are biased low for skewed outcomes).
+ * Returns { a, b, sse }.
+ */
+export function fitExpDecay(ys) {
+  const pts = ys.map((y, i) => [i + 1, y]).filter(([, y]) => typeof y === 'number' && Number.isFinite(y));
+  let best = null;
+  for (let b = 0.002; b <= 3; b *= 1.02) {
+    let num = 0, den = 0;
+    for (const [p, y] of pts) { const e = Math.exp(-b * (p - 1)); num += y * e; den += e * e; }
+    const a = den > 0 ? num / den : 0;
+    let sse = 0;
+    for (const [p, y] of pts) sse += (a * Math.exp(-b * (p - 1)) - y) ** 2;
+    if (!best || sse < best.sse) best = { a, b, sse };
+  }
+  return best;
+}
+
 /** Spearman rank correlation for paired arrays. */
 export function spearman(x, y) {
   const n = x.length;

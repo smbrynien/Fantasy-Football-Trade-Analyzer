@@ -1,0 +1,106 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",
+  "note": "SIMULATION: 12-team league drafted by model value from current data; weekly availability sampled; Δ = change in Team A expected optimal-lineup points for the rest of the season. Model numbers converted back to surplus points (value ÷ factor).",
+  "avail": {
+    "QB": 0.8,
+    "RB": 0.77,
+    "WR": 0.83,
+    "TE": 0.82
+  },
+  "byShape": {
+    "1-for-1": {
+      "n": 67,
+      "raw": {
+        "corr": 0.767,
+        "slope": 0.946,
+        "meanModel": -7.979,
+        "meanSim": -3.763
+      },
+      "packageAdjusted": {
+        "corr": 0.767,
+        "slope": 0.946,
+        "meanModel": -7.979,
+        "meanSim": -3.763
+      }
+    },
+    "2-for-1": {
+      "n": 67,
+      "raw": {
+        "corr": 0.701,
+        "slope": 0.882,
+        "meanModel": 45.963,
+        "meanSim": 19.093
+      },
+      "packageAdjusted": {
+        "corr": 0.685,
+        "slope": 0.922,
+        "meanModel": 24.006,
+        "meanSim": 19.093
+      }
+    },
+    "2-for-2": {
+      "n": 67,
+      "raw": {
+        "corr": 0.81,
+        "slope": 0.894,
+        "meanModel": 8.954,
+        "meanSim": 5.309
+      },
+      "packageAdjusted": {
+        "corr": 0.81,
+        "slope": 0.894,
+        "meanModel": 8.954,
+        "meanSim": 5.309
+      }
+    },
+    "3-for-1": {
+      "n": 67,
+      "raw": {
+        "corr": 0.538,
+        "slope": 0.838,
+        "meanModel": 117.469,
+        "meanSim": 43.571
+      },
+      "packageAdjusted": {
+        "corr": 0.52,
+        "slope": 0.981,
+        "meanModel": 60.342,
+        "meanSim": 43.571
+      }
+    },
+    "3-for-2": {
+      "n": 66,
+      "raw": {
+        "corr": 0.663,
+        "slope": 0.972,
+        "meanModel": 54.813,
+        "meanSim": 46.206
+      },
+      "packageAdjusted": {
+        "corr": 0.665,
+        "slope": 1.025,
+        "meanModel": 35.916,
+        "meanSim": 46.206
+      }
+    },
+    "4-for-2": {
+      "n": 66,
+      "raw": {
+        "corr": 0.492,
+        "slope": 0.713,
+        "meanModel": 109.779,
+        "meanSim": 53.491
+      },
+      "packageAdjusted": {
+        "corr": 0.503,
+        "slope": 0.76,
+        "meanModel": 67.737,
+        "meanSim": 53.491
+      }
+    }
+  },
+  "overall": {
+    "raw": 0.634,
+    "packageAdjusted": 0.657
+  }
+}

@@ -1,9 +1,11 @@
 {
-  "model_version": "1.0.0",
+  "model_version": "2.0.0",
   "_comment": "Valuation model parameters. Bump model_version whenever a formula or default changes so stored trades/values remain comparable. Every parameter is documented in docs/VALUATION_MODEL.md, docs/DYNASTY_MODEL.md and docs/ROOKIE_PICK_MODEL.md.",
   "scale": {
     "top_value": 10000,
-    "_comment": "10,000 = most valuable asset in the reference league. The same points\u2192value factor is applied to the user's league so values are comparable across settings."
+    "anchor_top_n": 12,
+    "anchor_value": null,
+    "_comment": "Values = points x factor. factor = anchor_value / mean(score of the top anchor_top_n reference-league assets); anchor_value null = 0.7 x top_value, which puts the top asset near 10,000. Anchoring on a top-N mean (not the single top asset) keeps every player monotone in his own inputs. The same factor is applied to the user league so values are comparable across settings."
   },
   "reference_league": {
     "teams": 12,
@@ -30,27 +32,36 @@
   "redraft": {
     "weights": {
       "preseason": {
-        "projection": 0.35,
-        "consensus": 0.3,
+        "projection": 0.3,
+        "consensus": 0.4,
         "market": 0.15,
-        "adp": 0.2,
-        "production": 0.0
+        "adp": 0.15,
+        "production": 0
       },
       "in_season": {
         "projection": 0.3,
-        "consensus": 0.25,
+        "consensus": 0.45,
         "market": 0.15,
-        "adp": 0.0,
-        "production": 0.3
+        "adp": 0,
+        "production": 0.1
       }
     },
     "production": {
-      "regression_games": 4,
-      "xfp_blend": 0.4,
+      "regression_games": 2,
+      "xfp_blend": 0.25,
       "min_games": 1,
       "sos_strength": 0.5,
       "sos_min_weeks": 3,
-      "_comment": "Production rate = (gp*rate + k*prior)/(gp+k). xfp_blend mixes opportunity-based expected points into actual points per game. SoS multiplier is shrunk by sos_strength."
+      "_comment": "Production rate = (gp*blend + k*prior)/(gp+k), blend = (1-xfp_blend)*ppg + xfp_blend*xppg; ROS points = rate * remaining games * availability * SoS. k, xfp_blend fitted walk-forward (audit E2); availability = realized share of remaining team games played (E2). SoS kept at 0.5 (fitted 0.5 in 3 of 4 folds, but removing it raised rank correlation slightly: inconclusive). Players without a last-season rate (>=4 games) need min_games_without_history games before production is used, and regress to the positional MEDIAN.",
+      "availability": {
+        "QB": 0.8,
+        "RB": 0.77,
+        "WR": 0.83,
+        "TE": 0.82,
+        "K": 0.95,
+        "DEF": 1
+      },
+      "min_games_without_history": 3
     },
     "injury_games_lost": {
       "Out": 1,
@@ -66,9 +77,32 @@
     },
     "bench_value_fraction": 0.35,
     "trend": {
-      "weight": 0.2,
-      "cap_pct": 0.05
-    }
+      "weight": 0,
+      "cap_pct": 0.05,
+      "_comment": "v2: 30-day market trend is display-only (no evidence it predicts outcomes; it is already in the market level)."
+    },
+    "uncertainty": {
+      "sd_per_game": {
+        "preseason": {
+          "QB": 4.9,
+          "RB": 4.2,
+          "WR": 3.8,
+          "TE": 3.1,
+          "K": 3,
+          "DEF": 3
+        },
+        "in_season": {
+          "QB": 5.5,
+          "RB": 4.4,
+          "WR": 4.3,
+          "TE": 3.8,
+          "K": 3,
+          "DEF": 3
+        }
+      },
+      "_comment": "SD of realized rest-of-season points around the forecast, per remaining game (audit E1b/E2: the residual SD grows ~linearly with games). Surplus is the EXPECTED surplus E[max(0, X - r)] (+ bench band), which removed the -14 point under-valuation of the deterministic version across all tiers."
+    },
+    "_weights_comment": "v2 (audit E1/E2): expert consensus was the most accurate single signal at every checkpoint and the fitted consensus weight did not decline during the season, so consensus dominates and production gets a small in-season weight. Projection/market weights are judgment (no free historical archives to backtest them)."
   },
   "dynasty": {
     "horizon_years": 5,
@@ -78,18 +112,18 @@
       "rebuilding": 0.92
     },
     "weights": {
-      "fundamental": 0.4,
-      "market": 0.3,
-      "consensus": 0.25,
-      "adp": 0.05
+      "fundamental": 0.25,
+      "market": 0.35,
+      "consensus": 0.4,
+      "adp": 0
     },
     "season_games": 17,
     "rate_evidence": {
-      "projection_weight": 1.0,
+      "projection_weight": 1,
       "current_season_full_games": 8,
       "last_season_weight": 0.8,
       "last_season_min_games": 4,
-      "prior_pseudo_games": 10
+      "prior_pseudo_games": 20
     },
     "uncertainty": {
       "cv_year1": {
@@ -116,7 +150,7 @@
       "WR": 0.85,
       "TE": 0.84,
       "K": 0.95,
-      "DEF": 1.0
+      "DEF": 1
     },
     "default_aging_curves": {
       "_comment": "Fallback relative-PPG multipliers by age (peak = 1.0). Replaced by config/calibration/aging-curves.json when present (run `npm run calibrate`).",
@@ -127,10 +161,10 @@
         "24": 0.94,
         "25": 0.97,
         "26": 0.99,
-        "27": 1.0,
-        "28": 1.0,
-        "29": 1.0,
-        "30": 1.0,
+        "27": 1,
+        "28": 1,
+        "29": 1,
+        "30": 1,
         "31": 0.99,
         "32": 0.97,
         "33": 0.95,
@@ -149,8 +183,8 @@
         "21": 0.9,
         "22": 0.95,
         "23": 0.99,
-        "24": 1.0,
-        "25": 1.0,
+        "24": 1,
+        "25": 1,
         "26": 0.97,
         "27": 0.93,
         "28": 0.87,
@@ -169,8 +203,8 @@
         "23": 0.92,
         "24": 0.96,
         "25": 0.99,
-        "26": 1.0,
-        "27": 1.0,
+        "26": 1,
+        "27": 1,
         "28": 0.99,
         "29": 0.97,
         "30": 0.93,
@@ -190,8 +224,8 @@
         "24": 0.9,
         "25": 0.95,
         "26": 0.99,
-        "27": 1.0,
-        "28": 1.0,
+        "27": 1,
+        "28": 1,
         "29": 0.98,
         "30": 0.95,
         "31": 0.91,
@@ -203,12 +237,12 @@
         "37": 0.5
       },
       "K": {
-        "20": 1.0,
-        "45": 1.0
+        "20": 1,
+        "45": 1
       },
       "DEF": {
-        "0": 1.0,
-        "99": 1.0
+        "0": 1,
+        "99": 1
       }
     },
     "default_attrition": {
@@ -239,9 +273,9 @@
         "slope": 0.05
       },
       "DEF": {
-        "base": 0.0,
+        "base": 0,
         "onset": 99,
-        "slope": 0.0
+        "slope": 0
       }
     },
     "injury_year1_fraction": {
@@ -255,9 +289,15 @@
       "Questionable": 0.01
     },
     "trend": {
-      "weight": 0.25,
-      "cap_pct": 0.06
-    }
+      "weight": 0,
+      "cap_pct": 0.06,
+      "_comment": "v2: display-only."
+    },
+    "aging_power": 2,
+    "_aging_power_comment": "mu_t = mu_1 * (A(age_t)/A(age_0))^aging_power. Delta-method curves understate decline (survivorship); power 2 removed the fundamental model age bias in walk-forward tests (audit E3).",
+    "require_current_evidence_after_year": 1,
+    "_evidence_comment": "Players past their first career year need current evidence (projection, current or last-season production) for a fundamental value; the draft-capital prior alone no longer values retired/out-of-league veterans.",
+    "_weights_comment": "v2 (audit E3): dynasty consensus alone (rho .581) beat the fundamental model (.502); a 75/25 consensus/fundamental blend was best (.583). ADP is a near-duplicate of consensus (rho .96) and gets 0."
   },
   "picks": {
     "default_rounds": 4,
@@ -271,10 +311,10 @@
       "current_class": 0.25
     },
     "future_year_discount": 0.88,
-    "class_strength": 1.0,
+    "class_strength": 1,
     "buckets": {
       "early": [
-        0.0,
+        0,
         0.3334
       ],
       "mid": [
@@ -283,45 +323,47 @@
       ],
       "late": [
         0.6666,
-        1.0
+        1
       ]
     },
     "reference_teams": 12,
     "unknown_slot_extra_cv": 0.1,
     "hit_rate_cv": 0.55,
     "prior_class_adjustment": 0.8,
-    "_prior_class_comment": "When the rookie class used for the current-class/historical curves is an already-drafted class (e.g. 2026 rookies used to price 2027 picks), its values are partly 'resolved' (landing spots, early production) and ordered by today's rankings, which favours players who already hit. This multiplier removes that optimism. Market data typically prices the upcoming class's early 1st at ~0.65-0.8x the prior class's 1.01-1.04."
+    "_prior_class_comment": "When the rookie class used for the current-class/historical curves is an already-drafted class (e.g. 2026 rookies used to price 2027 picks), its values are partly 'resolved' (landing spots, early production) and ordered by today's rankings, which favours players who already hit. This multiplier removes that optimism. Market data typically prices the upcoming class's early 1st at ~0.65-0.8x the prior class's 1.01-1.04.",
+    "_historical_comment": "Historical slot shape = least-squares exponential (config/calibration/rookie-slot-curve.json)."
   },
   "source_weights": {
-    "_comment": "Relative weight of each source WITHIN a signal group. Rationale in docs/VALUATION_MODEL.md \u00a7Source weighting.",
+    "_comment": "Relative weight of each source WITHIN a signal group. Rationale in docs/VALUATION_MODEL.md §Source weighting.",
     "projection": {
-      "sleeper_projections": 1.0,
+      "sleeper_projections": 1,
       "espn": 0.8,
-      "manual_projections": 1.0
+      "manual_projections": 1
     },
     "consensus": {
-      "fantasypros_ecr": 1.0,
-      "fantasypros_manual": 1.0,
+      "fantasypros_ecr": 1,
+      "fantasypros_manual": 1,
       "manual_rankings": 0.8
     },
     "market": {
-      "fantasycalc": 1.0,
-      "ktc": 1.0,
-      "dynastyprocess_values": 0.35,
+      "fantasycalc": 1,
+      "ktc": 1,
+      "dynastyprocess_values": 0,
       "manual_market": 0.8
     },
     "adp": {
-      "sleeper_projections": 1.0,
+      "sleeper_projections": 1,
       "ffc_adp": 0.8,
       "espn": 0.8,
       "manual_adp": 0.8
     },
     "pick_market": {
-      "fantasycalc": 1.0,
-      "ktc": 1.0,
+      "fantasycalc": 1,
+      "ktc": 1,
       "dynastyprocess_values": 0.8,
       "manual_picks": 0.8
-    }
+    },
+    "_dp_comment": "DynastyProcess player values are a transform of FantasyPros ECR (within-position rho .99): counting them as an independent market double-counts consensus. Kept for display; weight 0. DP pick values are kept (no duplicate pick consensus exists)."
   },
   "mapping": {
     "min_source_players": 20,
@@ -330,16 +372,16 @@
   "package": {
     "enabled": true,
     "redraft": {
-      "displacement_strength": 1.0,
-      "roster_slot_cost": 1.0,
+      "displacement_strength": 1,
+      "roster_slot_cost": 1,
       "min_retained_fraction": 0.25
     },
     "dynasty": {
       "displacement_strength": 0.6,
-      "roster_slot_cost": 1.0,
+      "roster_slot_cost": 1,
       "min_retained_fraction": 0.35
     },
-    "_comment": "Extra players received in an uneven trade are charged lineup displacement (surplus of the average team's worst starter at that position \u00d7 strength) and a roster-slot cost (value of the last rostered player). Picks are exempt from both."
+    "_comment": "Extra players received in an uneven trade are charged lineup displacement (surplus of the average team's worst starter at that position × strength) and a roster-slot cost (value of the last rostered player). Picks are exempt from both."
   },
   "confidence": {
     "high": 65,
@@ -347,6 +389,6 @@
     "dispersion_full_penalty_cv": 0.6,
     "sample_games_full": 12,
     "min_range_pct": 0.05,
-    "range_sd_multiplier": 1.0
+    "range_sd_multiplier": 1
   }
 }

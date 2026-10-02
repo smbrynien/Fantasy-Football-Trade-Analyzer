@@ -1,0 +1,78 @@
+experiment,data_label,model,metric,value
+E1 preseason redraft,REAL HISTORICAL DATA,ecr,spearman,0.505
+E1 preseason redraft,REAL HISTORICAL DATA,ecr,MAE,57.247
+E1 preseason redraft,REAL HISTORICAL DATA,prodLastSeason,spearman,0.41
+E1 preseason redraft,REAL HISTORICAL DATA,prodLastSeason,MAE,61.701
+E1 preseason redraft,REAL HISTORICAL DATA,prodLastSeasonWithUsage,spearman,0.433
+E1 preseason redraft,REAL HISTORICAL DATA,prodLastSeasonWithUsage,MAE,61.636
+E1 preseason redraft,REAL HISTORICAL DATA,blend,spearman,0.505
+E1 preseason redraft,REAL HISTORICAL DATA,blend,MAE,57.247
+E1b value scale,REAL HISTORICAL DATA,det,MAE,27.155
+E1b value scale,REAL HISTORICAL DATA,det,bias ranks 1-6,-14.516
+E1b value scale,REAL HISTORICAL DATA,det,bias ranks 7-18,-12.299
+E1b value scale,REAL HISTORICAL DATA,det,bias ranks 19-36,-14.005
+E1b value scale,REAL HISTORICAL DATA,det,bias ranks 37-99,-13.819
+E1b value scale,REAL HISTORICAL DATA,exp,MAE,30.413
+E1b value scale,REAL HISTORICAL DATA,exp,bias ranks 1-6,-8.417
+E1b value scale,REAL HISTORICAL DATA,exp,bias ranks 7-18,-0.199
+E1b value scale,REAL HISTORICAL DATA,exp,bias ranks 19-36,-2.006
+E1b value scale,REAL HISTORICAL DATA,exp,bias ranks 37-99,1.893
+E1b value scale,REAL HISTORICAL DATA,emp,MAE,29.985
+E1b value scale,REAL HISTORICAL DATA,emp,bias ranks 1-6,-2.508
+E1b value scale,REAL HISTORICAL DATA,emp,bias ranks 7-18,-1.142
+E1b value scale,REAL HISTORICAL DATA,emp,bias ranks 19-36,-1.221
+E1b value scale,REAL HISTORICAL DATA,emp,bias ranks 37-99,0.231
+E2 in-season ROS,REAL HISTORICAL DATA,ecr,spearman,0.49
+E2 in-season ROS,REAL HISTORICAL DATA,ecr,MAE,32.476
+E2 in-season ROS,REAL HISTORICAL DATA,seasonPPG,spearman,0.443
+E2 in-season ROS,REAL HISTORICAL DATA,seasonPPG,MAE,37.346
+E2 in-season ROS,REAL HISTORICAL DATA,last4,spearman,0.416
+E2 in-season ROS,REAL HISTORICAL DATA,last4,MAE,38.466
+E2 in-season ROS,REAL HISTORICAL DATA,usageOnly,spearman,0.373
+E2 in-season ROS,REAL HISTORICAL DATA,usageOnly,MAE,37.618
+E2 in-season ROS,REAL HISTORICAL DATA,currentModelProd,spearman,0.427
+E2 in-season ROS,REAL HISTORICAL DATA,currentModelProd,MAE,36.131
+E2 in-season ROS,REAL HISTORICAL DATA,fittedProd,spearman,0.453
+E2 in-season ROS,REAL HISTORICAL DATA,fittedProd,MAE,35.685
+E2 in-season ROS,REAL HISTORICAL DATA,fittedProdNoSOS,spearman,0.459
+E2 in-season ROS,REAL HISTORICAL DATA,fittedProdNoSOS,MAE,35.563
+E2 in-season ROS,REAL HISTORICAL DATA,currentBlend,spearman,0.487
+E2 in-season ROS,REAL HISTORICAL DATA,currentBlend,MAE,35.47
+E2 in-season ROS,REAL HISTORICAL DATA,fittedBlend,spearman,0.512
+E2 in-season ROS,REAL HISTORICAL DATA,fittedBlend,MAE,34.485
+E3 dynasty,REAL HISTORICAL DATA,ecr,spearman,0.581
+E3 dynasty,REAL HISTORICAL DATA,fundamental,spearman,0.502
+E3 dynasty,REAL HISTORICAL DATA,noAgeCurve,spearman,0.475
+E3 dynasty,REAL HISTORICAL DATA,noAttrition,spearman,0.497
+E3 dynasty,REAL HISTORICAL DATA,noDraftPrior,spearman,0.479
+E3 dynasty,REAL HISTORICAL DATA,deterministicSurplus,spearman,0.489
+E3 dynasty,REAL HISTORICAL DATA,year1Only,spearman,0.468
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr25,spearman,0.542
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr50,spearman,0.571
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr75,spearman,0.583
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1,spearman,0.502
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1.5,spearman,0.509
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g2,spearman,0.505
+E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1,spearman,0.509
+E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1.5,spearman,0.509
+E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g2,spearman,0.506
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1,spearman,0.506
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1.5,spearman,0.504
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g2,spearman,0.499
+E4 rookie slot curve,REAL HISTORICAL DATA,isotonicAverage,LOO MAE,40.707
+E4 rookie slot curve,REAL HISTORICAL DATA,isotonicAverage,LOO bias,0
+E4 rookie slot curve,REAL HISTORICAL DATA,exponential,LOO MAE,34.121
+E4 rookie slot curve,REAL HISTORICAL DATA,exponential,LOO bias,-21.466
+E4 rookie slot curve,REAL HISTORICAL DATA,power,LOO MAE,35.03
+E4 rookie slot curve,REAL HISTORICAL DATA,power,LOO bias,-22.975
+E4 rookie slot curve,REAL HISTORICAL DATA,linear,LOO MAE,32.309
+E4 rookie slot curve,REAL HISTORICAL DATA,linear,LOO bias,-25.07
+E4 rookie slot curve,REAL HISTORICAL DATA,logarithmic,LOO MAE,34.741
+E4 rookie slot curve,REAL HISTORICAL DATA,logarithmic,LOO bias,-31.082
+E4 rookie slot curve,REAL HISTORICAL DATA,exponentialLS,LOO MAE,37.899
+E4 rookie slot curve,REAL HISTORICAL DATA,exponentialLS,LOO bias,-5.236
+E4 rookie slot curve,REAL HISTORICAL DATA,linearLS,LOO MAE,36.732
+E4 rookie slot curve,REAL HISTORICAL DATA,linearLS,LOO bias,-10.052
+Monotonicity,"CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",current,failures,0
+Package simulation,"CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",raw,"corr(model diff, simulated lineup gain)",0.634
+Package simulation,"CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",packageAdjusted,"corr(model diff, simulated lineup gain)",0.657

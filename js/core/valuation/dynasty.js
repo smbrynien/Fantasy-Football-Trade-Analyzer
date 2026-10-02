@@ -100,7 +100,11 @@ export function runDynasty(dataset, league, model, env) {
     if (priorPPR !== null && ['QB', 'RB', 'WR', 'TE'].includes(x.pos)) {
       ev.push({ kind: 'prior', v: priorPPR * ratio, w: re.prior_pseudo_games / (re.prior_pseudo_games + careerGames) });
     }
-    const sumW = ev.reduce((a, e) => a + e.w, 0);
+    let sumW = ev.reduce((a, e) => a + e.w, 0);
+    // Past year one, a fundamental value needs current evidence: the draft prior alone must not value players who
+    // have left the league (v1 gave retired/free-agent veterans thousands of points from draft capital).
+    const gateYear = cfg.require_current_evidence_after_year;
+    if (gateYear && careerYear > gateYear && !ev.some((e) => e.kind !== 'prior')) { ev.length = 0; sumW = 0; }
     x.dyn = { ev, mu1: sumW > 0 ? weightedMean(ev.map((e) => ({ v: e.v, w: e.w }))) : null, careerYear, careerGames, yearsExp, priorShare: sumW > 0 ? (ev.find((e) => e.kind === 'prior')?.w || 0) / sumW : 0, ratio };
   }
 
@@ -132,7 +136,7 @@ export function runDynasty(dataset, league, model, env) {
       if (t > 1) surv *= 1 - hazard(model, x.pos, age - 1);
       let mu = x.dyn.mu1;
       if (t > 1) {
-        const aged = x.dyn.mu1 * (agingMultiplier(model, x.pos, age) / a0);
+        const aged = x.dyn.mu1 * Math.pow(agingMultiplier(model, x.pos, age) / a0, cfg.aging_power ?? 1);
         const pr = draftPrior(model, x.pos, x.p.draft, x.dyn.careerYear + t - 1);
         mu = pr !== null && x.dyn.priorShare > 0 ? (1 - x.dyn.priorShare) * aged + x.dyn.priorShare * pr * x.dyn.ratio : aged;
       }
@@ -202,10 +206,10 @@ export function runDynasty(dataset, league, model, env) {
     }
     let trendAdj = 0, trendRel = null;
     const mk = market.get(cid);
-    if (mk && cfg.trend.weight) {
-      const rels = mk.sources.filter((s) => s.raw && typeof s.raw.trend30 === 'number' && s.raw.value > 0).map((s) => ({ v: s.raw.trend30 / s.raw.value, w: s.weight }));
+    if (mk) {
+      const rels = mk.sources.filter((s) => s.raw && typeof s.raw.trend30 === 'number' && s.raw.value > 0).map((s) => ({ v: s.raw.trend30 / s.raw.value, w: s.weight || 1 }));
       trendRel = weightedMean(rels);
-      if (trendRel !== null) trendAdj = clamp(cfg.trend.weight * trendRel * b.score, -cfg.trend.cap_pct * b.score, cfg.trend.cap_pct * b.score);
+      if (trendRel !== null && cfg.trend.weight) trendAdj = clamp(cfg.trend.weight * trendRel * b.score, -cfg.trend.cap_pct * b.score, cfg.trend.cap_pct * b.score);
     }
     if (trendAdj) contributions.trend = trendAdj;
     const score = Math.max(0, b.score + trendAdj);

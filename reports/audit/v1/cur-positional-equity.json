@@ -1,0 +1,94 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 1.0.0",
+  "note": "Synthetic players (label: SYNTHETIC) with identical 250 projected PPR points over 14 games, valued in each league. Differences arise only from replacement levels (roster economics).",
+  "rows": [
+    {
+      "league": "10-team 1QB",
+      "QB": 262,
+      "QB_replacement": 245.134,
+      "RB": 4869,
+      "RB_replacement": 161.642,
+      "WR": 4346,
+      "WR_replacement": 163.13,
+      "TE": 5288,
+      "TE_replacement": 140.125
+    },
+    {
+      "league": "12-team 1QB",
+      "QB": 484,
+      "QB_replacement": 239.347,
+      "RB": 5235,
+      "RB_replacement": 154.552,
+      "WR": 4996,
+      "WR_replacement": 154.612,
+      "TE": 5552,
+      "TE_replacement": 136.606
+    },
+    {
+      "league": "14-team 1QB",
+      "QB": 674,
+      "QB_replacement": 234.85,
+      "RB": 6094,
+      "RB_replacement": 140.131,
+      "WR": 5758,
+      "WR_replacement": 141.154,
+      "TE": 5811,
+      "TE_replacement": 133.056
+    },
+    {
+      "league": "16-team 1QB",
+      "QB": 936,
+      "QB_replacement": 233.827,
+      "RB": 6452,
+      "RB_replacement": 132.834,
+      "WR": 6414,
+      "WR_replacement": 128.972,
+      "TE": 6143,
+      "TE_replacement": 129.769
+    },
+    {
+      "league": "12-team Superflex",
+      "QB": 4046,
+      "QB_replacement": 204.574,
+      "RB": 6138,
+      "RB_replacement": 140.131,
+      "WR": 6001,
+      "WR_replacement": 137.469,
+      "TE": 5600,
+      "TE_replacement": 136.606
+    },
+    {
+      "league": "12-team 2QB",
+      "QB": 4046,
+      "QB_replacement": 204.574,
+      "RB": 6138,
+      "RB_replacement": 140.131,
+      "WR": 6001,
+      "WR_replacement": 137.469,
+      "TE": 5600,
+      "TE_replacement": 136.606
+    },
+    {
+      "league": "12-team TE premium 1.0",
+      "QB": 484,
+      "QB_replacement": 239.347,
+      "RB": 5082,
+      "RB_replacement": 158.741,
+      "WR": 4436,
+      "WR_replacement": 161.495,
+      "TE": 9226,
+      "TE_replacement": 161.559
+    },
+    {
+      "league": "12-team 3WR 2FLEX",
+      "QB": 297,
+      "QB_replacement": 239.347,
+      "RB": 6335,
+      "RB_replacement": 132.834,
+      "WR": 6293,
+      "WR_replacement": 128.972,
+      "TE": 5948,
+      "TE_replacement": 129.769
+    }
+  ]
+}

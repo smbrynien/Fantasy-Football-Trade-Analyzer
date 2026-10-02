@@ -4,7 +4,9 @@
   "description": "Multi-source, transparent redraft & dynasty fantasy football trade analyzer with one-click data sync.",
   "type": "module",
   "private": true,
-  "engines": { "node": ">=18.17" },
+  "engines": {
+    "node": ">=18.17"
+  },
   "scripts": {
     "start": "node server/index.js",
     "sync": "node scripts/sync.js",
@@ -13,7 +15,8 @@
     "calibrate": "node scripts/calibrate.js",
     "backtest": "node scripts/backtest.js",
     "package": "bash scripts/package-release.sh",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "audit-model": "node scripts/audit-model.js"
   },
   "license": "MIT"
 }

@@ -5,7 +5,7 @@
 
 import { resolveScoring } from '../scoring.js';
 import { blendWeights } from '../settings.js';
-import { weightedMean, clamp, quantile } from '../util/stats.js';
+import { weightedMean, clamp, quantile, median } from '../util/stats.js';
 import { computeLeagueRates, derivePlayerInputs } from './context.js';
 import { computeLeagueStructure, surplusPoints } from './replacement.js';
 import { buildCurves } from './mapping.js';
@@ -44,8 +44,10 @@ export function runRedraft(dataset, league, model, env) {
     if (offseason || x.prod.rate === null || x.remGames === null || x.remGames === undefined || x.p.team === 'FA') continue;
     const lost = x.zeroProjection ? x.remGames : Math.min(x.injury.gamesLostRedraft || 0, x.remGames);
     x.gamesLost = lost;
-    x.prodROSNoInj = x.prod.rate * x.remGames * x.sos;
-    x.prodROS = x.prod.rate * Math.max(0, x.remGames - lost) * x.sos;
+    // Expected games = remaining games × historical availability (players miss games even when healthy today).
+    const avail = cfg.production.availability?.[x.pos] ?? 1;
+    x.prodROSNoInj = x.prod.rate * x.remGames * avail * x.sos;
+    x.prodROS = x.prod.rate * Math.max(0, x.remGames - lost) * avail * x.sos;
   }
 
   // --- league structure from baseline points ---
@@ -56,7 +58,12 @@ export function runRedraft(dataset, league, model, env) {
     if (x.basePoints !== null) pool.push({ cid: x.p.cid, position: x.pos, points: x.basePoints });
   }
   const structure = computeLeagueStructure(pool, league);
-  const S = (pts, pos) => (pts === null || pts === undefined ? null : surplusPoints(pts, pos, structure, beta));
+  // Outcome uncertainty of rest-of-season points: SD ≈ c_pos × remaining games (audit E1b/E2).
+  const remAll = [...inputs.values()].map((x) => x.remGames).filter((g) => typeof g === 'number' && g >= 0);
+  const gamesLeft = offseason || !remAll.length ? model.dynasty.season_games : median(remAll);
+  const sdTable = cfg.uncertainty?.sd_per_game?.[offseason ? 'preseason' : 'in_season'] || {};
+  const sdFor = (pos) => (sdTable[pos] ?? 0) * gamesLeft;
+  const S = (pts, pos) => (pts === null || pts === undefined ? null : surplusPoints(pts, pos, structure, beta, sdFor(pos)));
   const curves = buildCurves(pool.map((x) => ({ cid: x.cid, position: x.position, score: S(x.points, x.position) })));
 
   // --- mapped groups ---
@@ -96,10 +103,10 @@ export function runRedraft(dataset, league, model, env) {
     // Market momentum (source-reported 30-day trend), capped.
     let trendAdj = 0, trendRel = null;
     const mk = market.get(cid);
-    if (mk && cfg.trend.weight) {
-      const rels = mk.sources.filter((s) => s.raw && typeof s.raw.trend30 === 'number' && s.raw.value > 0).map((s) => ({ v: s.raw.trend30 / s.raw.value, w: s.weight }));
+    if (mk) {
+      const rels = mk.sources.filter((s) => s.raw && typeof s.raw.trend30 === 'number' && s.raw.value > 0).map((s) => ({ v: s.raw.trend30 / s.raw.value, w: s.weight || 1 }));
       trendRel = weightedMean(rels);
-      if (trendRel !== null) trendAdj = clamp(cfg.trend.weight * trendRel * b.score, -cfg.trend.cap_pct * b.score, cfg.trend.cap_pct * b.score);
+      if (trendRel !== null && cfg.trend.weight) trendAdj = clamp(cfg.trend.weight * trendRel * b.score, -cfg.trend.cap_pct * b.score, cfg.trend.cap_pct * b.score);
     }
     if (trendAdj) contributions.trend = trendAdj;
     const score = Math.max(0, b.score + trendAdj);
@@ -136,7 +143,7 @@ export function runRedraft(dataset, league, model, env) {
         usage: x.usage,
         injury: x.injury,
         basePoints: x.basePoints,
-        replacement: structure.replacement[x.pos], waiver: structure.waiver[x.pos],
+        replacement: structure.replacement[x.pos], waiver: structure.waiver[x.pos], outcomeSD: sdFor(x.pos),
         consensus: consensus.get(cid)?.sources || [],
         market: mk?.sources || [],
         adp: adp.get(cid)?.sources || [],

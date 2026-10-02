@@ -4,7 +4,7 @@
 
 import { scoreStats } from '../scoring.js';
 import { ageOn } from '../identity.js';
-import { weightedMean, mean, clamp } from '../util/stats.js';
+import { weightedMean, mean, median, clamp } from '../util/stats.js';
 
 const PASS_KEYS = ['pass_att', 'pass_cmp', 'pass_inc', 'pass_yd', 'pass_td', 'pass_int', 'pass_2pt', 'pass_fd', 'pass_sack'];
 const RUSH_KEYS = ['rush_att', 'rush_yd', 'rush_td', 'rush_2pt', 'rush_fd'];
@@ -194,12 +194,10 @@ export function derivePlayerInputs(dataset, league, scoring, phase, model, leagu
     if (gp >= 3 && ppg !== null) (posPPG[pos] ||= []).push(ppg);
   }
 
-  // Positional prior = mean PPG of the top third of players with >=3 games (startable tier)
+  // Positional prior for players without a last-season rate = MEDIAN PPG of players with >=3 games. (v1 used the mean
+  // of the top third, which gave one-game backups a starter-level rate; the audit found 1-game QBs valued as QB1s.)
   const posPrior = {};
-  for (const [pos, arr] of Object.entries(posPPG)) {
-    const s = arr.sort((a, b) => b - a);
-    posPrior[pos] = mean(s.slice(0, Math.max(1, Math.round(s.length / 3))));
-  }
+  for (const [pos, arr] of Object.entries(posPPG)) posPrior[pos] = median(arr);
 
   // Production rate with regression to a prior
   for (const x of out.values()) {
@@ -208,7 +206,8 @@ export function derivePlayerInputs(dataset, league, scoring, phase, model, leagu
     const blend = xppg !== null ? (1 - prodCfg.xfp_blend) * ppg + prodCfg.xfp_blend * xppg : ppg;
     let prior, priorKind;
     if (x.last && x.last.gp >= 4) { prior = x.last.ppg; priorKind = 'last_season'; }
-    else { prior = posPrior[x.pos] ?? blend; priorKind = 'position_average'; }
+    else if (gp < (prodCfg.min_games_without_history ?? 1)) { x.prod.rate = null; x.prod.blend = blend; continue; }
+    else { prior = posPrior[x.pos] ?? blend; priorKind = 'position_median'; }
     const k = prodCfg.regression_games;
     x.prod.blend = blend;
     x.prod.prior = prior;

@@ -1,0 +1,133 @@
+{
+  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",
+  "rows": [
+    {
+      "mode": "redraft",
+      "removed": "fantasycalc",
+      "spearman": 0.998,
+      "medianAbsPctChange": 0.011,
+      "p90AbsPctChange": 0.038,
+      "maxAbsPctChange": 0.093
+    },
+    {
+      "mode": "redraft",
+      "removed": "fantasypros_ecr",
+      "spearman": 0.989,
+      "medianAbsPctChange": 0.036,
+      "p90AbsPctChange": 0.103,
+      "maxAbsPctChange": 0.312
+    },
+    {
+      "mode": "redraft",
+      "removed": "sleeper_projections",
+      "spearman": 0.978,
+      "medianAbsPctChange": 0.088,
+      "p90AbsPctChange": 0.18,
+      "maxAbsPctChange": 0.236
+    },
+    {
+      "mode": "redraft",
+      "removed": "espn",
+      "spearman": 0.993,
+      "medianAbsPctChange": 0.036,
+      "p90AbsPctChange": 0.092,
+      "maxAbsPctChange": 0.245
+    },
+    {
+      "mode": "redraft",
+      "removed": "dynastyprocess_values",
+      "spearman": 1,
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0,
+      "maxAbsPctChange": 0
+    },
+    {
+      "mode": "redraft",
+      "removed": "fantasycalc+dynastyprocess_values",
+      "spearman": 0.998,
+      "medianAbsPctChange": 0.011,
+      "p90AbsPctChange": 0.038,
+      "maxAbsPctChange": 0.093
+    },
+    {
+      "mode": "redraft",
+      "removed": "sleeper_projections+espn",
+      "spearman": 0.949,
+      "medianAbsPctChange": 0.101,
+      "p90AbsPctChange": 0.275,
+      "maxAbsPctChange": 1.65
+    },
+    {
+      "mode": "redraft",
+      "removed": "fantasypros_ecr+fantasycalc",
+      "spearman": 0.981,
+      "medianAbsPctChange": 0.065,
+      "p90AbsPctChange": 0.161,
+      "maxAbsPctChange": 0.402
+    },
+    {
+      "mode": "dynasty",
+      "removed": "fantasycalc",
+      "spearman": 0.991,
+      "medianAbsPctChange": 0.032,
+      "p90AbsPctChange": 0.115,
+      "maxAbsPctChange": 0.313
+    },
+    {
+      "mode": "dynasty",
+      "removed": "fantasypros_ecr",
+      "spearman": 0.983,
+      "medianAbsPctChange": 0.049,
+      "p90AbsPctChange": 0.15,
+      "maxAbsPctChange": 0.322
+    },
+    {
+      "mode": "dynasty",
+      "removed": "sleeper_projections",
+      "spearman": 0.997,
+      "medianAbsPctChange": 0.066,
+      "p90AbsPctChange": 0.105,
+      "maxAbsPctChange": 0.301
+    },
+    {
+      "mode": "dynasty",
+      "removed": "espn",
+      "spearman": 0.992,
+      "medianAbsPctChange": 0.026,
+      "p90AbsPctChange": 0.093,
+      "maxAbsPctChange": 0.297
+    },
+    {
+      "mode": "dynasty",
+      "removed": "dynastyprocess_values",
+      "spearman": 1,
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0,
+      "maxAbsPctChange": 0
+    },
+    {
+      "mode": "dynasty",
+      "removed": "fantasycalc+dynastyprocess_values",
+      "spearman": 0.991,
+      "medianAbsPctChange": 0.032,
+      "p90AbsPctChange": 0.115,
+      "maxAbsPctChange": 0.313
+    },
+    {
+      "mode": "dynasty",
+      "removed": "sleeper_projections+espn",
+      "spearman": 0.986,
+      "medianAbsPctChange": 0.083,
+      "p90AbsPctChange": 0.182,
+      "maxAbsPctChange": 1
+    },
+    {
+      "mode": "dynasty",
+      "removed": "fantasypros_ecr+fantasycalc",
+      "spearman": 0.933,
+      "medianAbsPctChange": 0.148,
+      "p90AbsPctChange": 0.403,
+      "maxAbsPctChange": 0.896
+    }
+  ]
+}
