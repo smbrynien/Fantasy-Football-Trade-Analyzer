@@ -9,6 +9,7 @@ import { playerData } from './state.js';
 
 const POS = new Set(['QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'PICK']);
 const TEAM_SET = new Set(TEAMS);
+const SUFFIX = /^(jr|sr|ii|iii|iv|v)\.?$/i;
 
 export function buildSearchIndex(result) {
   const items = [];
@@ -24,10 +25,14 @@ export function buildSearchIndex(result) {
 export function searchAssets(index, q, { limit = 12, includePicks = true, exclude = new Set(), result } = {}) {
   const raw = q.trim();
   if (!raw) return [];
-  const tokens = raw.toUpperCase().split(/\s+/);
+  // Name suffixes are stripped from indexed names (nameKey), so drop them from the query too ("beckham jr" found nothing).
+  const words = raw.split(/\s+/).filter((t) => !SUFFIX.test(t));
+  const tokens = words.map((t) => t.toUpperCase());
   const posF = tokens.filter((t) => POS.has(t));
   const teamF = tokens.filter((t) => TEAM_SET.has(t) && !POS.has(t));
-  const textTokens = raw.split(/\s+/).filter((t) => !POS.has(t.toUpperCase()) && !TEAM_SET.has(t.toUpperCase())).map((t) => nameKey(t)).filter(Boolean);
+  const textTokens = words.filter((t) => !POS.has(t.toUpperCase()) && !TEAM_SET.has(t.toUpperCase())).map((t) => nameKey(t)).filter(Boolean);
+  // A team code is also a name prefix while typing ("min" → Minshew, not only Vikings): match either.
+  const teamOk = (it) => !teamF.length || teamF.some((t) => it.a.team === t || it.key.split(' ').some((w) => w.startsWith(t.toLowerCase())));
   const out = [];
   // pick expressions
   if (includePicks && result && result.picks) {
@@ -48,7 +53,7 @@ export function searchAssets(index, q, { limit = 12, includePicks = true, exclud
     if (it.pick && !includePicks) continue;
     if (it.secondary && !/\d/.test(raw)) continue;
     if (posF.length && !posF.includes(it.a.position)) continue;
-    if (teamF.length && !teamF.includes(it.a.team)) continue;
+    if (!teamOk(it)) continue;
     if (textTokens.length && !textTokens.every((t) => it.key.includes(t))) continue;
     if (!textTokens.length && !posF.length && !teamF.length) continue;
     out.push(it.a);
@@ -62,7 +67,9 @@ export function searchAssets(index, q, { limit = 12, includePicks = true, exclud
       return px - py || y.value - x.value;
     });
   }
-  return out.slice(0, limit);
+  // The parsed pick expression and the index can yield the same asset: show it once.
+  const seen = new Set();
+  return out.filter((a) => !seen.has(a.id) && seen.add(a.id)).slice(0, limit);
 }
 
 export function assetSearchBox({ getResult, onPick, placeholder = 'Search player, team or position…', includePicks = true, exclude = () => new Set() }) {

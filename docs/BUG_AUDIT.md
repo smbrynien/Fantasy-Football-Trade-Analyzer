@@ -276,3 +276,23 @@ regression test, verification.
   quarantined with the previous batch kept; a player whose source ID changed still resolves to the same player (no
   duplicate); repeated identical syncs leave the player set, market rows and values unchanged (no duplication or
   compounding); snapshots/history grow by one entry per new data version only.
+
+### SR1 · Low · Search — The same pick appeared twice in results
+* "1.04" → "2027 1.04 | 2027 1.04 | 2028 1.04"; "2027 1st" likewise: the pick parsed from the query was added and then
+  found again in the index. **Fix:** results de-duplicated by id. **File:** `js/ui/search.js`.
+
+### SR2 · Low · Search — Queries with name suffixes found nothing
+* "beckham jr", "kenneth walker iii", "walker iii." → no results: indexed names have suffixes stripped (`nameKey`) but the
+  query kept them. **Fix:** suffix tokens (Jr/Sr/II/III/IV/V) are dropped from the query.
+
+### SR3 · Low · Search — A team code swallowed name prefixes while typing
+* Typing "min" (for Minshew) or "ne" filtered strictly to MIN/NE players. **Fix:** a team token matches the team *or* a
+  name word starting with those letters; position tokens stay strict ("qb" = quarterbacks).
+* **Test (SR1–SR3):** new `tests/search.test.js` (3 tests, all fail on the old code). Other probes passed: apostrophes
+  (`ja'marr`/`jamarr`), initials (`tj`/`t.j.`), hyphens, case, empty/nonsense/HTML queries; latency 0.1–0.2 ms per
+  keystroke on 1,127 assets.
+
+### PF1 · Info (verified, no defect) — Performance and resource use
+* Valuation scales ~linearly: 2,208 → 13,248 players: redraft 136 → 372 ms, dynasty 254 → 844 ms; 100 keystroke
+  searches ≤ 18 ms at every size. Browser: 3 rounds × 15 cycles of 8 routes + player modal + 2 mode switches → event
+  listeners stay at 2, DOM nodes at 351, heap flat at 16 MB after warm-up, no leftover modals (no leaks).
