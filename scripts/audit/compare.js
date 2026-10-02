@@ -61,8 +61,9 @@ export function compareSnapshots(before, after) {
   return { summary: out, csv: csv.map((r) => r.map((c) => (typeof c === 'string' && /[",]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c)).join(',')).join('\n') };
 }
 
-export const V1_FILE = path.join(ROOT, 'reports', 'audit', 'values-v1.json');
-export function loadV1() { return fs.existsSync(V1_FILE) ? JSON.parse(fs.readFileSync(V1_FILE, 'utf8')) : null; }
+export const DEFAULT_OUT = path.join(ROOT, 'reports', 'audit');
+export const v1File = (outDir = DEFAULT_OUT) => path.join(outDir, 'values-v1.json');
+export function loadV1(outDir) { const f = v1File(outDir); return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null; }
 
 /** Representative before/after sample with the component deltas that explain each change. */
 export const SAMPLE = [

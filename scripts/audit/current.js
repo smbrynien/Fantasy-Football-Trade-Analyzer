@@ -15,11 +15,22 @@ import { pickAssetId } from '../../js/core/pick-labels.js';
 const POS = ['QB', 'RB', 'WR', 'TE'];
 const rnd = (x) => (typeof x === 'number' && Number.isFinite(x) ? Math.round(x) : null);
 const r3 = (x) => (x === null || x === undefined || !Number.isFinite(x) ? null : Math.round(x * 1000) / 1000);
-const FROZEN = path.join(DATA_DIR, 'benchmark', 'dataset-frozen.json');
+export const FROZEN = path.join(DATA_DIR, 'benchmark', 'dataset-frozen.json');
 
+/** The frozen dataset if one exists, else the live synced dataset (frozen: false), else null (nothing synced yet). */
 export function loadFrozenDataset() {
-  const f = fs.existsSync(FROZEN) ? FROZEN : P.dataset;
-  return { ds: JSON.parse(fs.readFileSync(f, 'utf8')), file: f };
+  const f = fs.existsSync(FROZEN) ? FROZEN : fs.existsSync(P.dataset) ? P.dataset : null;
+  if (!f) return null;
+  return { ds: JSON.parse(fs.readFileSync(f, 'utf8')), file: f, frozen: f === FROZEN };
+}
+
+/** Copy the live synced dataset to the frozen location so later before/after runs see identical data. */
+export function freezeDataset() {
+  if (!fs.existsSync(P.dataset)) throw new Error('No synced dataset to freeze — run `npm run sync` first.');
+  const previous = fs.existsSync(FROZEN) ? JSON.parse(fs.readFileSync(FROZEN, 'utf8')).data_version : null;
+  fs.mkdirSync(path.dirname(FROZEN), { recursive: true });
+  fs.copyFileSync(P.dataset, FROZEN);
+  return { previous, current: JSON.parse(fs.readFileSync(FROZEN, 'utf8')).data_version };
 }
 const preset = (c, id) => c.profiles.presets.find((p) => p.id === id);
 
@@ -403,7 +414,8 @@ function extremes(ds, config) {
 
 export async function currentDataAudit() {
   const config = loadConfig();
-  const { ds, file } = loadFrozenDataset();
+  const { ds, file } = loadFrozenDataset() || {};
+  if (!ds) return null;
   const label = { label: `CURRENT DATA (${ds.data_version}, ${path.basename(file)}) — model ${config.model.model_version}` };
   const rows = signalTable(ds, config);
   const t0 = Date.now();

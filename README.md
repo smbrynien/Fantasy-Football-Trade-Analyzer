@@ -66,7 +66,7 @@ Other commands:
 | `npm run rebuild` | Rebuild dataset/values from cached data (no network) |
 | `npm run calibrate` | Re-derive aging curves, attrition, draft priors, rookie slot curve from historical data |
 | `npm run backtest` | Evaluate consensus rankings vs actual production → `reports/backtest.json` |
-| `npm run audit-model` | Full model audit: walk-forward backtests, correlations, ablations, stability, monotonicity, before/after → `reports/audit/` ([MODEL_AUDIT](docs/MODEL_AUDIT.md)) |
+| `npm run audit-model` | Full model audit: walk-forward backtests, correlations, ablations, stability, monotonicity, before/after → `reports/audit/` ([MODEL_AUDIT](docs/MODEL_AUDIT.md)). Before/after for a model change: `-- --freeze --snapshot-before --out=DIR` on the old model, `-- --only=compare --out=DIR` on the new one |
 | `npm run package` | Build the ready-to-run ZIPs into `dist/` (what the release workflow publishes) |
 | `npm test` | Run the automated test suite (offline) |
 | `npm run lint` | Lint with ESLint (dev-only: uses a global ESLint 10 or fetches it via `npx`; nothing is added to the project) |
@@ -75,7 +75,7 @@ Other commands:
 Optional settings: copy `.env.example` to `.env` (port, bind address, user agent, timeouts). No default source needs
 an API key. Keep `HOST=127.0.0.1` unless you deliberately want to open it to your phone on the LAN (`HOST=0.0.0.0`).
 
-**Releases:** every push to `main` runs `.github/workflows/release.yml` — tests, builds the three ZIPs (app + bundled
+**Releases:** every push to `main` runs `.github/workflows/release.yml` — lint, tests, builds the three ZIPs (app + bundled
 Node.js `.node-version`) and publishes them as the latest GitHub Release, so the download links above always point at
 the newest version.
 

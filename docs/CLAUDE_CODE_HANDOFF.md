@@ -2,7 +2,7 @@
 
 > **Read this first in any new session.** It records the *actual* state of the repository as inspected on
 > **2026-10-02**. Originally written at commit `464841f` ("Model audit and valuation model 2.0.0"); last updated with
-> the model 2.1.0 commit (fix for bug #1, ADP-only redraft values) — see §38 for the git state.
+> the 2.1.0 session (bug #1, ESPN ADP, lint/E2E, lint in CI, bug #2) — see §38 for the git state.
 > The code is the source of truth. Verify anything here before acting on it, and **update this file** when the
 > project's state changes (see §42 "Maintaining this handoff").
 >
@@ -43,7 +43,7 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 | Automated sync (10 sources) | **Implemented**, all 10 OK on 2026-10-02 [verified] |
 | Manual import (7 templates) | **Implemented** [verified via API: preview, overwrite guard, commit, delete] |
 | Canonical player DB / identity resolution | **Implemented** |
-| Model audit tooling (`npm run audit-model`) | **Implemented**, with a fresh-clone reproducibility bug (§19 bug #2) |
+| Model audit tooling (`npm run audit-model`) | **Implemented**; reproducible on fresh clones since the bug #2 fix (`--freeze`, `--out`, graceful skips) |
 | Usability (UX) audit | **Not performed** (no UX audit document exists) |
 | Lint in repo | **Implemented** dev-only: `eslint.config.mjs` + `npm run lint` (no dependency); no type-check |
 | Browser E2E in repo | **Implemented** optional: `npm run test:e2e` (Playwright if installed, else skips) |
@@ -53,8 +53,8 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 ## 2. Current project status
 
 ```text
-Overall Status:  Working, tested. Model 2.1.0 (2.0.0 audit model + ADP corroboration rule). Bug #1 FIXED;
-                 bug #2 (audit fresh-clone crash) still open.
+Overall Status:  Working, tested. Model 2.1.0 (2.0.0 audit model + ADP corroboration rule). Bugs #1, #2, #10
+                 FIXED. Lint runs in CI.
 
 Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
                  corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
@@ -66,13 +66,14 @@ Trade Analyzer:  Implemented. Additive values + package adjustment + z-score ver
 Data Sync:       Implemented. 10 automated adapters, validation/quarantine, failover, snapshots, history.
 Manual Import:   Implemented. 7 templates, column auto-mapping, identity report, overwrite confirmation.
 Player Database: Implemented. 17 external ID systems, never merges ambiguous players, manual overrides.
-Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool crashes on a fresh clone at the
-                 compare step (needs the git-ignored frozen dataset).
+Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool works on fresh clones: `--freeze`,
+                 `--out=DIR`, before/after skipped with instructions on data mismatch (bug #2 fixed).
 UX Audit:        Not done. Known UX issues in §16.
-Testing:         69/69 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
+Testing:         72/72 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
                  (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
-CI/Release:      GitHub Actions builds and publishes ZIPs on every push to main; last run succeeded [verified].
+CI/Release:      GitHub Actions: lint → tests → build → publish ZIPs on every push to main (lint step added in
+                 the 2.1.0 session; a lint error now blocks the release — owner decision 2026-10-02).
 ```
 
 ## 3. How to start the project
@@ -89,10 +90,10 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --failed` | Retry only failed/partial/quarantined sources | inferred |
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
-| `npm test` | `node --test tests/*.test.js` — 69 tests, offline | **yes, 69/69** |
-| `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`) | **yes, clean** |
+| `npm test` | `node --test tests/*.test.js` — 72 tests, offline | **yes, 72/72** |
+| `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`). **CI runs it before the tests; a lint error blocks the release** | **yes, clean** |
 | `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360 px and 390 px: trade 1-for-1 with verdict, every main route, no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
-| `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--snapshot-before`) | yes, but see §19 bug #2 |
+| `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--freeze`, `--snapshot-before`, `--out=DIR`). `--freeze`/`--snapshot-before` without `--only` do only that (no backtests) | yes (fresh clone, mismatch and full before/after workflow; §17 item 10) |
 | `npm run calibrate` | Re-derive `config/calibration/*.json` from nflverse 2006–2025 (downloads ~60 MB to `scripts/.cache/`) | ran earlier in project |
 | `npm run backtest` | ECR vs realised production → `reports/backtest.json` (shown on the Model page) | ran earlier in project |
 | `npm run package` | Build release ZIPs into `dist/` (`scripts/package-release.sh`) | CI runs it |
@@ -146,7 +147,7 @@ reports/         backtest.json (served to the Model page); audit/ (audit outputs
 data/            RUNTIME, git-ignored except data/README.md (raw, normalized, players, calculated, snapshots,
                  state, user, benchmark)
 index.html, css/app.css, favicon.svg   single-page app shell
-.github/workflows/release.yml           test + build + publish ZIPs on push to main
+.github/workflows/release.yml           lint + test + build + publish ZIPs on push to main
 Start Trade Analyzer (*.bat|.command|.sh), HOW TO START.txt, scripts/package-release.sh   non-technical launchers
 CLAUDE.md        standing instructions for Claude sessions (git workflow, model versioning rules)
 ```
@@ -204,7 +205,7 @@ UI     js/ui/views/*  (hash router in js/app.js; valuation cached per mode+leagu
 | Hand-written SVG charts (`js/ui/charts.js`) | charts | No charting library. |
 | `node:test` + `node:assert` | tests | `npm test`; synthetic fixture, fake adapters, no network. |
 | ESLint 10 / Playwright (global installs; `npx`) | `npm run lint`, optional `npm run test:e2e` | **Dev-only, never dependencies** (owner decision 2026-10-02). The release ZIPs contain the config/script files but need neither tool. |
-| GitHub Actions | release ZIPs with bundled Node | `.github/workflows/release.yml` |
+| GitHub Actions | lint (`npm run lint`, ESLint fetched by `npx`), tests, release ZIPs with bundled Node | `.github/workflows/release.yml` |
 
 ## 7. Important architectural decisions (do not undo casually)
 
@@ -486,6 +487,19 @@ No formal usability audit has been done.
 8. **Dev tooling:** `eslint.config.mjs` + `npm run lint`, `tests/e2e/smoke.mjs` + `npm run test:e2e` (both dev-only,
    §3, §26). Lint found and the commit fixed 3 dead variables (unused `.map` index in `js/ui/views/compare.js` and
    the test fixture; unused `binary` option of `cached()` in `scripts/lib/history-data.js`). No behaviour change.
+9. **Lint in CI** — `release.yml` runs `npm run lint` before the tests (owner decision: a lint error blocks the
+   release). Simulated CI (no global ESLint, empty npm cache/prefix): `npx` fetched ESLint 10 into its cache in ≈4 s,
+   exit 0, no `node_modules`/lockfile created.
+10. **Bug #2 fixed (audit-model reproducibility).** `scripts/audit-model.js`: `--freeze` (copies the synced dataset to
+    `data/benchmark/dataset-frozen.json`; error + exit 1 if nothing is synced), `--snapshot-before` freezes first when
+    no frozen dataset exists, `--out=DIR` redirects every output **and** the baseline (so validation runs no longer
+    overwrite the committed `reports/audit/`), and `--freeze`/`--snapshot-before` alone no longer start the full
+    backtest suite. `current` and `compare` skip with instructions (exit 0) when nothing is synced; `compare` skips
+    when the baseline's `data_version` differs (it used to throw), and notes when it falls back to the live dataset.
+    Verified: fresh clone (no data) → exit 0 + instructions; synced clone vs committed baseline → skip, exit 0,
+    committed reports unchanged; old-model (2.0.0) baseline → simulated re-sync → new-model compare on the frozen data
+    → `model 2.0.0 → 2.1.0`, one player ≥500 dropped to 0 (bug #1 fix). `tests/audit-tool.test.js` (3 tests, runs the
+    real CLI on the synthetic fixture in temp dirs); the fresh-clone test fails on the old code (ENOENT).
 
 ## 18. What is currently in progress
 
@@ -495,15 +509,14 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 
 | Feature | Current state | What remains | Files | Blocker | Next step |
 |---|---|---|---|---|---|
-| Audit reproducibility on fresh clones | compare step crashes | freeze command + graceful skip | `scripts/audit-model.js`, `scripts/audit/compare.js`, `current.js` | none | §35 item 1 |
-| Audit results in the UI | only `reports/backtest.json` shown | serve/show `reports/audit/scorecard.csv` or a summary JSON | `server/index.js` STATIC_ALLOW, `js/ui/views/model.js` | none | §35 item 7 |
+| Audit results in the UI | only `reports/backtest.json` shown | serve/show `reports/audit/scorecard.csv` or a summary JSON | `server/index.js` STATIC_ALLOW, `js/ui/views/model.js` | none | §35 item 6 |
 
 ## 19. Known bugs
 
 | # | Bug | Severity | Reproduce | Expected | Actual | Likely cause | Files | Workaround |
 |---|---|---|---|---|---|---|---|---|
 | 1 | ~~Free agents valued from stale ADP alone in redraft~~ **FIXED in model 2.1.0** | was High | handoff snippet (PICK UP HERE) | ADP-only players N/A | now 3 FA ≥100 in 12-team 1QB in season (Tyreek Hill 297, Zane Gonzalez 217, Odell Beckham 186 — all corroborated by consensus; kept deliberately, owner decision 2026-10-02); 0 ADP-only assets | was: placeholder/stale deep ADP ranks × expected-surplus tail × lone-group renormalization | `redraft.js` (`adp_requires_corroboration`), `config/model.json` | — |
-| 2 | `npm run audit-model` crashes on a fresh clone | Medium (dev tooling) | delete/omit `data/benchmark/dataset-frozen.json`, run `node scripts/audit-model.js --only=compare` | skip or explain | `Error: data_version mismatch` thrown, runner exits before writing `scorecard.csv` | baseline `reports/audit/values-v1.json` was computed on a frozen dataset that is git-ignored and was created by a manual copy; no command recreates it | `scripts/audit/compare.js` L30, `scripts/audit-model.js`, `scripts/audit/current.js loadFrozenDataset` | run `--only=e1,e2,e3,e4,current` |
+| 2 | ~~`npm run audit-model` crashes on a fresh clone~~ **FIXED** (2.1.0 session) | was Medium | `FFTA_DATA_DIR=<empty dir> node scripts/audit-model.js --only=current,compare` | skip or explain | exit 0 with instructions; mismatched baseline → skip with instructions | was: no freeze command, `compareSnapshots` threw, `loadFrozenDataset` read a missing file | `scripts/audit-model.js`, `scripts/audit/{compare,current}.js`, `tests/audit-tool.test.js` | — |
 | 3 | Value history mixes model versions | Medium | Player → Trends after the 2.0.0 upgrade | model changes marked or series reset | `history.json` has entries from 1.0.0 and 2.0.0; the chart shows the model change as a value move | `server/history.js` records `model_version` per entry but the UI doesn't use it | `server/history.js`, `js/ui/views/player-modal.js` (trends) | "Why did this value change?" re-runs the current model on old snapshots (correct) |
 | 4 | Format-mismatched market lists used silently | Low (no current impact: FantasyCalc provides SF lists) | a source with only 1QB lists in an SF league | warn or exclude | `formatMismatch: true` is set but never read | unfinished guard | `js/core/valuation/signals.js` L35 | — |
 | 5 | TE-premium market lists never preferred | Low | TEP league with a source that publishes TEP values (KTC import with `tep`) | prefer the matching TEP list | always prefers `tep: 0` | `marketMismatch` uses `Math.abs(rec.tep − 0)` | `signals.js` L12 | none |
@@ -513,8 +526,9 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 | 9 | `config/calibration/rookie-slot-curve.json` `generated_at` predates its current shape | Low | compare `generated_at` with git history | timestamp of the LS-exponential refit | shape was refit in place from `raw_mean_by_rank` during the audit; `generated_at` still 13:33 | manual refit | that file; `npm run calibrate` regenerates consistently | rerun `npm run calibrate` |
 | 10 | ~~ESPN ADP placeholder (≈168–170) treated as a real ADP~~ **FIXED in the adapter** (after 2.1.0) | was Low | `data/normalized/espn/adp.json` | undrafted players tie | 815 of 1,050 entries are now exactly 170 with `undrafted: true`; they share one average overall rank (≈0 value) instead of being ordered by noise | was: adapter kept every ADP < 300 | `adapters/espn.js` (`ESPN_UNDRAFTED_ADP`, `ESPN_UNDRAFTED_MARGIN`) | — |
 | 11 | Trade note "Unavailable assets" lists raw ids (e.g. `P1f0ff3e3`), and a missing asset still counts as "Team A consolidates" | Low (UX) | `analyzeTrade` with an N/A player (e.g. Philip Rivers since 2.1.0, or a saved trade containing one) | player name; missing assets ignored for the consolidation note | raw cid; consolidation note fires | `trade.js` notes use ids; `playersA/B` count resolved assets only | `js/core/valuation/trade.js` | — |
+| 12 | `npm test` leaves one `ffta-sync-*` temp dir per run in the OS temp folder | Low (test hygiene) | run `npm test`, list `$TMPDIR/ffta-sync-*` | removed after the suite | stays | `tests/sync.test.js` creates it with `mkdtemp` and never removes it | `tests/sync.test.js` | delete them by hand |
 
-No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68–69 in the 2.1.0 session).
+No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68–72 in the 2.1.0 session).
 
 ## 20. Known model / data problems (not software bugs)
 
@@ -615,11 +629,12 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **69 tests, 69 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **72 tests, 72 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
 |---|---|---|
+| `audit-tool.test.js` | 3 | `audit-model` CLI on the synthetic fixture in temp dirs: fresh clone skips, freeze needs data, baseline/data mismatch skips, freeze → baseline → re-sync → compare uses frozen data |
 | `adapters.test.js` | 1 | ESPN ADP undrafted-default collapse (stubbed HTTP; first adapter-level test) |
 | `identity.test.js` | 9 | normalizers, ID/name matching, suffixes/nicknames, team change, ambiguous never merged, conflicts, overrides, DEF, PlayerStore |
 | `ingestion.test.js` | 8 | CSV parsing (quotes, BOM, CRLF, malformed), delimiter detection, auto column mapping, required fields, duplicates, JSON uploads, pick labels |
@@ -631,10 +646,10 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 Optional browser E2E: `npm run test:e2e` (`tests/e2e/smoke.mjs`, not matched by the `npm test` glob; §3). It covers
 the trade builder (desktop + mobile width), every main route and console errors — not the import wizard, Settings
-round-trips, the player modal or dynasty picks. CI does not run lint or E2E (release.yml runs `npm test` only).
+round-trips, the player modal or dynasty picks. CI runs lint and `npm test`, not E2E.
 
 Gaps: no test for most adapters against recorded real responses (only ESPN ADP, stubbed), the HTTP API routes,
-deeper UI flows (see above), Sleeper league import, history/trends, the audit scripts.
+deeper UI flows (see above), Sleeper league import, history/trends, the audit backtests (E1–E4).
 Manual checks still worth doing after UI changes: trade builder on mobile, import wizard end-to-end in the browser,
 Settings overrides round-trip, Sleeper league import with a real league ID.
 
@@ -700,16 +715,14 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 1. Formulas: `js/core/valuation/{redraft,dynasty,picks,context,replacement,blend,mapping,engine,trade}.js`.
    Parameters: `config/model.json`; calibration: `scripts/calibrate.js` → `config/calibration/`.
-2. Before changing anything: `npm test`; save a baseline:
-   `node scripts/audit-model.js --snapshot-before` (writes `reports/audit/values-v1.json` from the **frozen** dataset —
-   create `data/benchmark/dataset-frozen.json` first by copying `data/calculated/dataset.json`; see bug #2).
-   **Caution:** this and `--only=current,compare` overwrite the *committed* `reports/audit/` files. The 2.1.0 session
-   copied the outputs elsewhere and ran `git checkout -- reports/` so the committed reports stay the 2.0.0 audit
-   record; decide deliberately whether a change warrants committing a new audit. A full-asset diff (every asset, all
-   presets, both modes, forced preseason) is a cheap, stronger check than the top-400 compare for targeted fixes.
+2. Before changing anything: `npm test`; `npm run sync` if `data/` is empty; save a baseline on the OLD model:
+   `npm run audit-model -- --freeze --snapshot-before --out=/some/dir` (freezes the synced dataset, writes
+   `values-v1.json` to the out dir; ~1 s, no backtests). Use `--out` unless you intend to commit a new audit:
+   without it, outputs go to the *committed* `reports/audit/`. A full-asset diff (every asset, all presets, both modes,
+   forced preseason) is a cheap, stronger check than the top-400 compare for targeted fixes.
 3. Make the change; **bump `model_version`**.
-4. Validate: `npm test`; `node scripts/audit-model.js --only=current,compare` (monotonicity, stability,
-   before/after); for formula changes with historical relevance, the relevant backtest (`--only=e1|e2|e3|e4`).
+4. Validate: `npm test`; `npm run lint`; `npm run audit-model -- --only=current,compare --out=/some/dir`
+   (monotonicity, stability, before/after against the frozen data — a re-sync in between doesn't matter); for formula changes with historical relevance, the relevant backtest (`--only=e1|e2|e3|e4`).
 5. Avoid leakage: fit only on seasons before the test season; rankings dated before the target window; refit
    calibration per season as `calibrateBefore()` in `scripts/audit/backtests.js` does.
 6. Redraft vs dynasty: they share `context.js` (production rate feeds dynasty μ1), `replacement.js`, `mapping.js`,
@@ -769,11 +782,9 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 | Priority | Task | Why it matters | Current state | Dependencies | Files |
 |---|---|---|---|---|---|
-| Medium | Make `audit-model` reproducible on fresh clones (bug #2) | model changes need before/after validation | crashes at compare | none | `scripts/audit-model.js`, `scripts/audit/compare.js`, `current.js` |
 | Medium | Mark/segment model versions in value history (bug #3) | trends show model changes as value moves | unfixed | none | `server/history.js`, `js/ui/views/player-modal.js` |
 | Medium | Mobile nav + wide-table UX fixes (bugs #6, #7) | many users on phones | unfixed | none | `css/app.css`, `js/app.js`, `js/ui/views/rookies.js` |
 | Low | Use `formatMismatch` and TEP list preference (bugs #4, #5) | correctness for future sources/imports | unfixed | none | `signals.js` |
-| Low | Run `npm run lint` (and optionally E2E) in CI | catch regressions before release | not in release.yml | decide: lint failures would block releases | `.github/workflows/release.yml` |
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
 | Low | Trade notes: names instead of raw ids; ignore missing assets in the consolidation note (bug #11) | clarity | unfixed | none | `trade.js` |
@@ -783,39 +794,35 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 ## 35. Recommended next steps
 
-1. **Make the audit reproducible (bug #2).** Add `--freeze` (copies `data/calculated/dataset.json` to
-   `data/benchmark/dataset-frozen.json`), make `compare` print a clear message and skip (not throw) on a
-   data_version mismatch, and still write `scorecard.csv`. *Verify:* run on a machine without the frozen file:
-   exits 0, prints the instructions; with `--freeze --snapshot-before` → change → `--only=compare` works.
-2. **Mark model versions in value history (bug #3):** draw a vertical marker or break the series where
+1. **Mark model versions in value history (bug #3):** draw a vertical marker or break the series where
    `entries[i].model_version` changes, in the Trends tab. *Verify:* Trends for any player shows the 1.0.0 → 2.0.0
-   boundary.
-3. **Mobile header nav:** make `nav` tabs wrap or show a scroll affordance at ≤480 px so Data/Settings/Model/Help
+   boundary (and 2.0.0 → 2.1.0 once history spans it; history is per `data/`, so a new container has none — seed a
+   synthetic `history.json` in a temp `FFTA_DATA_DIR` to test).
+2. **Mobile header nav:** make `nav` tabs wrap or show a scroll affordance at ≤480 px so Data/Settings/Model/Help
    are visibly reachable. *Files:* `css/app.css`, `index.html`. *Verify:* screenshot at 390×844.
-4. **Rookies table width:** hide low-value columns (College, Rookie ADP when empty) under 1400 px or allow
+3. **Rookies table width:** hide low-value columns (College, Rookie ADP when empty) under 1400 px or allow
    horizontal scroll with a sticky name column. *Files:* `js/ui/views/rookies.js`, `css/app.css`.
-5. *(done — lint tooling, §3)*
-6. *(done — optional E2E smoke test, §26)*. Possible extension: import wizard, player modal, dynasty pick adder.
-7. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
+4. *(done — lint tooling, §3; runs in CI)*
+5. *(done — optional E2E smoke test, §26)*. Possible extension: import wizard, player modal, dynasty pick adder.
+6. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
    `STATIC_ALLOW` and render it in `js/ui/views/model.js`.
-8. **signals.js correctness:** honour `formatMismatch` (skip or flag the list and lower confidence) and prefer
+7. **signals.js correctness:** honour `formatMismatch` (skip or flag the list and lower confidence) and prefer
    TEP lists when the league has a TE premium (`bonus_rec_te` > 0). Add tests.
-9. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
+8. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
     dead weight in redraft). Measure size and valuation time before and after.
-10. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
+9. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
 
 # PICK UP HERE
 
 ```text
 Current state:            Model 2.1.0 (bug #1 fixed: ADP corroborates only); ESPN undrafted ADP collapsed to a tie
-                          (bug #10 fixed); dev-only `npm run lint` + optional `npm run test:e2e` added. All 10 sources
-                          sync; 69/69 tests, lint clean, E2E pass.
-Most important unfinished: Bug #2 audit-model fresh-clone crash (§35 item 1) — it is what makes model before/after
-                          checks awkward; then bug #3 history mixes model versions (now 1.0.0/2.0.0/2.1.0).
-Secondary:                mobile nav (#6), rookies table (#7), trade-note ids (#11), lint in CI (decide).
+                          (bug #10); dev-only `npm run lint` (also in CI) + optional `npm run test:e2e`; audit-model
+                          reproducible (bug #2). All 10 sources sync; 72/72 tests, lint clean, E2E pass.
+Most important unfinished: Bug #3 value history mixes model versions (now 1.0.0/2.0.0/2.1.0) — §35 item 1.
+Secondary:                mobile nav (#6), rookies table (#7), trade-note ids (#11), audit scorecard on Model page.
 Known blockers:           None.
-Files to inspect first:   scripts/audit-model.js, scripts/audit/compare.js, server/history.js
-Tests to run first:       npm test (expect 69/69); npm run lint (clean); npm run test:e2e (pass or SKIP)
+Files to inspect first:   server/history.js, js/ui/views/player-modal.js (Trends), js/ui/charts.js
+Tests to run first:       npm test (expect 72/72); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
                           assigned branch and main (CLAUDE.md).
@@ -845,7 +852,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
 3. Check `git status` / `git log` first; don't discard uncommitted work you didn't create.
 4. Read the relevant doc before changing a major system (model docs, `ADDING_A_SOURCE.md`, `DATA_IMPORT.md`).
 5. Don't undo the decisions in §7 without understanding their rationale and recording the new one.
-6. Run `npm test` before and after changes; for model changes follow §31 (before/after, monotonicity, extremes).
+6. Run `npm test` and `npm run lint` before and after changes (CI blocks the release on either); for model changes
+   follow §31 (before/after, monotonicity, extremes).
 7. Never fabricate data, never scrape sources whose terms forbid it, never commit `data/` or `.env`.
 8. The container is ephemeral: `data/` (git-ignored) won't exist in a new session — run `npm run sync`. Lint and E2E
    are in the repo now (`npm run lint`, `npm run test:e2e`); the cloud container has ESLint 10 and Playwright
@@ -861,7 +869,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   (fast-forward; never force-push `main`).
 * Recent commits: `cb8e7ff` initial full app → `f80fcc6` CLAUDE.md → `7ac5d50` non-technical distribution →
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
-  model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling (this update).
+  model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling → lint in CI +
+  audit-model reproducibility (bug #2, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

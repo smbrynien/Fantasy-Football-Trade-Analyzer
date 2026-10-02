@@ -515,5 +515,8 @@ Prioritised (severity → change):
 * Superflex/TE-premium dynasty consensus is only partly format-specific (FantasyPros SF list; no TEP list).
 
 Reproduce: `npm run audit-model` (all), `-- --only=e1,e2,e3,e4,current,compare`, `-- --rebuild` (re-download the
-benchmark), `-- --snapshot-before` (save current-model values as the "before" baseline). Model comparison:
-[MODEL_COMPARISON.md](MODEL_COMPARISON.md).
+benchmark), `-- --freeze` (copy the synced dataset to `data/benchmark/dataset-frozen.json`), `-- --snapshot-before`
+(save current-model values on the frozen dataset as the "before" baseline; freezes first if needed), `-- --out=DIR`
+(write everything to DIR instead of the committed `reports/audit/`). The frozen dataset is git-ignored, so on a fresh
+clone the current-data numbers come from your own sync and a before/after comparison against the committed baseline
+is skipped with instructions. Model comparison: [MODEL_COMPARISON.md](MODEL_COMPARISON.md).

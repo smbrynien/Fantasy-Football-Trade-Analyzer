@@ -1,22 +1,39 @@
 #!/usr/bin/env node
 // Automated model audit: `npm run audit-model` → reports/audit/*.json (+ CSV)
 //   --only=e1,e2,e3,e4,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
-//   --snapshot-before   save current-model values on the frozen dataset as the 'before' baseline (values-v1.json)
+//   --freeze            copy the synced dataset to data/benchmark/dataset-frozen.json (the data before/after runs use)
+//   --snapshot-before   save current-model values on the frozen dataset as the 'before' baseline (values-v1.json);
+//                       freezes first if no frozen dataset exists
+//   --out=DIR           write every output (and read/write the baseline) in DIR instead of the committed reports/audit
+// --freeze / --snapshot-before without --only do only that (no backtests). A before/after comparison is skipped with
+// instructions, never thrown, when the baseline was made on different data.
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../server/lib/paths.js';
 import { loadBenchmark } from './audit/benchmark.js';
 import { preseasonRedraft, inSeasonROS, dynasty, rookieCurve, measureOppRates } from './audit/backtests.js';
 import { loadSeasons } from './lib/history-data.js';
+import { FROZEN, freezeDataset } from './audit/current.js';
 
 const args = process.argv.slice(2);
 const only = (args.find((a) => a.startsWith('--only=')) || '').replace('--only=', '').split(',').filter(Boolean);
-const want = (k) => !only.length || only.includes(k);
-const OUT = path.join(ROOT, 'reports', 'audit');
+const setupOnly = !only.length && (args.includes('--freeze') || args.includes('--snapshot-before'));
+const want = (k) => (only.length ? only.includes(k) : !setupOnly);
+const outArg = args.find((a) => a.startsWith('--out='));
+const OUT = outArg ? path.resolve(outArg.slice('--out='.length)) : path.join(ROOT, 'reports', 'audit');
 fs.mkdirSync(OUT, { recursive: true });
-const write = (name, obj) => { fs.writeFileSync(path.join(OUT, `${name}.json`), JSON.stringify(obj, null, 2)); console.log(`  wrote reports/audit/${name}.json`); };
+const rel = (f) => { const r = path.relative(ROOT, f); return !r || r.startsWith('..') ? f : r; };
+const write = (name, obj) => { const f = path.join(OUT, `${name}.json`); fs.writeFileSync(f, JSON.stringify(obj, null, 2)); console.log(`  wrote ${rel(f)}`); };
 
 const t0 = Date.now();
+const HOW = 'To compare model versions: `npm run sync` → `npm run audit-model -- --freeze --snapshot-before` on the OLD model → change the model → `npm run audit-model -- --only=compare`.';
+if (OUT !== path.join(ROOT, 'reports', 'audit')) console.log(`Writing outputs to ${OUT}`);
+if (args.includes('--freeze') || (args.includes('--snapshot-before') && !fs.existsSync(FROZEN))) {
+  try {
+    const { previous, current } = freezeDataset();
+    console.log(`Froze dataset ${current} → ${rel(FROZEN)}${previous && previous !== current ? ` (replaced ${previous})` : ''}`);
+  } catch (e) { console.error(`  ${e.message}`); process.exit(1); }
+}
 const needBench = ['e1', 'e2', 'e3', 'e4'].some(want);
 const bench = needBench ? await loadBenchmark({ rebuild: args.includes('--rebuild') }) : null;
 if (want('e1')) { console.log('E1 preseason redraft…'); write('e1-preseason-redraft', { label: 'REAL HISTORICAL DATA', oppRates: measureOppRates(bench), ...preseasonRedraft(bench) }); }
@@ -26,31 +43,43 @@ if (want('e4')) { console.log('E4 rookie curve…'); write('e4-rookie-curve', { 
 if (want('current')) {
   const { currentDataAudit } = await import('./audit/current.js');
   console.log('Current-data analyses…');
-  for (const [k, v] of Object.entries(await currentDataAudit())) write(k, v);
+  const res = await currentDataAudit();
+  if (!res) console.log(`  SKIPPED: no dataset. Run \`npm run sync\` first. ${HOW}`);
+  else for (const [k, v] of Object.entries(res)) write(k, v);
 }
 if (want('compare') || args.includes('--snapshot-before')) {
   const { loadConfig } = await import('../server/lib/config.js');
-  const { snapshotValues, compareSnapshots, sampleTable, loadV1, V1_FILE } = await import('./audit/compare.js');
+  const { snapshotValues, compareSnapshots, sampleTable, loadV1, v1File } = await import('./audit/compare.js');
   const { loadFrozenDataset } = await import('./audit/current.js');
-  const config = loadConfig();
-  const { ds } = loadFrozenDataset();
-  const now = snapshotValues(ds, config);
-  if (args.includes('--snapshot-before')) { fs.writeFileSync(V1_FILE, JSON.stringify(now)); console.log(`  saved baseline ${path.relative(ROOT, V1_FILE)}`); }
+  const frozen = loadFrozenDataset();
+  if (!frozen) console.log(`  SKIPPED before/after: no dataset. Run \`npm run sync\` first. ${HOW}`);
   else {
-    const before = loadV1();
-    if (!before) console.log('  no baseline (run with --snapshot-before on the old model first)');
-    else {
-      console.log('Before/after comparison…');
-      const { summary, csv } = compareSnapshots(before, now);
-      write('before-after', summary);
-      fs.writeFileSync(path.join(OUT, 'before-after.csv'), csv);
-      console.log('  wrote reports/audit/before-after.csv');
-      write('before-after-sample', { label: summary.label, rows: sampleTable(before, now) });
+    if (!frozen.frozen) console.log(`  NOTE: no frozen dataset; using the live dataset ${frozen.ds.data_version}, which changes on every sync. ${HOW}`);
+    const now = snapshotValues(frozen.ds, loadConfig());
+    if (args.includes('--snapshot-before')) {
+      fs.writeFileSync(v1File(OUT), JSON.stringify(now));
+      console.log(`  saved baseline ${rel(v1File(OUT))} (model ${Object.values(now.sets)[0].model_version}, data ${now.data_version})`);
+    } else {
+      const before = loadV1(OUT);
+      if (!before) console.log(`  SKIPPED before/after: no baseline at ${rel(v1File(OUT))}. ${HOW}`);
+      else if (before.data_version !== now.data_version) {
+        console.log(`  SKIPPED before/after: the baseline (${rel(v1File(OUT))}) was computed on data ${before.data_version}, but the dataset here is ${now.data_version}.`);
+        console.log('  Values would differ because of data, not the model. To compare: check out the old model, then');
+        console.log('  `npm run audit-model -- --freeze --snapshot-before` (add --out=DIR to keep the committed reports untouched),');
+        console.log('  return to the new model and run `npm run audit-model -- --only=compare` (same --out).');
+      } else {
+        console.log('Before/after comparison…');
+        const { summary, csv } = compareSnapshots(before, now);
+        write('before-after', summary);
+        fs.writeFileSync(path.join(OUT, 'before-after.csv'), csv);
+        console.log(`  wrote ${rel(path.join(OUT, 'before-after.csv'))}`);
+        write('before-after-sample', { label: summary.label, rows: sampleTable(before, now) });
+      }
     }
   }
 }
 // Scorecard: one CSV row per (experiment, model/baseline, metric) from whatever reports exist.
-{
+if (!setupOnly) {
   const rd = (f) => { try { return JSON.parse(fs.readFileSync(path.join(OUT, `${f}.json`), 'utf8')); } catch { return null; } };
   const rows = [['experiment', 'data_label', 'model', 'metric', 'value']];
   const e1 = rd('e1-preseason-redraft'), e2 = rd('e2-inseason-ros'), e3 = rd('e3-dynasty'), e4 = rd('e4-rookie-curve');
@@ -68,6 +97,6 @@ if (want('compare') || args.includes('--snapshot-before')) {
   const mono = rd('cur-monotonicity'), pk = rd('cur-package-simulation');
   if (mono) rows.push(['Monotonicity', mono.label, 'current', 'failures', mono.failures]);
   if (pk) for (const [m, v] of Object.entries(pk.overall || {})) rows.push(['Package simulation', pk.label, m, 'corr(model diff, simulated lineup gain)', v]);
-  if (rows.length > 1) { fs.writeFileSync(path.join(OUT, 'scorecard.csv'), rows.map((r) => r.map((c) => (/[",]/.test(String(c)) ? `"${String(c).replace(/"/g, '""')}"` : c)).join(',')).join('\n')); console.log('  wrote reports/audit/scorecard.csv'); }
+  if (rows.length > 1) { fs.writeFileSync(path.join(OUT, 'scorecard.csv'), rows.map((r) => r.map((c) => (/[",]/.test(String(c)) ? `"${String(c).replace(/"/g, '""')}"` : c)).join(',')).join('\n')); console.log(`  wrote ${rel(path.join(OUT, 'scorecard.csv'))}`); }
 }
 console.log(`done in ${((Date.now() - t0) / 1000).toFixed(0)}s`);

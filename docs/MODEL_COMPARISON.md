@@ -65,8 +65,11 @@ four classes is noise-dominated), and MAE-optimal curves (biased low).
 
 Compare old and new values yourself: `reports/audit/before-after.csv` (every player in four leagues) and
 `before-after-sample.json` (representative players with the component that drove each change). To re-create the
-"before" baseline for a future model change: `npm run audit-model -- --snapshot-before` on the old model, then
-`npm run audit-model -- --only=compare` on the new one (same frozen dataset).
+"before" baseline for a future model change: `npm run sync`, then `npm run audit-model -- --freeze --snapshot-before
+--out=DIR` on the old model, then `npm run audit-model -- --only=compare --out=DIR` on the new one (same frozen
+dataset; `--out` keeps the committed reports untouched). The committed baseline `reports/audit/values-v1.json` was made
+on the 2026-10-02 frozen dataset, which is not in the repository, so on any other dataset `--only=compare` skips with
+these instructions.
 
 ## Before / after — representative players (12-team, CURRENT DATA)
 
