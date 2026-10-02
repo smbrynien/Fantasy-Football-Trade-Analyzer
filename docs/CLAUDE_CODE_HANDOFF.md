@@ -36,7 +36,7 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 
 | Capability | Status |
 |---|---|
-| Redraft valuation | **Implemented** (model 2.1.1; bug #1 ADP-only values fixed) |
+| Redraft valuation | **Implemented** (model 2.1.2; bug #1 ADP-only values fixed) |
 | Dynasty valuation | **Implemented** |
 | Rookie / future pick values | **Implemented** |
 | Trade analyzer (multi-asset, packages, uncertainty) | **Implemented** |
@@ -53,10 +53,11 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 ## 2. Current project status
 
 ```text
-Overall Status:  Working, tested. Model 2.1.1 (2.0.0 audit model + ADP corroboration rule + market list
-                 format rules). ALL known bugs (§19 #1–#13) FIXED. Lint runs in CI.
+Overall Status:  Working, tested. Model 2.1.2 (2.0.0 audit model + ADP corroboration rule + market list
+                 format rules + monotone pick curves). ALL known bugs (§19 #1–#13) FIXED. Lint runs in CI.
 Bug audit:       Adversarial reliability audit IN PROGRESS — findings, root causes and tests in docs/BUG_AUDIT.md
-                 (server path traversal, crash vectors, CSRF, rebuild races, corrupt-file recovery fixed so far).
+                 (server path traversal, crash vectors, CSRF, rebuild races, corrupt-file recovery, import validation,
+                 identity conflicts, impossible/inverted picks fixed so far).
 
 Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
                  corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
@@ -642,7 +643,7 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 ## 24. Model version / data version
 
 ```text
-Model version:   2.1.1          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
+Model version:   2.1.2          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
 App version:     1.0.0          js/core/version.js APP_VERSION and package.json "version" (release tag v<version>-build.<n>)
 Schemas:         NORMALIZED_SCHEMA_VERSION 1, DATASET_SCHEMA_VERSION 1 (js/core/version.js); history.json schema_version 1;
                  config files carry their own schema_version
@@ -908,7 +909,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   audit-model reproducibility (bug #2) → Trends model-version markers (bug #3) → model 2.1.1 market list
   format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11) → layout fixes (bugs #6, #7, #13) →
   hygiene (bugs #8, #9, #12). Every known bug is now fixed. → bug-audit batch 1: server hardening + sync/storage
-  reliability (docs/BUG_AUDIT.md A1–A5, B1, C1, C2, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  reliability (docs/BUG_AUDIT.md A1–A5, B1, C1, C2) → batch 2: import validation, CSV export formula injection,
+  identity conflicts, pick validity + monotone pick curves (model 2.1.2; I1–I3, ID1–ID2, P1–P2, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

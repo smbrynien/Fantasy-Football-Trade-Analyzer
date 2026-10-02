@@ -86,7 +86,11 @@ export function parseCSV(text, { delimiter, naValues = ['', 'NA', 'N/A', 'null',
 
 function escapeField(v) {
   if (v === null || v === undefined) return '';
-  const s = typeof v === 'number' ? (Number.isFinite(v) ? String(v) : '') : String(v);
+  let s = typeof v === 'number' ? (Number.isFinite(v) ? String(v) : '') : String(v);
+  // Spreadsheet formula injection: a text cell from a source or an import (e.g. a player "name" of =HYPERLINK(…))
+  // would run as a formula when the export is opened in Excel/Sheets. Prefix such text with ' — numbers (including
+  // negative ones written as text, like "-12.5") are left alone.
+  if (typeof v !== 'number' && /^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+(\.\d+)?$/.test(s)) s = `'${s}`;
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
@@ -103,7 +107,11 @@ export function toCSV(objects, columns) {
 export function toNumber(v) {
   if (v === null || v === undefined || v === '') return null;
   if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-  const s = String(v).replace(/[,$%\s]/g, '');
+  let s = String(v).replace(/[$%\s]/g, '');
+  // Commas: thousands separators only when they form 3-digit groups ("1,234", "12,345.6"); otherwise a decimal comma
+  // ("12,5", "0,85" — European exports, usually ';'-delimited). Stripping every comma read "0,85" as 85.
+  if (/^[-+]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+  else if (/^[-+]?\d*,\d+$/.test(s)) s = s.replace(',', '.');
   if (s === '' || s === '-' || /^n\/?a$/i.test(s)) return null;
   const n = Number(s);
   return Number.isFinite(n) ? n : null;

@@ -48,6 +48,20 @@ function cleanIds(ids) {
   return out;
 }
 
+/**
+ * Evidence in the record itself that `p` is a DIFFERENT person: birth dates more than 2 days apart, an age more than
+ * 2 years off, or another draft year. Returns the reason or null. A name match that contradicts it must not be used —
+ * it used to attach e.g. a 2003-born rookie's data to a retired namesake born in 1994.
+ */
+function identityConflict(rec, p) {
+  const bd = (d) => (d ? Date.parse(String(d).slice(0, 10)) : NaN);
+  const a = bd(rec.birth_date), b = bd(p.birth_date);
+  if (Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) > 2 * 864e5) return 'birth_date';
+  if (typeof rec.age === 'number' && Number.isFinite(b) && Math.abs(ageOn(p.birth_date) - rec.age) > 2) return 'age';
+  if (rec.draft_year && p.draft?.year && Number(rec.draft_year) !== Number(p.draft.year)) return 'draft_year';
+  return null;
+}
+
 function positionsCompatible(recPos, player) {
   if (!recPos) return true;
   const allowed = POSITION_COMPAT[recPos] || [recPos];
@@ -140,6 +154,7 @@ export class PlayerIndex {
       for (const p of this.players.values()) {
         if (!positionsCompatible(position, p) || !position) continue;
         if (team && team !== 'FA' && p.team && p.team !== team) continue;
+        if (identityConflict(rec, p)) continue;
         const s = jaroWinkler(key, nameKey(p.name));
         if (s >= 0.94) scored.push({ p, s });
       }
@@ -153,12 +168,13 @@ export class PlayerIndex {
     if (!list.length) return { status: 'unmatched', cid: null, confidence: 0, method: 'name', candidates: [], flags };
 
     if (list.length > 1) {
-      // Disambiguate — each filter is applied only if it leaves at least one candidate.
+      // Disambiguate — each filter is applied only if it leaves at least one candidate. Strongest evidence first:
+      // a birth date identifies a person; a team does not (players move), so team comes last.
       const filters = [];
-      if (team && team !== 'FA') filters.push(['team', (p) => p.team === team]);
-      if (rec.birth_date) filters.push(['birth_date', (p) => p.birth_date === rec.birth_date]);
+      if (rec.birth_date) filters.push(['birth_date', (p) => !identityConflict({ birth_date: rec.birth_date }, p) && Boolean(p.birth_date)]);
       if (typeof rec.age === 'number') filters.push(['age', (p) => p.birth_date && Math.abs(ageOn(p.birth_date) - rec.age) <= 1.5]);
       if (rec.draft_year) filters.push(['draft_year', (p) => p.draft && Number(p.draft.year) === Number(rec.draft_year)]);
+      if (team && team !== 'FA') filters.push(['team', (p) => p.team === team]);
       const used = [];
       for (const [label, f] of filters) {
         const next = list.filter(f);
@@ -168,10 +184,14 @@ export class PlayerIndex {
       if (list.length > 1) {
         return { status: 'ambiguous', cid: null, confidence: 0, method: 'name', candidates: list.map((p) => p.cid), flags: ['duplicate_name'] };
       }
+      const why = identityConflict(rec, list[0]);
+      if (why) return { status: 'unmatched', cid: null, confidence: 0, method: 'name', candidates: [list[0].cid], flags: ['identity_conflict', `conflict_${why}`] };
       return { status: 'matched', cid: list[0].cid, confidence: 0.9, method: `name+${used.join('+')}`, candidates: [], flags: ['disambiguated'] };
     }
 
     const p = list[0];
+    const why = identityConflict(rec, p);
+    if (why) return { status: 'unmatched', cid: null, confidence: 0, method: 'name', candidates: [p.cid], flags: ['identity_conflict', `conflict_${why}`] };
     let confidence = 0.95;
     if (team && team !== 'FA' && p.team && p.team !== 'FA' && p.team !== team) { flags.push('team_differs'); confidence = 0.9; }
     if (!position) { flags.push('no_position'); confidence -= 0.05; }

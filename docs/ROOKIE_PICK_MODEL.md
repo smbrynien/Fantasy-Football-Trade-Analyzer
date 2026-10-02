@@ -51,6 +51,16 @@ rookie #15; in a 12-team league it is #13. League size is therefore handled with
 Future seasons are discounted `future_year_discount^Δ` (0.88/yr) on the model parts; market parts use that season's own
 market prices. `class_strength` (default 1.0) lets you mark a strong/weak class.
 
+**Monotonic by construction (model 2.1.2).** Within each season, V over class positions 1..rounds·teams is made
+non-increasing by isotonic regression (pool-adjacent violators), with each component rescaled so the breakdown still
+sums to the value. Before 2.1.2, future classes could invert at round boundaries (2028 3.01 > 2028 2.12 on 2026-10-02
+data) because round-level market values scale each round's segment separately. The upcoming class was already
+monotone and is unchanged; only future-class picks next to an inversion moved (by a few to ~10%).
+
+**Picks that cannot exist are unavailable** (2.1.2): an already-drafted class, more than 5 years out, a round beyond the
+league's rookie rounds, or a slot/range outside 1..teams (they used to be valued — a "1.13" in a 12-team league as
+1.12). Labels with round or slot 0 are not parsed as picks.
+
 ## Uncertainty
 
 * **Estimate range** (±): spread of V across the possible slots, disagreement between the three inputs, a growing

@@ -23,12 +23,13 @@ export function parsePickLabel(label) {
   const s = String(label).trim().replace(/\s+/g, ' ');
   let m;
   // 2027 Pick 1.04 / 2027 1.04 / 2027 #1.04
+  // Rounds and slots start at 1: "2027 0.05" / "2027 1.00" are not picks.
   if ((m = s.match(/^(\d{4})\s+(?:pick\s+|#)?(\d{1,2})\.(\d{1,2})$/i))) {
-    return { season: +m[1], round: +m[2], slot: +m[3], bucket: null, range: null };
+    return +m[2] >= 1 && +m[3] >= 1 ? { season: +m[1], round: +m[2], slot: +m[3], bucket: null, range: null } : null;
   }
   // 2027 Round 2 Pick 5
   if ((m = s.match(/^(\d{4})\s+round\s+(\d)\s*,?\s*pick\s+(\d{1,2})$/i))) {
-    return { season: +m[1], round: +m[2], slot: +m[3], bucket: null, range: null };
+    return +m[2] >= 1 && +m[3] >= 1 ? { season: +m[1], round: +m[2], slot: +m[3], bucket: null, range: null } : null;
   }
   // 2027 Early 1st / 2027 Mid 2nd / 2027 Late 3rd (Round)?
   if ((m = s.match(/^(\d{4})\s+(early|mid|middle|late)\s+(\w+)(?:\s+round)?$/i))) {
@@ -63,7 +64,8 @@ export function parsePickAssetId(id) {
   else if (['early', 'mid', 'late'].includes(rest)) d.bucket = rest;
   else {
     const r = rest.match(/^r(\d+)-(\d+)$/);
-    if (r) d.range = [Math.min(+r[1], +r[2]), Math.max(+r[1], +r[2])];
+    if (!r) return null; // an unrecognised suffix (e.g. ":-1") used to fall back silently to "slot unknown"
+    d.range = [Math.min(+r[1], +r[2]), Math.max(+r[1], +r[2])];
   }
   return d;
 }

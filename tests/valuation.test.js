@@ -197,3 +197,33 @@ test('market lists: TE-premium lists are preferred in TE-premium leagues and avo
   const te = r.assets.get('TTE1');
   assert.equal(te.details.market.find((s) => s.src === 'ktc').raw.tep, 1);
 });
+
+// BUG_AUDIT P1/P2: picks that cannot exist must not be valued.
+import { getAsset as getA } from '../js/core/valuation/engine.js';
+import { parsePickLabel as ppl, parsePickAssetId as ppid } from '../js/core/pick-labels.js';
+
+test('picks: impossible picks are unavailable; every real pick is valued (BUG_AUDIT P1)', () => {
+  const r = computeValuations({ dataset: ds, league: preset('preset_dyn_12_1qb'), mode: 'dynasty', config });
+  const up = r.picks.upcoming;
+  for (const id of [`pick:${up - 1}:1`, `pick:${up + 6}:1`, `pick:${up}:1:13`, `pick:${up}:1:0`, `pick:${up}:9`, `pick:${up}:1:r0-3`, `pick:${up}:1:r1-13`, `pick:${up}:1:-1`, `pick:${up}:1:xyz`]) {
+    assert.equal(getA(r, id), null, id);
+  }
+  for (const id of [`pick:${up}:1:1`, `pick:${up}:1:12`, `pick:${up}:${r.picks.rounds}:12`, `pick:${up}:1:early`, `pick:${up}:1:r5-3`, `pick:${up + 5}:1`]) {
+    const a = getA(r, id);
+    assert.ok(a && Number.isFinite(a.value) && a.value > 0, id);
+  }
+  assert.equal(ppl(`${up} 0.05`), null);
+  assert.equal(ppl(`${up} 1.00`), null);
+  assert.equal(ppid('pick:2027:1:-1'), null);
+});
+
+test('picks: value never increases with a later slot, round or season (property over the whole grid)', () => {
+  const r = computeValuations({ dataset: ds, league: preset('preset_dyn_12_1qb'), mode: 'dynasty', config });
+  const { upcoming: up, rounds } = r.picks;
+  const v = (s, rd, k) => getA(r, `pick:${s}:${rd}:${k}`).value;
+  for (let s = up; s < up + 3; s++) {
+    let prev = Infinity;
+    for (let rd = 1; rd <= rounds; rd++) for (let k = 1; k <= 12; k++) { const x = v(s, rd, k); assert.ok(x <= prev + 1e-9, `${s} ${rd}.${k}`); prev = x; }
+  }
+  for (let k = 1; k <= 12; k++) assert.ok(v(up + 1, 1, k) <= v(up, 1, k) + 1e-9, `future discount at 1.${k}`);
+});

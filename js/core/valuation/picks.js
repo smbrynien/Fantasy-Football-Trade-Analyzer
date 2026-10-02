@@ -145,7 +145,7 @@ export function runPicks(dataset, league, model, env, dyn) {
 
   // ---------- Slot value ----------
   const W = cfg.weights;
-  const slotValue = (season, p) => {
+  const rawSlotValue = (season, p) => {
     const delta = season - upcoming;
     const disc = Math.pow(cfg.future_year_discount, delta);
     const modelAdj = classIsUpcoming ? 1 : (cfg.prior_class_adjustment ?? 1);
@@ -161,9 +161,46 @@ export function runPicks(dataset, league, model, env, dyn) {
     for (const [k, val] of Object.entries(parts)) if (val !== null && W[k] > 0) { contributions[k] = (val * W[k]) / sw; v += contributions[k]; }
     return { v: sw ? v : null, parts, contributions, marketSources: mk ? mk.sources : [], disc };
   };
+  // A later pick in the same draft can never be worth more than an earlier one. Raw values could invert at round
+  // boundaries for future classes (round-level market values scale each round's segment separately, and a source
+  // missing one round changes the blend from that round on): 2028 3.01 > 2028 2.12 on 2026-10-02 data. Each season's
+  // curve over class positions 1..rounds·teams is made non-increasing by isotonic regression (pool-adjacent
+  // violators: averages offending neighbours, keeps the level); components are rescaled to stay additive.
+  const seasonTables = new Map();
+  const slotValue = (season, p) => {
+    if (!Number.isInteger(p) || p < 1 || p > maxP) return rawSlotValue(season, p);
+    if (!seasonTables.has(season)) {
+      const raw = Array.from({ length: maxP }, (_, i) => rawSlotValue(season, i + 1));
+      const idx = raw.map((r, i) => (r.v === null ? -1 : i)).filter((i) => i >= 0);
+      const iso = isotonicDecreasing(idx.map((i) => raw[i].v));
+      idx.forEach((i, j) => {
+        const r = raw[i], f = r.v ? iso[j] / r.v : 1;
+        raw[i] = { ...r, v: iso[j], contributions: Object.fromEntries(Object.entries(r.contributions).map(([k, c]) => [k, c * f])) };
+      });
+      seasonTables.set(season, raw);
+    }
+    return seasonTables.get(season)[p - 1];
+  };
 
-  /** Value a descriptor (known slot / bucket / range / unknown) for this league. */
+  /**
+   * Is this a pick that can exist in this league? Picks for an already-drafted class, more than 5 years out (the
+   * longest pick horizon the settings allow), beyond the league's rookie rounds, or outside slots 1..teams used to be
+   * valued anyway (a "1.13" in a 12-team league priced as 1.12; a drafted 2026 1st priced like a 2027 1st).
+   */
+  const validDescriptor = (desc) => {
+    const season = Number(desc.season), r = Number(desc.round);
+    const inT = (k) => Number.isInteger(k) && k >= 1 && k <= T;
+    if (!Number.isInteger(season) || season < upcoming || season > upcoming + 5) return false;
+    if (!Number.isInteger(r) || r < 1 || r > rounds) return false;
+    if (desc.slot !== null && desc.slot !== undefined && !inT(Number(desc.slot))) return false;
+    if (desc.range && !(inT(desc.range[0]) && inT(desc.range[1]) && desc.range[0] <= desc.range[1])) return false;
+    if (desc.bucket && !['early', 'mid', 'late'].includes(desc.bucket)) return false;
+    return true;
+  };
+
+  /** Value a descriptor (known slot / bucket / range / unknown) for this league; null if the pick cannot exist. */
   const valueDescriptor = (desc) => {
+    if (!validDescriptor(desc)) return null;
     const season = Number(desc.season), r = Number(desc.round);
     let slots;
     if (desc.slot) slots = [clamp(desc.slot, 1, T)];

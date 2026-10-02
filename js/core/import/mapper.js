@@ -151,8 +151,16 @@ export function validateRows(normalized, spec) {
     if (!p.position) issues.push({ level: 'warning', row: p._row, message: `"${p.name}" has no recognised position — matching will rely on name only.` });
     if (p.team === null) issues.push({ level: 'warning', row: p._row, message: `"${p.name}" has an unrecognised team abbreviation.` });
     if (typeof p.age === 'number' && (p.age < 19 || p.age > 45)) issues.push({ level: 'warning', row: p._row, message: `"${p.name}" has an implausible age ${p.age}.` });
-    if (spec.record_type === 'market_value' && !(p.value >= 0)) issues.push({ level: 'error', row: p._row, message: `"${p.name}" has a negative or missing value.` });
-    if ((spec.record_type === 'ranking' && !(p.rank > 0)) || (spec.record_type === 'adp' && !(p.adp > 0))) issues.push({ level: 'error', row: p._row, message: `"${p.name}" has an invalid rank/ADP.` });
+    // Error-level problems make the row invalid, so it is counted as invalid and NOT committed. They used to be
+    // reported but still imported: a rank of 0 or −3 then ranked as the best player in the list.
+    let reason = null;
+    if (spec.record_type === 'market_value' && !(p.value >= 0)) reason = 'negative or missing value';
+    if ((spec.record_type === 'ranking' && !(p.rank > 0)) || (spec.record_type === 'adp' && !(p.adp > 0))) reason = 'invalid rank/ADP (must be > 0)';
+    if (reason) {
+      issues.push({ level: 'error', row: p._row, message: `"${p.name}": ${reason} — row skipped.` });
+      p._invalid = true;
+      p.reason = reason;
+    }
   }
   if (spec.record_type === 'ranking') {
     const ranks = normalized.players.map((p) => p.rank).filter((r) => typeof r === 'number');

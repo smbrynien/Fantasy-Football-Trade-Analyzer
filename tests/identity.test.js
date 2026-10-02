@@ -94,3 +94,35 @@ test('PlayerStore: rookie creation, ID enrichment, team change event, multi-posi
   assert.equal(c.action, 'created');
   assert.notEqual(c.cid, a.cid);
 });
+
+// BUG_AUDIT ID1/ID2: a name match must never override contradicting identity evidence in the record itself.
+test('identity: a unique name match that contradicts birth date / age / draft year stays unmatched (BUG_AUDIT ID1)', () => {
+  const ix = new PlayerIndex([{ cid: 'P_OLD', name: 'Mike Williams', position: 'WR', team: 'FA', birth_date: '1994-10-04', draft: { year: 2017 }, ids: {}, aliases: [] }]);
+  for (const rec of [{ birth_date: '2003-05-01' }, { age: 22 }, { draft_year: 2025 }]) {
+    const r = ix.resolve({ name: 'Mike Williams', position: 'WR', team: 'NYJ', ...rec });
+    assert.equal(r.status, 'unmatched', JSON.stringify(rec));
+    assert.ok(r.flags.includes('identity_conflict'));
+    assert.deepEqual(r.candidates, ['P_OLD'], 'candidate offered for manual review');
+  }
+  // consistent evidence (incl. date formats and a 1-day source discrepancy) still matches
+  for (const rec of [{}, { birth_date: '1994-10-04T00:00:00Z' }, { birth_date: '1994-10-05' }, { age: 31.5 }, { draft_year: 2017 }]) {
+    assert.equal(ix.resolve({ name: 'Mike Williams', position: 'WR', ...rec }).cid, 'P_OLD', JSON.stringify(rec));
+  }
+});
+
+test('identity: birth date outranks team when disambiguating same-name players (BUG_AUDIT ID2)', () => {
+  const ix = new PlayerIndex([
+    { cid: 'P_A', name: 'Chris Jones', position: 'RB', team: 'DEN', birth_date: '1995-01-01', ids: {}, aliases: [] },
+    { cid: 'P_B', name: 'Chris Jones', position: 'RB', team: 'NYG', birth_date: '2001-01-01', ids: {}, aliases: [] },
+  ]);
+  assert.equal(ix.resolve({ name: 'Chris Jones', position: 'RB', team: 'DEN', birth_date: '2001-01-01' }).cid, 'P_B', 'traded player found by birth date');
+  assert.equal(ix.resolve({ name: 'Chris Jones', position: 'RB', team: 'DEN' }).cid, 'P_A');
+  assert.equal(ix.resolve({ name: 'Chris Jones', position: 'RB', team: 'KC' }).status, 'ambiguous', 'no evidence → never guessed');
+  assert.equal(ix.resolve({ name: 'Chris Jones', position: 'RB', team: 'DEN', birth_date: '1999-09-09' }).status, 'unmatched', 'contradicts both');
+});
+
+test('identity: fuzzy matching also refuses contradicting birth dates (BUG_AUDIT ID1)', () => {
+  const ix = new PlayerIndex([{ cid: 'P1', name: 'Marquise Brown', position: 'WR', team: 'KC', birth_date: '1997-06-04', ids: {}, aliases: [] }]);
+  assert.equal(ix.resolve({ name: 'Marquis Brown', position: 'WR', team: 'KC' }).cid, 'P1');
+  assert.notEqual(ix.resolve({ name: 'Marquis Brown', position: 'WR', team: 'KC', birth_date: '2004-01-01' }).status, 'matched');
+});

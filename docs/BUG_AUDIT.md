@@ -104,3 +104,58 @@ regression test, verification.
   caller gets its normal fallback, and the event is listed in `/api/status` `recovered_files` and on the Data page.
   Missing-file and I/O errors behave as before. Config files (`config/*.json`) still fail loudly at startup by design.
 * **Test:** `tests/sync.test.js` "corrupt state/normalized files are moved aside…".
+
+### I1 · High · Import/data integrity — Rows the preview flagged as errors were imported anyway
+* **Steps:** Manual import → rankings template with ranks `0` and `-3`. The preview listed both as errors, but Import
+  committed them ("3 players imported"). **Impact:** rank 0 / −3 (or ADP ≤ 0) maps as the *best* rank in the list;
+  negative market values were stored.
+* **Root cause:** `validateRows` reported error-level issues but `commitImport` only skipped rows marked `_invalid`.
+* **Fix:** error-level row problems mark the row `_invalid` (excluded from counts, identity report and commit).
+* **Files:** `js/core/import/mapper.js`. **Test:** `tests/ingestion.test.js` "import validation: rows with error-level
+  problems…". Verified end-to-end with `commitImport` on real data: only the valid row is stored.
+
+### I2 · High · Import/numbers — Decimal commas read as thousands separators (`0,85` → 85)
+* **Steps:** import a European CSV (`;`-delimited) with `12,5` or `0,85`. **Actual:** 125 and 85 — silent 10–100×
+  errors in projections or values. **Root cause:** `toNumber` stripped every comma. **Fix:** commas are thousands
+  separators only in 3-digit groups (`1,234`, `12,345.6`); otherwise a decimal comma. **File:** `js/core/util/csv.js`.
+  **Test:** `tests/ingestion.test.js` "numbers: decimal commas…".
+
+### I3 · Medium · Export/security — CSV exports allowed spreadsheet formula injection
+* A source- or import-provided text cell such as `=HYPERLINK(…)` / `+…` / `@…` was written verbatim, so opening a
+  Players/Trade/health CSV in Excel or Sheets would evaluate it. **Fix:** such text cells get a leading `'`; numbers
+  (also negative numbers written as text) are untouched; quoting round-trips. **File:** `js/core/util/csv.js`
+  (all six `toCSV` exports). **Test:** "CSV export neutralizes spreadsheet formulas…".
+
+### ID1 · Critical · Identity — A unique name match overrode contradicting birth date / age / draft year
+* **Steps:** player DB has one "Mike Williams" (WR, born 1994). A source/import record "Mike Williams, WR, born
+  2003-05-01" (or age 22, or draft year 2025) → **matched** to the 1994 player. Any data for a new namesake (a rookie the
+  authoritative sources have not created yet) silently attached to the wrong person. Same for fuzzy matches.
+* **Root cause:** the single-candidate and fuzzy paths never compared the record's own identity evidence.
+* **Fix:** `identityConflict()` — birth dates > 2 days apart, age > 2 years off, or a different draft year → the
+  record stays **unmatched** with `identity_conflict` and the candidate listed for manual review. **File:**
+  `js/core/identity.js`. **Tests:** `tests/identity.test.js` (3 new). **Verification on real data:** rebuild with old vs
+  new code → identical unresolved/ambiguous lists (24/2): no false positives today; purely protective.
+
+### ID2 · High · Identity — Team outranked birth date when disambiguating same-name players
+* "Chris Jones, RB, DEN, born 2001-01-01" with two Chris Joneses (DEN born 1995, NYG born 2001) matched the **DEN** one —
+  the team filter ran first and stopped. Teams change; birth dates don't. **Fix:** filter order birth date → age → draft
+  year → team, then the conflict check. **Test:** "birth date outranks team…".
+
+### P1 · Medium · Picks — Picks that cannot exist were valued
+* `2027 1.13` in a 12-team league was valued like 1.12; slot 0/−1 silently became "2027 1st" (asset id ≠ shown pick);
+  a 9th-round pick in a 4-round league, and the already-drafted 2026 1st (valued like a 2027 1st, 3,163) were all
+  priced. Such ids reach the app via search/labels, imports and old saved trades (after a rookie draft).
+* **Fix:** `validDescriptor` in `picks.js` (season upcoming..upcoming+5, round 1..league rounds, slot/range inside
+  1..teams) → unavailable (named in trade notes since bug #11); `parsePickAssetId` rejects unknown suffixes;
+  `parsePickLabel` rejects round/slot 0. **Test:** `tests/valuation.test.js` "picks: impossible picks are unavailable…".
+
+### P2 · Medium · Model/picks — Future-class pick values inverted at round boundaries (model 2.1.2)
+* Found by a new **property test** (value must not increase with a later slot/round). Real data, 12-team dynasty:
+  2028 3.01 = 614 > 2028 2.12 = 571; 2029 3.12 < 4.01; within-round inversions in some presets (10-team: 2029
+  3.04 = 176 < 3.05 = 213).
+* **Root cause:** for future seasons, round-level market values scale each round's segment of the upcoming season's
+  curve separately (discontinuous at boundaries), and a source missing one round changes the component blend there.
+* **Fix:** per-season isotonic (PAV) pass over class positions; components rescaled to stay additive. Model 2.1.2.
+* **Verification:** full value diff on the frozen dataset, 7 presets × both modes × in-season/preseason: **0 player
+  values changed**; only future-class picks adjacent to inversions moved (pooled, e.g. 2028 2.12/3.01 → 593/593);
+  upcoming class unchanged. **Test:** "picks: value never increases with a later slot, round or season".

@@ -90,3 +90,64 @@ test('pick label parsing covers all source styles', () => {
   assert.equal(id, 'pick:2027:1:r3-7');
   assert.deepEqual(parsePickAssetId(id).range, [3, 7]);
 });
+
+// ---- BUG_AUDIT I1/I2 + fuzzing of the import pipeline ----
+import { toNumber as toNum } from '../js/core/util/csv.js';
+const [pu, amc, am, tn, vr] = [parseUpload, autoMapColumns, applyMapping, toNormalized, validateRows];
+const importSpecs = specs;
+
+test('numbers: decimal commas are decimals, 3-digit comma groups are thousands (BUG_AUDIT I2)', () => {
+  assert.equal(toNum('12,5'), 12.5);
+  assert.equal(toNum('0,85'), 0.85);
+  assert.equal(toNum('-3,25'), -3.25);
+  assert.equal(toNum('1,234'), 1234);
+  assert.equal(toNum('12,345.6'), 12345.6);
+  assert.equal(toNum('1,234,567'), 1234567);
+  assert.equal(toNum('$1,250'), 1250);
+  assert.equal(toNum('7.5'), 7.5);
+  for (const bad of ['abc', '1,2,3', '--5', '', null, 'NaN', 'Infinity', '1e400']) assert.equal(toNum(bad), null, String(bad));
+});
+
+test('import validation: rows with error-level problems are invalid and never committed (BUG_AUDIT I1)', () => {
+  const rspec = spec('rankings_generic');
+  const parsed = pu('player_name,position,team,rank\nA Player,WR,CIN,0\nB Player,WR,MIN,-3\nC Player,WR,LAR,5\n', 'r.csv');
+  const { mapping } = amc(parsed.headers, rspec, importSpecs.common_aliases);
+  const norm = tn(am(parsed.records, mapping, rspec).rows, rspec, { kind: 'ros' });
+  const v = vr(norm, rspec);
+  assert.equal(v.counts.players, 1, 'only the valid row counts');
+  assert.deepEqual(norm.players.filter((p) => !p._invalid).map((p) => p.name), ['C Player']);
+  assert.equal(v.issues.filter((i) => i.level === 'error').length, 2);
+});
+
+test('import pipeline fuzz: random CSV/JSON never throws and never yields non-finite numbers', () => {
+  let seed = 42;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  const pick = (a) => a[Math.floor(rnd() * a.length)];
+  const cells = ['', ' ', 'NA', '"', '""', '"a,b"', '12,5', '1,234', '-0', '1e309', 'NaN', '<script>x</script>', '=HYPERLINK("x")', 'José Ñúñez', '\u0000', 'WR', 'QB1', 'FA', '2027 1.01', '2028 1st', '9999', '-1', 'Ja\'Marr', 'null', '{}', '[]'];
+  for (let i = 0; i < 300; i++) {
+    const nCols = 1 + Math.floor(rnd() * 6), nRows = Math.floor(rnd() * 8);
+    const header = Array.from({ length: nCols }, () => pick(['player_name', 'name', 'position', 'team', 'rank', 'value', 'adp', 'pick', 'age', 'x', '']));
+    const lines = [header.join(pick([',', ';', '\t']))];
+    for (let r = 0; r < nRows; r++) lines.push(Array.from({ length: nCols + Math.floor(rnd() * 3) - 1 }, () => pick(cells)).join(','));
+    const text = rnd() < 0.2 ? JSON.stringify(Array.from({ length: nRows }, () => ({ name: pick(cells), position: pick(cells), value: pick(cells), rank: pick(cells) }))) : lines.join(pick(['\n', '\r\n']));
+    for (const sp of specs.specs) {
+      const parsed = pu(text, rnd() < 0.5 ? 'f.csv' : 'f.json');
+      if (parsed.error) continue;
+      const { mapping } = amc(parsed.headers, sp, importSpecs.common_aliases);
+      const norm = tn(am(parsed.records, mapping, sp).rows, sp, {});
+      vr(norm, sp);
+      for (const rec of [...norm.players, ...norm.picks]) for (const [k, val] of Object.entries(rec)) if (typeof val === 'number') assert.ok(Number.isFinite(val), `${sp.id} ${k}=${val}`);
+    }
+  }
+});
+
+test('CSV export neutralizes spreadsheet formulas but keeps numbers (BUG_AUDIT I3)', () => {
+  const out = toCSV([{ name: '=HYPERLINK("http://x","y")', a: '+1+1', b: '@SUM(A1)', c: '-12.5', d: -3, e: 'Ja\'Marr, "J"' }]);
+  const row = parseCSV(out).records[0];
+  assert.equal(row.name, '\'=HYPERLINK("http://x","y")');
+  assert.equal(row.a, '\'+1+1');
+  assert.equal(row.b, '\'@SUM(A1)');
+  assert.equal(row.c, '-12.5');
+  assert.equal(row.d, '-3');
+  assert.equal(row.e, 'Ja\'Marr, "J"', 'quotes/commas round-trip');
+});
