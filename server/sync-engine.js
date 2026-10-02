@@ -23,6 +23,26 @@ let progress = null;
 export function syncProgress() { return progress; }
 export function isSyncRunning() { return Boolean(running); }
 
+/**
+ * The season the app should project. During the offseason Sleeper keeps `season` on the COMPLETED season and names
+ * the upcoming one `league_season`; taken literally, adapters fetched (and the model valued from) last year's season
+ * projections from February to August. Use the upcoming season while the type is 'off'.
+ */
+export function normalizeNflState(s) {
+  let season = Number(s.season);
+  const upcoming = Number(s.league_season);
+  if (s.season_type === 'off' && Number.isInteger(upcoming) && upcoming > season) season = upcoming;
+  return { season, week: Number(s.week) || 0, season_type: s.season_type };
+}
+
+/** Calendar fallback with the same meaning: Jan–Feb = previous season's postseason, Mar–Aug = upcoming offseason. */
+export function calendarNflState(d = new Date()) {
+  const m = d.getUTCMonth() + 1, y = d.getUTCFullYear();
+  if (m <= 2) return { season: y - 1, week: 19, season_type: 'post', source: 'calendar' };
+  if (m <= 8) return { season: y, week: 0, season_type: 'off', source: 'calendar' };
+  return { season: y, week: 0, season_type: 'pre', source: 'calendar' }; // Sep–Dec without a state source: week unknown
+}
+
 /** Determine NFL state: live from Sleeper, else last known, else derived from the calendar. */
 async function resolveState(config, http, log) {
   try {
@@ -31,16 +51,14 @@ async function resolveState(config, http, log) {
     const adapter = src && createAdapter(src, { http, log });
     if (!adapter || typeof adapter.fetchState !== 'function') throw new Error('no enabled state source');
     const s = (await adapter.fetchState()).records[0];
-    const st = { season: Number(s.season), week: Number(s.week), season_type: s.season_type, fetched_at: new Date().toISOString(), source: src.id };
+    const st = { ...normalizeNflState(s), fetched_at: new Date().toISOString(), source: src.id };
     await writeJSON(P.nflState, st, { pretty: true });
     return st;
   } catch (e) {
     log(`NFL state unavailable (${e.message}); using cached/derived state.`);
     const cached = await readJSON(P.nflState, null);
     if (cached) return { ...cached, source: 'cache' };
-    const d = new Date();
-    const season = d.getUTCMonth() + 1 >= 3 ? d.getUTCFullYear() : d.getUTCFullYear() - 1;
-    return { season, week: 0, season_type: 'off', source: 'calendar' };
+    return calendarNflState();
   }
 }
 
@@ -216,7 +234,7 @@ export function rebuild(...args) {
 async function rebuildNow(config, statusAll, state, log = () => {}) {
   config = config || loadConfig();
   statusAll = statusAll || (await readJSON(P.sourceStatus, {}));
-  state = state || (await readJSON(P.nflState, null)) || { season: new Date().getUTCFullYear(), week: 0, season_type: 'off' };
+  state = state || (await readJSON(P.nflState, null)) || calendarNflState();
   const db = await buildPlayerDB(config);
   log(`player DB: ${db.players.length} players ${JSON.stringify(db.summary)}`);
   const { dataset, report } = await buildDataset(config, { players: db.players, overrides: db.overrides, sourceStatus: statusAll, state });

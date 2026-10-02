@@ -9,11 +9,39 @@ export const ROSTER_SLOTS = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPERFLEX', 'K', '
 export function buildLeague(profile, leagueDefaults) {
   const base = deepClone(leagueDefaults.default_league);
   const league = deepMerge(base, profile || {});
+  if (!league.roster || typeof league.roster !== 'object') league.roster = deepClone(base.roster || {}); // e.g. roster: null
   // qb_format follows SUPERFLEX slots unless explicitly 2QB (QB>=2)
   if (league.roster.SUPERFLEX > 0) league.qb_format = 'sf';
   else if (league.roster.QB >= 2) league.qb_format = '2qb';
   else league.qb_format = '1qb';
   return league;
+}
+
+/**
+ * Coerce a built league into what the engine can value safely. Profiles can reach the engine without passing the
+ * settings form (localStorage, the server copy, older versions, imports): a negative team count or a roster slot of
+ * "two" used to crash every page, and 0/NaN teams produced values with teams = null. Clamps to the same limits
+ * validateLeague enforces in the UI (which still reports the problem to the user — buildLeague stays unclamped).
+ */
+export function sanitizeLeague(league, leagueDefaults) {
+  const def = leagueDefaults?.default_league || {};
+  const num = (v, d) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) ? d : Number(v));
+  const out = { ...league };
+  out.teams = clamp(Math.round(num(league.teams, def.teams ?? 12)), 4, 32);
+  out.roster = Object.fromEntries(ROSTER_SLOTS.map((s) => [s, clamp(Math.round(num(league.roster?.[s], def.roster?.[s] ?? 0)), 0, 30)]));
+  const sc = league.scoring && typeof league.scoring === 'object' ? league.scoring : {};
+  out.scoring = Object.fromEntries(Object.entries(sc).filter(([k, v]) => k === 'bonuses' || (typeof v === 'number' && Number.isFinite(v))));
+  if (Array.isArray(sc.bonuses)) out.scoring.bonuses = sc.bonuses.filter((b) => b && Number.isFinite(Number(b.threshold)) && Number.isFinite(Number(b.points)));
+  else delete out.scoring.bonuses;
+  if (league.dynasty && typeof league.dynasty === 'object') {
+    // Only fix values that are present: absent ones fall back to the (overridable) model defaults downstream.
+    const dy = { ...league.dynasty };
+    if (dy.strategy !== undefined && !['contending', 'balanced', 'rebuilding'].includes(dy.strategy)) dy.strategy = 'balanced';
+    for (const k of ['rookie_rounds', 'pick_years']) if (dy[k] !== undefined && dy[k] !== null) { const n = num(dy[k], null); if (n === null) delete dy[k]; else dy[k] = clamp(Math.round(n), 1, 6); }
+    out.dynasty = dy;
+  }
+  out.qb_format = out.roster.SUPERFLEX > 0 ? 'sf' : out.roster.QB >= 2 ? '2qb' : '1qb';
+  return out;
 }
 
 /** Returns a list of human-readable problems (empty = valid). */

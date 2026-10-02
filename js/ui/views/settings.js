@@ -102,6 +102,9 @@ export function renderSettings(root, args) {
         source: { platform: 'sleeper', league_id: id.trim(), imported_at: new Date().toISOString() },
       };
       if (count('REC_FLEX') || count('WRRB_FLEX')) toast('Note: WR/TE-only or WR/RB-only flex slots were treated as regular FLEX.', 'warn', 6000);
+      // Same checks as the settings form and profile import (it used to skip them, e.g. a 2-team league).
+      const errs = validateLeague(buildLeague(p, app.config.leagueDefaults));
+      if (errs.length) throw new Error(`this league can't be modelled as-is: ${errs.join(' ')}`);
       upsertUserProfile(p);
       setProfile(p.id);
       toast(`Imported "${p.name}" from Sleeper (${p.teams} teams, ${isDynasty ? 'dynasty' : 'redraft'}).`);

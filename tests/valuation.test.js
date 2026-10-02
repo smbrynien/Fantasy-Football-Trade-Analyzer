@@ -227,3 +227,23 @@ test('picks: value never increases with a later slot, round or season (property 
   }
   for (let k = 1; k <= 12; k++) assert.ok(v(up + 1, 1, k) <= v(up, 1, k) + 1e-9, `future discount at 1.${k}`);
 });
+
+// BUG_AUDIT L1: settings that bypass the settings form (stored/old/imported profiles) must not crash the engine.
+import { sanitizeLeague, buildLeague as bl, validateLeague as vl } from '../js/core/settings.js';
+
+test('league settings: hostile profiles never crash valuations or produce non-finite values (BUG_AUDIT L1)', () => {
+  const base = preset('preset_12_1qb_ppr');
+  const hostile = [{ teams: -5 }, { teams: 0 }, { teams: NaN }, { teams: '12' }, { teams: 100 }, { roster: { QB: '1', RB: 'two', WR: 2, TE: 1, FLEX: 1 } },
+    { roster: {} }, { roster: null }, { scoring: { rec: NaN, pass_td: 'x' } }, { scoring: null }, { scoring: { bonuses: [{ stat: 'rec_yd', threshold: 'a', points: 3 }] } },
+    { dynasty: { strategy: 'weird', rookie_rounds: 0, pick_years: 99 } }, { roster: { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, BENCH: 0 } }];
+  for (const patch of hostile) for (const mode of ['redraft', 'dynasty']) {
+    const r = computeValuations({ dataset: ds, league: { ...base, ...patch }, mode, config });
+    assert.ok(r.league.teams >= 4 && r.league.teams <= 32, JSON.stringify(patch));
+    for (const a of r.assets.values()) assert.ok(Number.isFinite(a.value) && a.value >= 0, `${JSON.stringify(patch)} ${mode} ${a.id}`);
+  }
+  // the sanitizer never hides problems from the UI's validator, and never changes a valid league
+  assert.ok(vl(bl({ ...base, teams: -5 }, config.leagueDefaults)).length > 0);
+  const valid = bl(base, config.leagueDefaults);
+  const s = sanitizeLeague(valid, config.leagueDefaults);
+  assert.deepEqual([s.teams, s.roster, s.qb_format], [valid.teams, Object.fromEntries(Object.keys(s.roster).map((k) => [k, valid.roster[k] ?? 0])), valid.qb_format]);
+});

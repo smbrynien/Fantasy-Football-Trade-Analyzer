@@ -188,3 +188,30 @@ regression test, verification.
 * A player named `<img src=x onerror="window.__xss=1">Evil <b>Name</b> & "Co" é🏈` renders literally in the player
   modal and lists; nothing executes (`h()` builds text nodes; the unused `innerHTML` branch was removed in batch 1).
   **Test:** E2E "injection: HTML in a player name renders as text and never executes".
+
+### L1 · High · Settings/engine — Settings that bypassed the form crashed every page or produced nonsense
+* **Steps:** a stored/imported/server profile with `teams: -5`, `roster: { RB: "two" }` or `roster: null` →
+  `computeValuations` threw (every page showed "Something went wrong"); `teams: 0`/`NaN` produced values with
+  `teams = null`; a `NaN` scoring value silently changed values; 100 teams went through although 4–32 is documented.
+  The Sleeper league import skipped `validateLeague` entirely.
+* **Root cause:** validation lived only in the settings form and the profile-file import; the engine trusted its input.
+* **Fix:** `sanitizeLeague()` (engine side) clamps teams 4–32 and roster slots to integers 0–30, drops non-finite
+  scoring values/bonuses, fixes invalid present dynasty settings; `buildLeague` tolerates `roster: null` and stays
+  unclamped so `validateLeague` still reports problems in the UI; the Sleeper import now validates and refuses leagues
+  it cannot model. **Files:** `js/core/settings.js`, `js/core/valuation/engine.js`, `js/ui/views/settings.js`.
+* **Test:** `tests/valuation.test.js` "league settings: hostile profiles never crash…" (13 hostile profiles × 2 modes).
+* **Verification:** all valid presets unchanged (24,892 assets, 0 diffs); fuzz of 25 extreme configurations → no
+  throws, no non-finite or negative values. Extreme-but-valid inputs (e.g. 1e6 points per reception) still yield
+  extreme values by design (§9 Won't fix).
+
+### D1 · High · Dates/season transition — In the offseason the app projected the season that had just ended
+* **Steps:** Sleeper's documented offseason state is `{season: "2026", league_season: "2027", week: 0,
+  season_type: "off"}` (Feb–Aug). The sync stored `season: 2026`, so adapters fetched 2026 *season projections*
+  (last year's) and `computePhase` (week ≤ 0 → preseason) targeted 2026 as well: for half a year, redraft values would
+  have rested on the previous season's projections. The calendar fallback (Sleeper down) mapped March–August to the new
+  year but January–February to an "off" state for the old year — inconsistent with Sleeper.
+* **Fix:** `normalizeNflState` uses `league_season` while `season_type === 'off'`; `calendarNflState` mirrors it
+  (Jan–Feb = previous season's postseason, Mar–Aug = upcoming offseason, Sep–Dec = preseason without a week).
+  **File:** `server/sync-engine.js`. **Test:** `tests/sync.test.js` "season transitions…" simulates end of 2026 season →
+  2027 offseason → 2027 preseason → 2027 regular season. **Limit:** verified against Sleeper's documented state shape;
+  a live offseason response could not be observed (it is October 2026).

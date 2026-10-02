@@ -1,6 +1,6 @@
 // Valuation engine entry point (isomorphic). Pure function of (dataset, league settings, config) → valuations.
 
-import { buildLeague, buildModel, computePhase, settingsHash } from '../settings.js';
+import { buildLeague, sanitizeLeague, buildModel, computePhase, settingsHash } from '../settings.js';
 import { runRedraft } from './redraft.js';
 import { runDynasty } from './dynasty.js';
 import { runPicks } from './picks.js';
@@ -61,7 +61,7 @@ export function scaleFactor(refRun, scale) {
 
 export function computeValuations({ dataset, league: leagueIn, mode, config }) {
   const t0 = Date.now();
-  const league = buildLeague(leagueIn, config.leagueDefaults);
+  const league = sanitizeLeague(buildLeague(leagueIn, config.leagueDefaults), config.leagueDefaults);
   const model = buildModel(config.model, config.calibration, league);
   const phase = computePhase(dataset.state, model);
   const env = { leagueDefaults: config.leagueDefaults, phase, ...sourceEnv(dataset, config) };

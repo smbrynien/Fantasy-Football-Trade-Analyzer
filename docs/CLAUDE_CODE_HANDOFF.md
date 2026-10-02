@@ -424,12 +424,12 @@ Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your**
 
 | Setting | Values | Propagation |
 |---|---|---|
-| teams | 4–32 (validated) | replacement levels, pick class positions, market variant preference |
+| teams | 4–32 (validated in the form, profile and Sleeper imports; clamped by `sanitizeLeague` in the engine) | replacement levels, pick class positions, market variant preference |
 | roster QB/RB/WR/TE/FLEX/SUPERFLEX/K/DEF/BENCH/IR | 0–30 | `computeLeagueStructure`: starters, greedy FLEX then SF, waiver level from bench |
 | flex_eligibility | default FLEX RB/WR/TE, SF QB/RB/WR/TE | same |
 | qb_format | derived: SUPERFLEX>0 → `sf`; QB≥2 → `2qb`; else `1qb` | market/ranking/ADP list selection (2qb uses SF lists) |
 | scoring_preset | standard / half_ppr / ppr | `rec` 0 / .5 / 1 over `base_scoring` |
-| scoring keys | pass_yd .04, pass_td 4, int −2, rush/rec yd .1, td 6, 2pt 2, fum_lost −2, first downs (pass/rush/rec_fd, estimated from yards when missing), cmp/inc/sack/rush_att, `bonus_rec_te/rb/wr`, `bonus_fd_te`, yardage `bonuses[]` (expected value for aggregates) | `scoreStats` for projections, production, last season, priors' scoring ratio |
+| scoring keys | pass_yd .04, pass_td 4, pass_int −2, rush/rec yd .1, td 6, 2pt 2, fum_lost −2, first downs (pass/rush/rec_fd, estimated from yards when missing), cmp/inc/sack/rush_att, `bonus_rec_te/rb/wr`, `bonus_fd_te`, yardage `bonuses[]` (expected value for aggregates) | `scoreStats` for projections, production, last season, priors' scoring ratio |
 | dynasty.strategy / rookie_rounds / pick_years | contending/balanced/rebuilding; 1–6; 1–6 | discount δ; pick assets |
 | overrides | any `config/model.json` path | `buildModel` deep merge (Settings → Advanced etc.) |
 | Sleeper league import | league ID → scoring + roster | Settings |
@@ -911,7 +911,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   hygiene (bugs #8, #9, #12). Every known bug is now fixed. → bug-audit batch 1: server hardening + sync/storage
   reliability (docs/BUG_AUDIT.md A1–A5, B1, C1, C2) → batch 2: import validation, CSV export formula injection,
   identity conflicts, pick validity + monotone pick curves (model 2.1.2; I1–I3, ID1–ID2, P1–P2) → batch 3: duplicate
-  generic picks, single player modal + URL, dialog focus, injection probe (T1, U1, U2, S1, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  generic picks, single player modal + URL, dialog focus, injection probe (T1, U1, U2, S1) → batch 4: hostile league
+  settings sanitized, offseason projects the upcoming season (L1, D1, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

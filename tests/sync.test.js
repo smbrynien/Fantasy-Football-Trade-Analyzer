@@ -155,3 +155,20 @@ test('a sync that fails early reports failure instead of the previous run\'s suc
   assert.ok(p.error);
   assert.equal(p.summary, null, 'no stale summary from the previous run');
 });
+
+test('season transitions: offseason state projects the upcoming season (BUG_AUDIT D1)', async () => {
+  const { normalizeNflState, calendarNflState } = await import('../server/sync-engine.js');
+  const { computePhase } = await import('../js/core/settings.js');
+  const model = loadTestConfig().model;
+  // Sleeper's documented offseason shape: season = completed season, league_season = upcoming.
+  assert.equal(normalizeNflState({ season: '2026', league_season: '2027', week: 0, season_type: 'off' }).season, 2027);
+  assert.equal(normalizeNflState({ season: '2027', league_season: '2027', week: 0, season_type: 'pre' }).season, 2027);
+  assert.equal(normalizeNflState({ season: '2026', league_season: '2027', week: 5, season_type: 'regular' }).season, 2026, 'in season: untouched');
+  assert.equal(normalizeNflState({ season: '2026', week: 0, season_type: 'off' }).season, 2026, 'no league_season: untouched');
+  // Simulated year: end of 2026 season → 2027 offseason → 2027 preseason → 2027 regular season.
+  const target = (st) => { const ph = computePhase(st, model); return ph.phase === 'postseason' || ph.phase === 'offseason' ? ph.season + 1 : ph.season; };
+  const steps = [['2027-01-20', 2027], ['2027-02-20', 2027], ['2027-05-01', 2027], ['2027-08-20', 2027]];
+  for (const [d, want] of steps) assert.equal(target(calendarNflState(new Date(`${d}T12:00:00Z`))), want, `calendar ${d}`);
+  assert.equal(target(normalizeNflState({ season: '2026', league_season: '2027', week: 0, season_type: 'off' })), 2027);
+  assert.equal(target({ season: 2027, week: 3, season_type: 'regular' }), 2027);
+});
