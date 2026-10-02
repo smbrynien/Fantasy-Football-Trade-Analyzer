@@ -1,0 +1,15 @@
+node_modules/
+.env
+.DS_Store
+# Synced/cached third-party data is never committed (licensing + size). Run `npm run sync`.
+data/raw/
+data/normalized/
+data/calculated/
+data/snapshots/
+data/state/
+data/user/
+data/cache/
+data/players/
+!data/README.md
+# research downloads
+scripts/.cache/

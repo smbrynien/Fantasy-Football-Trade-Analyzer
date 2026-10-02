@@ -1,0 +1,1400 @@
+{
+  "generated_at": "2026-10-02T13:33:02.795Z",
+  "method": "Mean PPR PPG of players with >=4 games in career year k, scaled by min(1, P(>=4 games)/position availability). Buckets: R1a picks 1-16, R1b 17-32, R2, R3, R4-5, R6-7, UDFA.",
+  "sample": {
+    "seasons": "2006-2025",
+    "players": 2975
+  },
+  "priors": {
+    "QB": {
+      "UDFA": [
+        0.48,
+        0.444,
+        0.396,
+        0.589,
+        0.646
+      ],
+      "R4-5": [
+        1.806,
+        2.923,
+        1.418,
+        2.409,
+        2.315
+      ],
+      "R6-7": [
+        1.291,
+        1.995,
+        1.248,
+        1.232,
+        1.243
+      ],
+      "R1a": [
+        13.846,
+        15.301,
+        15.521,
+        14.544,
+        13.618
+      ],
+      "R3": [
+        5.822,
+        7.689,
+        3.93,
+        4.145,
+        4.433
+      ],
+      "R2": [
+        5.886,
+        7.592,
+        6.778,
+        7.934,
+        7.554
+      ],
+      "R1b": [
+        9.404,
+        13.233,
+        8.115,
+        8.853,
+        7.283
+      ]
+    },
+    "RB": {
+      "R4-5": [
+        4.722,
+        5.163,
+        5.065,
+        3.993,
+        3.342
+      ],
+      "R2": [
+        9.958,
+        11.464,
+        11.81,
+        11.286,
+        8.926
+      ],
+      "UDFA": [
+        1.044,
+        1.192,
+        1.264,
+        1.092,
+        0.948
+      ],
+      "R3": [
+        7.212,
+        9.572,
+        8.735,
+        8.042,
+        6.303
+      ],
+      "R1b": [
+        10.885,
+        11.208,
+        11.255,
+        11.361,
+        8.985
+      ],
+      "R6-7": [
+        2.134,
+        2.766,
+        2.497,
+        2.109,
+        1.406
+      ],
+      "R1a": [
+        14.514,
+        15.958,
+        16.861,
+        15.202,
+        14.297
+      ]
+    },
+    "WR": {
+      "R4-5": [
+        3.835,
+        4.498,
+        3.943,
+        3.601,
+        2.868
+      ],
+      "UDFA": [
+        0.572,
+        0.838,
+        0.808,
+        0.702,
+        0.636
+      ],
+      "R2": [
+        7.191,
+        8.606,
+        9.099,
+        8.402,
+        6.748
+      ],
+      "R1b": [
+        9.912,
+        10.918,
+        11.675,
+        12.166,
+        9.97
+      ],
+      "R6-7": [
+        1.619,
+        2.65,
+        2.208,
+        1.913,
+        1.831
+      ],
+      "R3": [
+        5.144,
+        6.795,
+        6.785,
+        5.429,
+        5.684
+      ],
+      "R1a": [
+        11.037,
+        12.482,
+        12.536,
+        12.981,
+        13.114
+      ]
+    },
+    "TE": {
+      "UDFA": [
+        0.321,
+        0.637,
+        0.697,
+        0.656,
+        0.561
+      ],
+      "R6-7": [
+        0.969,
+        1.413,
+        1.467,
+        1.177,
+        1.042
+      ],
+      "R3": [
+        3.513,
+        5.073,
+        5.903,
+        5.276,
+        4.61
+      ],
+      "R4-5": [
+        3.026,
+        3.596,
+        4,
+        4.126,
+        3.158
+      ],
+      "R2": [
+        5.417,
+        7.343,
+        7.526,
+        8.308,
+        7.005
+      ],
+      "R1a": [
+        9.018,
+        10.291,
+        10.291,
+        10.291,
+        10.291
+      ],
+      "R1b": [
+        7.066,
+        8.756,
+        9.758,
+        7.823,
+        7.47
+      ]
+    }
+  },
+  "detail": {
+    "QB": {
+      "UDFA": [
+        {
+          "k": 1,
+          "n": 152,
+          "played": 10,
+          "p_play": 0.066,
+          "cond_mean_ppg": 5.945,
+          "median_ppg": 5.189
+        },
+        {
+          "k": 2,
+          "n": 152,
+          "played": 6,
+          "p_play": 0.039,
+          "cond_mean_ppg": 9.166,
+          "median_ppg": 12.378
+        },
+        {
+          "k": 3,
+          "n": 143,
+          "played": 6,
+          "p_play": 0.042,
+          "cond_mean_ppg": 7.694,
+          "median_ppg": 9.989
+        },
+        {
+          "k": 4,
+          "n": 136,
+          "played": 10,
+          "p_play": 0.074,
+          "cond_mean_ppg": 6.53,
+          "median_ppg": 5.774
+        },
+        {
+          "k": 5,
+          "n": 128,
+          "played": 8,
+          "p_play": 0.063,
+          "cond_mean_ppg": 8.43,
+          "median_ppg": 8.567
+        }
+      ],
+      "R4-5": [
+        {
+          "k": 1,
+          "n": 53,
+          "played": 10,
+          "p_play": 0.189,
+          "cond_mean_ppg": 7.8,
+          "median_ppg": 7.823
+        },
+        {
+          "k": 2,
+          "n": 53,
+          "played": 20,
+          "p_play": 0.377,
+          "cond_mean_ppg": 6.312,
+          "median_ppg": 6.044
+        },
+        {
+          "k": 3,
+          "n": 51,
+          "played": 7,
+          "p_play": 0.137,
+          "cond_mean_ppg": 8.423,
+          "median_ppg": 6.315
+        },
+        {
+          "k": 4,
+          "n": 44,
+          "played": 8,
+          "p_play": 0.182,
+          "cond_mean_ppg": 10.797,
+          "median_ppg": 10.634
+        },
+        {
+          "k": 5,
+          "n": 42,
+          "played": 5,
+          "p_play": 0.119,
+          "cond_mean_ppg": 15.851,
+          "median_ppg": 14.145
+        }
+      ],
+      "R6-7": [
+        {
+          "k": 1,
+          "n": 58,
+          "played": 9,
+          "p_play": 0.155,
+          "cond_mean_ppg": 6.783,
+          "median_ppg": 6.811
+        },
+        {
+          "k": 2,
+          "n": 58,
+          "played": 11,
+          "p_play": 0.19,
+          "cond_mean_ppg": 8.574,
+          "median_ppg": 6.292
+        },
+        {
+          "k": 3,
+          "n": 55,
+          "played": 7,
+          "p_play": 0.127,
+          "cond_mean_ppg": 7.993,
+          "median_ppg": 8.038
+        },
+        {
+          "k": 4,
+          "n": 53,
+          "played": 8,
+          "p_play": 0.151,
+          "cond_mean_ppg": 6.654,
+          "median_ppg": 6.552
+        },
+        {
+          "k": 5,
+          "n": 50,
+          "played": 5,
+          "p_play": 0.1,
+          "cond_mean_ppg": 10.133,
+          "median_ppg": 9.94
+        }
+      ],
+      "R1a": [
+        {
+          "k": 1,
+          "n": 48,
+          "played": 46,
+          "p_play": 0.958,
+          "cond_mean_ppg": 13.846,
+          "median_ppg": 13.081
+        },
+        {
+          "k": 2,
+          "n": 48,
+          "played": 46,
+          "p_play": 0.958,
+          "cond_mean_ppg": 15.301,
+          "median_ppg": 14.765
+        },
+        {
+          "k": 3,
+          "n": 42,
+          "played": 36,
+          "p_play": 0.857,
+          "cond_mean_ppg": 15.521,
+          "median_ppg": 15.657
+        },
+        {
+          "k": 4,
+          "n": 39,
+          "played": 32,
+          "p_play": 0.821,
+          "cond_mean_ppg": 14.544,
+          "median_ppg": 15.538
+        },
+        {
+          "k": 5,
+          "n": 39,
+          "played": 29,
+          "p_play": 0.744,
+          "cond_mean_ppg": 14.925,
+          "median_ppg": 15.999
+        }
+      ],
+      "R3": [
+        {
+          "k": 1,
+          "n": 23,
+          "played": 10,
+          "p_play": 0.435,
+          "cond_mean_ppg": 10.914,
+          "median_ppg": 11.721
+        },
+        {
+          "k": 2,
+          "n": 23,
+          "played": 11,
+          "p_play": 0.478,
+          "cond_mean_ppg": 13.103,
+          "median_ppg": 12.386
+        },
+        {
+          "k": 3,
+          "n": 23,
+          "played": 10,
+          "p_play": 0.435,
+          "cond_mean_ppg": 7.366,
+          "median_ppg": 6.161
+        },
+        {
+          "k": 4,
+          "n": 22,
+          "played": 7,
+          "p_play": 0.318,
+          "cond_mean_ppg": 10.618,
+          "median_ppg": 8.735
+        },
+        {
+          "k": 5,
+          "n": 19,
+          "played": 7,
+          "p_play": 0.368,
+          "cond_mean_ppg": 9.806,
+          "median_ppg": 10.134
+        }
+      ],
+      "R2": [
+        {
+          "k": 1,
+          "n": 21,
+          "played": 13,
+          "p_play": 0.619,
+          "cond_mean_ppg": 7.749,
+          "median_ppg": 7.796
+        },
+        {
+          "k": 2,
+          "n": 21,
+          "played": 12,
+          "p_play": 0.571,
+          "cond_mean_ppg": 10.828,
+          "median_ppg": 10.821
+        },
+        {
+          "k": 3,
+          "n": 21,
+          "played": 9,
+          "p_play": 0.429,
+          "cond_mean_ppg": 12.89,
+          "median_ppg": 11.749
+        },
+        {
+          "k": 4,
+          "n": 20,
+          "played": 11,
+          "p_play": 0.55,
+          "cond_mean_ppg": 11.756,
+          "median_ppg": 14.101
+        },
+        {
+          "k": 5,
+          "n": 20,
+          "played": 10,
+          "p_play": 0.5,
+          "cond_mean_ppg": 12.312,
+          "median_ppg": 11.83
+        }
+      ],
+      "R1b": [
+        {
+          "k": 1,
+          "n": 11,
+          "played": 8,
+          "p_play": 0.727,
+          "cond_mean_ppg": 10.538,
+          "median_ppg": 11.278
+        },
+        {
+          "k": 2,
+          "n": 11,
+          "played": 9,
+          "p_play": 0.818,
+          "cond_mean_ppg": 13.233,
+          "median_ppg": 12.528
+        },
+        {
+          "k": 3,
+          "n": 11,
+          "played": 8,
+          "p_play": 0.727,
+          "cond_mean_ppg": 9.094,
+          "median_ppg": 6.722
+        },
+        {
+          "k": 4,
+          "n": 11,
+          "played": 6,
+          "p_play": 0.545,
+          "cond_mean_ppg": 13.228,
+          "median_ppg": 14.122
+        },
+        {
+          "k": 5,
+          "n": 10,
+          "played": 5,
+          "p_play": 0.5,
+          "cond_mean_ppg": 11.872,
+          "median_ppg": 14.68
+        }
+      ]
+    },
+    "RB": {
+      "R4-5": [
+        {
+          "k": 1,
+          "n": 136,
+          "played": 115,
+          "p_play": 0.846,
+          "cond_mean_ppg": 4.722,
+          "median_ppg": 3.813
+        },
+        {
+          "k": 2,
+          "n": 136,
+          "played": 98,
+          "p_play": 0.721,
+          "cond_mean_ppg": 5.774,
+          "median_ppg": 5.082
+        },
+        {
+          "k": 3,
+          "n": 124,
+          "played": 80,
+          "p_play": 0.645,
+          "cond_mean_ppg": 6.328,
+          "median_ppg": 5.577
+        },
+        {
+          "k": 4,
+          "n": 119,
+          "played": 60,
+          "p_play": 0.504,
+          "cond_mean_ppg": 6.383,
+          "median_ppg": 5.15
+        },
+        {
+          "k": 5,
+          "n": 109,
+          "played": 46,
+          "p_play": 0.422,
+          "cond_mean_ppg": 6.383,
+          "median_ppg": 4.679
+        }
+      ],
+      "R2": [
+        {
+          "k": 1,
+          "n": 46,
+          "played": 38,
+          "p_play": 0.826,
+          "cond_mean_ppg": 9.958,
+          "median_ppg": 9.58
+        },
+        {
+          "k": 2,
+          "n": 46,
+          "played": 40,
+          "p_play": 0.87,
+          "cond_mean_ppg": 11.464,
+          "median_ppg": 11.003
+        },
+        {
+          "k": 3,
+          "n": 45,
+          "played": 37,
+          "p_play": 0.822,
+          "cond_mean_ppg": 11.81,
+          "median_ppg": 11.338
+        },
+        {
+          "k": 4,
+          "n": 44,
+          "played": 33,
+          "p_play": 0.75,
+          "cond_mean_ppg": 12.128,
+          "median_ppg": 12.23
+        },
+        {
+          "k": 5,
+          "n": 41,
+          "played": 25,
+          "p_play": 0.61,
+          "cond_mean_ppg": 11.799,
+          "median_ppg": 12.618
+        }
+      ],
+      "UDFA": [
+        {
+          "k": 1,
+          "n": 575,
+          "played": 136,
+          "p_play": 0.237,
+          "cond_mean_ppg": 3.556,
+          "median_ppg": 2.362
+        },
+        {
+          "k": 2,
+          "n": 575,
+          "played": 152,
+          "p_play": 0.264,
+          "cond_mean_ppg": 3.633,
+          "median_ppg": 2.492
+        },
+        {
+          "k": 3,
+          "n": 553,
+          "played": 140,
+          "p_play": 0.253,
+          "cond_mean_ppg": 4.024,
+          "median_ppg": 2.778
+        },
+        {
+          "k": 4,
+          "n": 529,
+          "played": 107,
+          "p_play": 0.202,
+          "cond_mean_ppg": 4.353,
+          "median_ppg": 2.886
+        },
+        {
+          "k": 5,
+          "n": 506,
+          "played": 81,
+          "p_play": 0.16,
+          "cond_mean_ppg": 4.771,
+          "median_ppg": 3.854
+        }
+      ],
+      "R3": [
+        {
+          "k": 1,
+          "n": 54,
+          "played": 51,
+          "p_play": 0.944,
+          "cond_mean_ppg": 7.212,
+          "median_ppg": 6.186
+        },
+        {
+          "k": 2,
+          "n": 54,
+          "played": 48,
+          "p_play": 0.889,
+          "cond_mean_ppg": 9.572,
+          "median_ppg": 8.768
+        },
+        {
+          "k": 3,
+          "n": 51,
+          "played": 38,
+          "p_play": 0.745,
+          "cond_mean_ppg": 9.448,
+          "median_ppg": 10.29
+        },
+        {
+          "k": 4,
+          "n": 47,
+          "played": 38,
+          "p_play": 0.809,
+          "cond_mean_ppg": 8.042,
+          "median_ppg": 7.656
+        },
+        {
+          "k": 5,
+          "n": 43,
+          "played": 24,
+          "p_play": 0.558,
+          "cond_mean_ppg": 9.102,
+          "median_ppg": 9.757
+        }
+      ],
+      "R1b": [
+        {
+          "k": 1,
+          "n": 19,
+          "played": 18,
+          "p_play": 0.947,
+          "cond_mean_ppg": 10.885,
+          "median_ppg": 10.29
+        },
+        {
+          "k": 2,
+          "n": 19,
+          "played": 19,
+          "p_play": 1,
+          "cond_mean_ppg": 11.208,
+          "median_ppg": 10.546
+        },
+        {
+          "k": 3,
+          "n": 19,
+          "played": 15,
+          "p_play": 0.789,
+          "cond_mean_ppg": 11.49,
+          "median_ppg": 11.5
+        },
+        {
+          "k": 4,
+          "n": 19,
+          "played": 17,
+          "p_play": 0.895,
+          "cond_mean_ppg": 11.361,
+          "median_ppg": 11.88
+        },
+        {
+          "k": 5,
+          "n": 19,
+          "played": 14,
+          "p_play": 0.737,
+          "cond_mean_ppg": 9.829,
+          "median_ppg": 9.987
+        }
+      ],
+      "R6-7": [
+        {
+          "k": 1,
+          "n": 152,
+          "played": 80,
+          "p_play": 0.526,
+          "cond_mean_ppg": 3.268,
+          "median_ppg": 2.283
+        },
+        {
+          "k": 2,
+          "n": 152,
+          "played": 76,
+          "p_play": 0.5,
+          "cond_mean_ppg": 4.459,
+          "median_ppg": 3.278
+        },
+        {
+          "k": 3,
+          "n": 148,
+          "played": 61,
+          "p_play": 0.412,
+          "cond_mean_ppg": 4.882,
+          "median_ppg": 3.986
+        },
+        {
+          "k": 4,
+          "n": 141,
+          "played": 51,
+          "p_play": 0.362,
+          "cond_mean_ppg": 4.699,
+          "median_ppg": 3.446
+        },
+        {
+          "k": 5,
+          "n": 133,
+          "played": 37,
+          "p_play": 0.278,
+          "cond_mean_ppg": 4.073,
+          "median_ppg": 2.886
+        }
+      ],
+      "R1a": [
+        {
+          "k": 1,
+          "n": 17,
+          "played": 17,
+          "p_play": 1,
+          "cond_mean_ppg": 14.514,
+          "median_ppg": 14.94
+        },
+        {
+          "k": 2,
+          "n": 17,
+          "played": 17,
+          "p_play": 1,
+          "cond_mean_ppg": 15.958,
+          "median_ppg": 16.325
+        },
+        {
+          "k": 3,
+          "n": 17,
+          "played": 16,
+          "p_play": 0.941,
+          "cond_mean_ppg": 16.861,
+          "median_ppg": 17.65
+        },
+        {
+          "k": 4,
+          "n": 15,
+          "played": 13,
+          "p_play": 0.867,
+          "cond_mean_ppg": 15.202,
+          "median_ppg": 13.15
+        },
+        {
+          "k": 5,
+          "n": 15,
+          "played": 14,
+          "p_play": 0.933,
+          "cond_mean_ppg": 14.297,
+          "median_ppg": 14.99
+        }
+      ]
+    },
+    "WR": {
+      "R4-5": [
+        {
+          "k": 1,
+          "n": 153,
+          "played": 112,
+          "p_play": 0.732,
+          "cond_mean_ppg": 4.332,
+          "median_ppg": 3.083
+        },
+        {
+          "k": 2,
+          "n": 153,
+          "played": 99,
+          "p_play": 0.647,
+          "cond_mean_ppg": 5.749,
+          "median_ppg": 4.608
+        },
+        {
+          "k": 3,
+          "n": 145,
+          "played": 73,
+          "p_play": 0.503,
+          "cond_mean_ppg": 6.477,
+          "median_ppg": 5.778
+        },
+        {
+          "k": 4,
+          "n": 140,
+          "played": 67,
+          "p_play": 0.479,
+          "cond_mean_ppg": 6.223,
+          "median_ppg": 5.985
+        },
+        {
+          "k": 5,
+          "n": 134,
+          "played": 51,
+          "p_play": 0.381,
+          "cond_mean_ppg": 6.232,
+          "median_ppg": 5.555
+        }
+      ],
+      "UDFA": [
+        {
+          "k": 1,
+          "n": 950,
+          "played": 146,
+          "p_play": 0.154,
+          "cond_mean_ppg": 3.079,
+          "median_ppg": 2.263
+        },
+        {
+          "k": 2,
+          "n": 950,
+          "played": 166,
+          "p_play": 0.175,
+          "cond_mean_ppg": 3.966,
+          "median_ppg": 2.894
+        },
+        {
+          "k": 3,
+          "n": 914,
+          "played": 150,
+          "p_play": 0.164,
+          "cond_mean_ppg": 4.073,
+          "median_ppg": 2.95
+        },
+        {
+          "k": 4,
+          "n": 864,
+          "played": 109,
+          "p_play": 0.126,
+          "cond_mean_ppg": 4.603,
+          "median_ppg": 3.831
+        },
+        {
+          "k": 5,
+          "n": 813,
+          "played": 83,
+          "p_play": 0.102,
+          "cond_mean_ppg": 5.153,
+          "median_ppg": 3.75
+        }
+      ],
+      "R2": [
+        {
+          "k": 1,
+          "n": 89,
+          "played": 86,
+          "p_play": 0.966,
+          "cond_mean_ppg": 7.191,
+          "median_ppg": 7.097
+        },
+        {
+          "k": 2,
+          "n": 89,
+          "played": 80,
+          "p_play": 0.899,
+          "cond_mean_ppg": 8.606,
+          "median_ppg": 7.953
+        },
+        {
+          "k": 3,
+          "n": 85,
+          "played": 71,
+          "p_play": 0.835,
+          "cond_mean_ppg": 9.099,
+          "median_ppg": 8.443
+        },
+        {
+          "k": 4,
+          "n": 81,
+          "played": 59,
+          "p_play": 0.728,
+          "cond_mean_ppg": 9.54,
+          "median_ppg": 9.5
+        },
+        {
+          "k": 5,
+          "n": 74,
+          "played": 44,
+          "p_play": 0.595,
+          "cond_mean_ppg": 9.386,
+          "median_ppg": 9.37
+        }
+      ],
+      "R1b": [
+        {
+          "k": 1,
+          "n": 41,
+          "played": 37,
+          "p_play": 0.902,
+          "cond_mean_ppg": 9.912,
+          "median_ppg": 9.933
+        },
+        {
+          "k": 2,
+          "n": 41,
+          "played": 39,
+          "p_play": 0.951,
+          "cond_mean_ppg": 10.918,
+          "median_ppg": 11.32
+        },
+        {
+          "k": 3,
+          "n": 37,
+          "played": 34,
+          "p_play": 0.919,
+          "cond_mean_ppg": 11.675,
+          "median_ppg": 12.744
+        },
+        {
+          "k": 4,
+          "n": 33,
+          "played": 28,
+          "p_play": 0.848,
+          "cond_mean_ppg": 12.166,
+          "median_ppg": 12.26
+        },
+        {
+          "k": 5,
+          "n": 32,
+          "played": 23,
+          "p_play": 0.719,
+          "cond_mean_ppg": 11.471,
+          "median_ppg": 9.864
+        }
+      ],
+      "R6-7": [
+        {
+          "k": 1,
+          "n": 182,
+          "played": 78,
+          "p_play": 0.429,
+          "cond_mean_ppg": 3.125,
+          "median_ppg": 2.179
+        },
+        {
+          "k": 2,
+          "n": 182,
+          "played": 89,
+          "p_play": 0.489,
+          "cond_mean_ppg": 4.482,
+          "median_ppg": 3.873
+        },
+        {
+          "k": 3,
+          "n": 171,
+          "played": 68,
+          "p_play": 0.398,
+          "cond_mean_ppg": 4.592,
+          "median_ppg": 3.688
+        },
+        {
+          "k": 4,
+          "n": 159,
+          "played": 47,
+          "p_play": 0.296,
+          "cond_mean_ppg": 5.353,
+          "median_ppg": 4.286
+        },
+        {
+          "k": 5,
+          "n": 154,
+          "played": 34,
+          "p_play": 0.221,
+          "cond_mean_ppg": 6.86,
+          "median_ppg": 5.276
+        }
+      ],
+      "R3": [
+        {
+          "k": 1,
+          "n": 93,
+          "played": 76,
+          "p_play": 0.817,
+          "cond_mean_ppg": 5.205,
+          "median_ppg": 4.609
+        },
+        {
+          "k": 2,
+          "n": 93,
+          "played": 76,
+          "p_play": 0.817,
+          "cond_mean_ppg": 6.877,
+          "median_ppg": 6.188
+        },
+        {
+          "k": 3,
+          "n": 88,
+          "played": 60,
+          "p_play": 0.682,
+          "cond_mean_ppg": 8.229,
+          "median_ppg": 7.704
+        },
+        {
+          "k": 4,
+          "n": 82,
+          "played": 49,
+          "p_play": 0.598,
+          "cond_mean_ppg": 7.513,
+          "median_ppg": 6.99
+        },
+        {
+          "k": 5,
+          "n": 79,
+          "played": 41,
+          "p_play": 0.519,
+          "cond_mean_ppg": 9.058,
+          "median_ppg": 8.108
+        }
+      ],
+      "R1a": [
+        {
+          "k": 1,
+          "n": 32,
+          "played": 30,
+          "p_play": 0.938,
+          "cond_mean_ppg": 11.037,
+          "median_ppg": 10.9
+        },
+        {
+          "k": 2,
+          "n": 32,
+          "played": 32,
+          "p_play": 1,
+          "cond_mean_ppg": 12.482,
+          "median_ppg": 12.123
+        },
+        {
+          "k": 3,
+          "n": 29,
+          "played": 26,
+          "p_play": 0.897,
+          "cond_mean_ppg": 12.536,
+          "median_ppg": 12.317
+        },
+        {
+          "k": 4,
+          "n": 29,
+          "played": 24,
+          "p_play": 0.828,
+          "cond_mean_ppg": 12.981,
+          "median_ppg": 13.606
+        },
+        {
+          "k": 5,
+          "n": 24,
+          "played": 20,
+          "p_play": 0.833,
+          "cond_mean_ppg": 13.114,
+          "median_ppg": 13.152
+        }
+      ]
+    },
+    "TE": {
+      "UDFA": [
+        {
+          "k": 1,
+          "n": 454,
+          "played": 56,
+          "p_play": 0.123,
+          "cond_mean_ppg": 2.131,
+          "median_ppg": 1.615
+        },
+        {
+          "k": 2,
+          "n": 454,
+          "played": 93,
+          "p_play": 0.205,
+          "cond_mean_ppg": 2.547,
+          "median_ppg": 2.237
+        },
+        {
+          "k": 3,
+          "n": 434,
+          "played": 84,
+          "p_play": 0.194,
+          "cond_mean_ppg": 2.95,
+          "median_ppg": 2.421
+        },
+        {
+          "k": 4,
+          "n": 415,
+          "played": 67,
+          "p_play": 0.161,
+          "cond_mean_ppg": 3.329,
+          "median_ppg": 2.578
+        },
+        {
+          "k": 5,
+          "n": 390,
+          "played": 53,
+          "p_play": 0.136,
+          "cond_mean_ppg": 3.379,
+          "median_ppg": 2.929
+        }
+      ],
+      "R6-7": [
+        {
+          "k": 1,
+          "n": 83,
+          "played": 28,
+          "p_play": 0.337,
+          "cond_mean_ppg": 2.353,
+          "median_ppg": 1.541
+        },
+        {
+          "k": 2,
+          "n": 83,
+          "played": 40,
+          "p_play": 0.482,
+          "cond_mean_ppg": 2.402,
+          "median_ppg": 1.938
+        },
+        {
+          "k": 3,
+          "n": 80,
+          "played": 36,
+          "p_play": 0.45,
+          "cond_mean_ppg": 2.669,
+          "median_ppg": 2.263
+        },
+        {
+          "k": 4,
+          "n": 77,
+          "played": 20,
+          "p_play": 0.26,
+          "cond_mean_ppg": 3.712,
+          "median_ppg": 2.702
+        },
+        {
+          "k": 5,
+          "n": 72,
+          "played": 13,
+          "p_play": 0.181,
+          "cond_mean_ppg": 4.728,
+          "median_ppg": 3.631
+        }
+      ],
+      "R3": [
+        {
+          "k": 1,
+          "n": 48,
+          "played": 33,
+          "p_play": 0.688,
+          "cond_mean_ppg": 4.185,
+          "median_ppg": 3.264
+        },
+        {
+          "k": 2,
+          "n": 48,
+          "played": 34,
+          "p_play": 0.708,
+          "cond_mean_ppg": 5.865,
+          "median_ppg": 5.028
+        },
+        {
+          "k": 3,
+          "n": 47,
+          "played": 36,
+          "p_play": 0.766,
+          "cond_mean_ppg": 6.311,
+          "median_ppg": 4.767
+        },
+        {
+          "k": 4,
+          "n": 44,
+          "played": 29,
+          "p_play": 0.659,
+          "cond_mean_ppg": 6.556,
+          "median_ppg": 4.164
+        },
+        {
+          "k": 5,
+          "n": 41,
+          "played": 27,
+          "p_play": 0.659,
+          "cond_mean_ppg": 5.733,
+          "median_ppg": 4.26
+        }
+      ],
+      "R4-5": [
+        {
+          "k": 1,
+          "n": 102,
+          "played": 71,
+          "p_play": 0.696,
+          "cond_mean_ppg": 3.561,
+          "median_ppg": 3.2
+        },
+        {
+          "k": 2,
+          "n": 102,
+          "played": 72,
+          "p_play": 0.706,
+          "cond_mean_ppg": 4.172,
+          "median_ppg": 3.516
+        },
+        {
+          "k": 3,
+          "n": 96,
+          "played": 63,
+          "p_play": 0.656,
+          "cond_mean_ppg": 4.992,
+          "median_ppg": 4.16
+        },
+        {
+          "k": 4,
+          "n": 91,
+          "played": 59,
+          "p_play": 0.648,
+          "cond_mean_ppg": 5.211,
+          "median_ppg": 3.99
+        },
+        {
+          "k": 5,
+          "n": 82,
+          "played": 47,
+          "p_play": 0.573,
+          "cond_mean_ppg": 4.513,
+          "median_ppg": 3.25
+        }
+      ],
+      "R2": [
+        {
+          "k": 1,
+          "n": 36,
+          "played": 36,
+          "p_play": 1,
+          "cond_mean_ppg": 5.417,
+          "median_ppg": 5.309
+        },
+        {
+          "k": 2,
+          "n": 36,
+          "played": 33,
+          "p_play": 0.917,
+          "cond_mean_ppg": 7.343,
+          "median_ppg": 7.577
+        },
+        {
+          "k": 3,
+          "n": 35,
+          "played": 30,
+          "p_play": 0.857,
+          "cond_mean_ppg": 7.526,
+          "median_ppg": 7.233
+        },
+        {
+          "k": 4,
+          "n": 30,
+          "played": 25,
+          "p_play": 0.833,
+          "cond_mean_ppg": 8.308,
+          "median_ppg": 7.823
+        },
+        {
+          "k": 5,
+          "n": 29,
+          "played": 24,
+          "p_play": 0.828,
+          "cond_mean_ppg": 7.005,
+          "median_ppg": 6.656
+        }
+      ],
+      "R1a": [
+        {
+          "k": 1,
+          "n": 5,
+          "played": 5,
+          "p_play": 1,
+          "cond_mean_ppg": 9.018,
+          "median_ppg": 7.875
+        },
+        {
+          "k": 2,
+          "n": 5,
+          "played": 5,
+          "p_play": 1,
+          "cond_mean_ppg": 10.291,
+          "median_ppg": 9.336
+        },
+        {
+          "k": 3,
+          "n": 4,
+          "played": 4,
+          "p_play": 1,
+          "cond_mean_ppg": null,
+          "median_ppg": 9.584
+        },
+        {
+          "k": 4,
+          "n": 4,
+          "played": 4,
+          "p_play": 1,
+          "cond_mean_ppg": null,
+          "median_ppg": 10.532
+        },
+        {
+          "k": 5,
+          "n": 4,
+          "played": 4,
+          "p_play": 1,
+          "cond_mean_ppg": null,
+          "median_ppg": 13.144
+        }
+      ],
+      "R1b": [
+        {
+          "k": 1,
+          "n": 13,
+          "played": 13,
+          "p_play": 1,
+          "cond_mean_ppg": 7.066,
+          "median_ppg": 7.469
+        },
+        {
+          "k": 2,
+          "n": 13,
+          "played": 12,
+          "p_play": 0.923,
+          "cond_mean_ppg": 8.756,
+          "median_ppg": 9.377
+        },
+        {
+          "k": 3,
+          "n": 13,
+          "played": 12,
+          "p_play": 0.923,
+          "cond_mean_ppg": 9.758,
+          "median_ppg": 10.301
+        },
+        {
+          "k": 4,
+          "n": 12,
+          "played": 12,
+          "p_play": 1,
+          "cond_mean_ppg": 7.823,
+          "median_ppg": 7.527
+        },
+        {
+          "k": 5,
+          "n": 12,
+          "played": 10,
+          "p_play": 0.833,
+          "cond_mean_ppg": 7.47,
+          "median_ppg": 7.618
+        }
+      ]
+    }
+  }
+}

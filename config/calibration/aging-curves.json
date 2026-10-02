@@ -1,0 +1,424 @@
+{
+  "generated_at": "2026-10-02T13:33:02.795Z",
+  "method": "Delta method on PPR PPG: consecutive seasons with >=6 games, kept when either season >=5 PPG (symmetric selection avoids building regression-to-the-mean into the curve), weighted by harmonic-mean games, 3-pt smoothed, anchored at mean PPG of ages 24-28; ages without >=15 pairs follow the shape of the default curve, and every age is shrunk toward the default curve with weight n/(n+80) (n = pairs observed). Survivorship bias (decliners leave the sample) is partly offset by attrition.json.",
+  "sample": {
+    "seasons": "2006-2025",
+    "players": 2975
+  },
+  "curves": {
+    "QB": {
+      "20": 0.801,
+      "21": 0.801,
+      "22": 0.862,
+      "23": 0.925,
+      "24": 0.964,
+      "25": 0.975,
+      "26": 0.984,
+      "27": 0.988,
+      "28": 0.992,
+      "29": 0.996,
+      "30": 1,
+      "31": 0.993,
+      "32": 0.974,
+      "33": 0.951,
+      "34": 0.92,
+      "35": 0.876,
+      "36": 0.843,
+      "37": 0.798,
+      "38": 0.735,
+      "39": 0.664,
+      "40": 0.583,
+      "41": 0.501,
+      "42": 0.421
+    },
+    "RB": {
+      "20": 0.86,
+      "21": 0.898,
+      "22": 0.92,
+      "23": 0.973,
+      "24": 1,
+      "25": 0.985,
+      "26": 0.951,
+      "27": 0.898,
+      "28": 0.824,
+      "29": 0.748,
+      "30": 0.668,
+      "31": 0.59,
+      "32": 0.52,
+      "33": 0.466,
+      "34": 0.395,
+      "35": 0.326,
+      "36": 0.328,
+      "37": 0.33,
+      "38": 0.33,
+      "39": 0.33,
+      "40": 0.33,
+      "41": 0.33,
+      "42": 0.33
+    },
+    "WR": {
+      "20": 0.751,
+      "21": 0.793,
+      "22": 0.831,
+      "23": 0.917,
+      "24": 0.976,
+      "25": 0.999,
+      "26": 1,
+      "27": 0.963,
+      "28": 0.913,
+      "29": 0.848,
+      "30": 0.791,
+      "31": 0.723,
+      "32": 0.68,
+      "33": 0.614,
+      "34": 0.569,
+      "35": 0.556,
+      "36": 0.487,
+      "37": 0.45,
+      "38": 0.45,
+      "39": 0.45,
+      "40": 0.45,
+      "41": 0.45,
+      "42": 0.45
+    },
+    "TE": {
+      "20": 0.653,
+      "21": 0.697,
+      "22": 0.739,
+      "23": 0.827,
+      "24": 0.917,
+      "25": 0.98,
+      "26": 1,
+      "27": 0.99,
+      "28": 0.976,
+      "29": 0.951,
+      "30": 0.922,
+      "31": 0.879,
+      "32": 0.832,
+      "33": 0.776,
+      "34": 0.719,
+      "35": 0.659,
+      "36": 0.579,
+      "37": 0.499,
+      "38": 0.502,
+      "39": 0.502,
+      "40": 0.502,
+      "41": 0.502,
+      "42": 0.502
+    }
+  },
+  "raw": {
+    "QB": {
+      "21": {
+        "n": 11,
+        "mean_ppg_change": 2.864
+      },
+      "22": {
+        "n": 33,
+        "mean_ppg_change": 0.856
+      },
+      "23": {
+        "n": 51,
+        "mean_ppg_change": 0.319
+      },
+      "24": {
+        "n": 55,
+        "mean_ppg_change": -0.413
+      },
+      "25": {
+        "n": 47,
+        "mean_ppg_change": -0.735
+      },
+      "26": {
+        "n": 47,
+        "mean_ppg_change": 0.712
+      },
+      "27": {
+        "n": 44,
+        "mean_ppg_change": -0.367
+      },
+      "28": {
+        "n": 37,
+        "mean_ppg_change": 0.043
+      },
+      "29": {
+        "n": 35,
+        "mean_ppg_change": 0.862
+      },
+      "30": {
+        "n": 33,
+        "mean_ppg_change": -0.328
+      },
+      "31": {
+        "n": 31,
+        "mean_ppg_change": -0.438
+      },
+      "32": {
+        "n": 23,
+        "mean_ppg_change": 0.195
+      },
+      "33": {
+        "n": 26,
+        "mean_ppg_change": -1.368
+      },
+      "34": {
+        "n": 16,
+        "mean_ppg_change": -0.398
+      },
+      "35": {
+        "n": 16,
+        "mean_ppg_change": -0.935
+      },
+      "36": {
+        "n": 16,
+        "mean_ppg_change": 1.363
+      },
+      "37": {
+        "n": 8,
+        "mean_ppg_change": -2.127
+      },
+      "38": {
+        "n": 5,
+        "mean_ppg_change": -0.546
+      },
+      "39": {
+        "n": 4,
+        "mean_ppg_change": -4.287
+      },
+      "40": {
+        "n": 3,
+        "mean_ppg_change": -1.446
+      },
+      "41": {
+        "n": 1,
+        "mean_ppg_change": -1.101
+      },
+      "42": {
+        "n": 1,
+        "mean_ppg_change": 4.64
+      },
+      "43": {
+        "n": 1,
+        "mean_ppg_change": 0.924
+      },
+      "44": {
+        "n": 1,
+        "mean_ppg_change": -6.064
+      }
+    },
+    "RB": {
+      "20": {
+        "n": 1,
+        "mean_ppg_change": 1.722
+      },
+      "21": {
+        "n": 62,
+        "mean_ppg_change": 1.321
+      },
+      "22": {
+        "n": 136,
+        "mean_ppg_change": 1.757
+      },
+      "23": {
+        "n": 183,
+        "mean_ppg_change": -0.082
+      },
+      "24": {
+        "n": 186,
+        "mean_ppg_change": -0.303
+      },
+      "25": {
+        "n": 159,
+        "mean_ppg_change": -0.448
+      },
+      "26": {
+        "n": 131,
+        "mean_ppg_change": -0.658
+      },
+      "27": {
+        "n": 110,
+        "mean_ppg_change": -1.22
+      },
+      "28": {
+        "n": 84,
+        "mean_ppg_change": -1.593
+      },
+      "29": {
+        "n": 48,
+        "mean_ppg_change": -1.578
+      },
+      "30": {
+        "n": 32,
+        "mean_ppg_change": -1.293
+      },
+      "31": {
+        "n": 23,
+        "mean_ppg_change": -1.72
+      },
+      "32": {
+        "n": 14,
+        "mean_ppg_change": -2.001
+      },
+      "33": {
+        "n": 5,
+        "mean_ppg_change": -3.982
+      },
+      "34": {
+        "n": 2,
+        "mean_ppg_change": -2.756
+      },
+      "35": {
+        "n": 2,
+        "mean_ppg_change": -2.857
+      },
+      "36": {
+        "n": 1,
+        "mean_ppg_change": 0.353
+      }
+    },
+    "WR": {
+      "20": {
+        "n": 4,
+        "mean_ppg_change": 2.976
+      },
+      "21": {
+        "n": 76,
+        "mean_ppg_change": 2.26
+      },
+      "22": {
+        "n": 197,
+        "mean_ppg_change": 1.396
+      },
+      "23": {
+        "n": 247,
+        "mean_ppg_change": 0.18
+      },
+      "24": {
+        "n": 237,
+        "mean_ppg_change": 0.629
+      },
+      "25": {
+        "n": 238,
+        "mean_ppg_change": -0.157
+      },
+      "26": {
+        "n": 203,
+        "mean_ppg_change": -0.523
+      },
+      "27": {
+        "n": 176,
+        "mean_ppg_change": -1.095
+      },
+      "28": {
+        "n": 131,
+        "mean_ppg_change": -1.081
+      },
+      "29": {
+        "n": 95,
+        "mean_ppg_change": -1.848
+      },
+      "30": {
+        "n": 71,
+        "mean_ppg_change": -0.765
+      },
+      "31": {
+        "n": 53,
+        "mean_ppg_change": -2.397
+      },
+      "32": {
+        "n": 33,
+        "mean_ppg_change": -1.722
+      },
+      "33": {
+        "n": 23,
+        "mean_ppg_change": -2.535
+      },
+      "34": {
+        "n": 17,
+        "mean_ppg_change": -2.558
+      },
+      "35": {
+        "n": 7,
+        "mean_ppg_change": -0.575
+      },
+      "36": {
+        "n": 6,
+        "mean_ppg_change": -4.24
+      }
+    },
+    "TE": {
+      "20": {
+        "n": 2,
+        "mean_ppg_change": 1.387
+      },
+      "21": {
+        "n": 19,
+        "mean_ppg_change": 2.356
+      },
+      "22": {
+        "n": 47,
+        "mean_ppg_change": 1.213
+      },
+      "23": {
+        "n": 79,
+        "mean_ppg_change": 1.34
+      },
+      "24": {
+        "n": 89,
+        "mean_ppg_change": 0.643
+      },
+      "25": {
+        "n": 92,
+        "mean_ppg_change": 0.063
+      },
+      "26": {
+        "n": 90,
+        "mean_ppg_change": -0.649
+      },
+      "27": {
+        "n": 81,
+        "mean_ppg_change": -0.205
+      },
+      "28": {
+        "n": 73,
+        "mean_ppg_change": -0.034
+      },
+      "29": {
+        "n": 53,
+        "mean_ppg_change": -0.976
+      },
+      "30": {
+        "n": 32,
+        "mean_ppg_change": -0.647
+      },
+      "31": {
+        "n": 21,
+        "mean_ppg_change": -1.087
+      },
+      "32": {
+        "n": 14,
+        "mean_ppg_change": -0.145
+      },
+      "33": {
+        "n": 13,
+        "mean_ppg_change": 0.211
+      },
+      "34": {
+        "n": 7,
+        "mean_ppg_change": -1.1
+      },
+      "35": {
+        "n": 2,
+        "mean_ppg_change": -0.051
+      },
+      "36": {
+        "n": 3,
+        "mean_ppg_change": -2.995
+      },
+      "37": {
+        "n": 2,
+        "mean_ppg_change": -4.315
+      }
+    }
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "generated_at": "2026-10-02T13:53:25.549Z",
+  "method": "Spearman rank correlation between a pre-season ordering and realised fantasy production (PPR). Sources: FantasyPros ECR archive (DynastyProcess db_fpecr), nflverse season stats. \"Same players\" restricts ECR to players who also have a last-season baseline, so both columns are compared on identical samples.",
+  "sections": [
+    {
+      "title": "Redraft: preseason ECR vs actual points — average by position",
+      "columns": [
+        "Position",
+        "Seasons",
+        "ECR ρ (all ranked)",
+        "ECR ρ (same players)",
+        "Last-season PPG ρ"
+      ],
+      "rows": [
+        [
+          "QB",
+          6,
+          0.394,
+          0.372,
+          0.311
+        ],
+        [
+          "RB",
+          6,
+          0.537,
+          0.533,
+          0.439
+        ],
+        [
+          "WR",
+          6,
+          0.492,
+          0.511,
+          0.381
+        ],
+        [
+          "TE",
+          6,
+          0.405,
+          0.401,
+          0.314
+        ]
+      ],
+      "note": "Players ranked in the top QB24/RB48/WR60/TE24 by preseason ECR."
+    },
+    {
+      "title": "Redraft: by season and position",
+      "columns": [
+        "Season",
+        "n",
+        "ECR ρ",
+        "n (with baseline)",
+        "ECR ρ (same)",
+        "Last-season ρ"
+      ],
+      "rows": [
+        [
+          "2020 QB",
+          24,
+          0.477,
+          21,
+          0.437,
+          0.368
+        ],
+        [
+          "2020 RB",
+          48,
+          0.49,
+          41,
+          0.544,
+          0.503
+        ],
+        [
+          "2020 WR",
+          60,
+          0.415,
+          53,
+          0.46,
+          0.253
+        ],
+        [
+          "2020 TE",
+          24,
+          0.579,
+          22,
+          0.567,
+          0.268
+        ],
+        [
+          "2021 QB",
+          24,
+          0.755,
+          20,
+          0.692,
+          0.568
+        ],
+        [
+          "2021 RB",
+          48,
+          0.484,
+          42,
+          0.532,
+          0.479
+        ],
+        [
+          "2021 WR",
+          60,
+          0.38,
+          54,
+          0.436,
+          0.258
+        ],
+        [
+          "2021 TE",
+          24,
+          0.463,
+          22,
+          0.392,
+          0.373
+        ],
+        [
+          "2022 QB",
+          24,
+          0.477,
+          24,
+          0.477,
+          0.383
+        ],
+        [
+          "2022 RB",
+          48,
+          0.532,
+          41,
+          0.557,
+          0.44
+        ],
+        [
+          "2022 WR",
+          60,
+          0.579,
+          50,
+          0.592,
+          0.5
+        ],
+        [
+          "2022 TE",
+          24,
+          0.336,
+          22,
+          0.275,
+          0.422
+        ],
+        [
+          "2023 QB",
+          24,
+          0.24,
+          21,
+          0.295,
+          0.347
+        ],
+        [
+          "2023 RB",
+          48,
+          0.458,
+          40,
+          0.337,
+          0.284
+        ],
+        [
+          "2023 WR",
+          60,
+          0.621,
+          53,
+          0.606,
+          0.58
+        ],
+        [
+          "2023 TE",
+          24,
+          0.439,
+          21,
+          0.529,
+          0.494
+        ],
+        [
+          "2024 QB",
+          24,
+          0.38,
+          20,
+          0.471,
+          0.328
+        ],
+        [
+          "2024 RB",
+          48,
+          0.585,
+          43,
+          0.541,
+          0.426
+        ],
+        [
+          "2024 WR",
+          60,
+          0.429,
+          52,
+          0.442,
+          0.291
+        ],
+        [
+          "2024 TE",
+          24,
+          0.401,
+          23,
+          0.404,
+          0.257
+        ],
+        [
+          "2025 QB",
+          24,
+          0.037,
+          22,
+          -0.141,
+          -0.13
+        ],
+        [
+          "2025 RB",
+          48,
+          0.675,
+          40,
+          0.685,
+          0.505
+        ],
+        [
+          "2025 WR",
+          60,
+          0.527,
+          52,
+          0.53,
+          0.405
+        ],
+        [
+          "2025 TE",
+          24,
+          0.213,
+          22,
+          0.238,
+          0.073
+        ]
+      ]
+    },
+    {
+      "title": "Dynasty: preseason dynasty ECR vs realised 3-season surplus",
+      "columns": [
+        "Season",
+        "n",
+        "ECR ρ",
+        "Last-season PPG ρ",
+        "Window"
+      ],
+      "rows": [
+        [
+          "2020 (top 150)",
+          150,
+          0.581,
+          0.412,
+          "3 seasons"
+        ],
+        [
+          "2021 (top 150)",
+          150,
+          0.565,
+          0.38,
+          "3 seasons"
+        ],
+        [
+          "2022 (top 150)",
+          150,
+          0.62,
+          0.454,
+          "3 seasons"
+        ],
+        [
+          "2023 (top 150)",
+          150,
+          0.562,
+          0.371,
+          "3 seasons"
+        ]
+      ]
+    }
+  ],
+  "conclusions": [
+    "On identical samples, preseason expert consensus ordered players with an average ρ of 0.454 vs 0.361 for last season's PPG alone — consensus carries information beyond raw production, but correlations well below 1 mean single rankings should not be treated as precise.",
+    "This supports giving consensus substantial weight preseason, adding production as the season progresses (phase-aware weights), and exposing uncertainty rather than single-number certainty.",
+    "Not tested (no free historical data): projection sources, ADP and trade-market values. Value history is recorded from each sync going forward so these can be evaluated later."
+  ]
+}

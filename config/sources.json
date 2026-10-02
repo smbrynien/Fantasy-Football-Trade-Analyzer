@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "_comment": "Source registry. Add/disable/reprioritise sources here. 'adapter' is a module in /adapters. Manual-only sources have adapter 'manual'. Priority: primary | secondary | supplemental | fallback.",
+  "freshness_hours": {
+    "player": 24,
+    "injury": 8,
+    "market_value": 24,
+    "pick_market": 48,
+    "ranking": 168,
+    "projection": 72,
+    "adp": 168,
+    "stat_week": 96,
+    "schedule": 336
+  },
+  "exclusive_data_types": {
+    "_comment": "Data types where only ONE source may be used at a time (mixing would corrupt the data). Ordered by preference; the next source is used only when the previous one has no usable (non-quarantined) data, and the substitution is reported.",
+    "stat_week": [
+      "nflverse",
+      "sleeper_stats"
+    ],
+    "schedule": [
+      "nflverse"
+    ],
+    "injury_official": [
+      "nflverse"
+    ],
+    "injury_reported": [
+      "sleeper",
+      "espn"
+    ],
+    "state": [
+      "sleeper"
+    ]
+  },
+  "authoritative_player_sources": {
+    "_comment": "Sources whose 'player' records may CREATE canonical players, merged in this order. 'team_authority' is the source whose team value wins when authoritative sources disagree (the one updated fastest after transactions).",
+    "order": [
+      "dynastyprocess_ids",
+      "nflverse",
+      "sleeper"
+    ],
+    "team_authority": "sleeper"
+  },
+  "history_series": {
+    "_comment": "Which source/format feeds the raw market and consensus lines in value history (Model value history is always recorded).",
+    "market_source": "fantasycalc",
+    "market_format": {
+      "qb": "1qb",
+      "ppr": 1,
+      "teams": 12
+    },
+    "consensus_source": "fantasypros_ecr"
+  },
+  "sources": [
+    {
+      "id": "sleeper",
+      "name": "Sleeper",
+      "adapter": "sleeper",
+      "enabled": true,
+      "priority": "primary",
+      "method": "api",
+      "data_types": [
+        "player",
+        "injury",
+        "state"
+      ],
+      "auth": null,
+      "update_frequency_hours": 12,
+      "url": "https://api.sleeper.app/v1/players/nfl",
+      "docs_url": "https://docs.sleeper.com/",
+      "terms": "Documented public API, no key. Sleeper asks callers to stay under 1000 calls/minute and to fetch /players/nfl at most once per day.",
+      "independence_group": "sleeper",
+      "fallback": "Player metadata also comes from the DynastyProcess crosswalk and nflverse players; cached Sleeper data is kept until replaced."
+    },
+    {
+      "id": "sleeper_projections",
+      "name": "Sleeper Projections (Rotowire)",
+      "adapter": "sleeper_projections",
+      "enabled": true,
+      "priority": "secondary",
+      "method": "api (undocumented)",
+      "data_types": [
+        "projection",
+        "adp"
+      ],
+      "auth": null,
+      "update_frequency_hours": 24,
+      "url": "https://api.sleeper.app/projections/nfl/{season}/{week}",
+      "docs_url": "https://docs.sleeper.com/",
+      "terms": "Undocumented endpoint used by Sleeper's web app. Public, no key, CORS open. May change without notice.",
+      "independence_group": "rotowire",
+      "fallback": "ESPN projections and manual projection imports provide independent projections."
+    },
+    {
+      "id": "sleeper_stats",
+      "name": "Sleeper Weekly Stats",
+      "adapter": "sleeper_stats",
+      "enabled": true,
+      "priority": "secondary",
+      "method": "api (undocumented)",
+      "data_types": [
+        "stat_week"
+      ],
+      "auth": null,
+      "update_frequency_hours": 24,
+      "url": "https://api.sleeper.app/stats/nfl/{season}/{week}",
+      "docs_url": "https://docs.sleeper.com/",
+      "terms": "Undocumented endpoint. Used as fallback for statistics and as the only free source of red-zone usage.",
+      "independence_group": "sleeper",
+      "fallback": "nflverse weekly stats are primary."
+    },
+    {
+      "id": "fantasycalc",
+      "name": "FantasyCalc",
+      "adapter": "fantasycalc",
+      "enabled": true,
+      "priority": "primary",
+      "method": "api",
+      "data_types": [
+        "market_value",
+        "pick_market"
+      ],
+      "auth": null,
+      "update_frequency_hours": 12,
+      "url": "https://api.fantasycalc.com/values/current",
+      "docs_url": "https://fantasycalc.com/",
+      "terms": "Public JSON endpoint used by fantasycalc.com, no key, CORS open. Values are derived from real trades on connected leagues.",
+      "independence_group": "fantasycalc",
+      "fallback": "DynastyProcess values and manual KTC import are alternative market inputs."
+    },
+    {
+      "id": "dynastyprocess_values",
+      "name": "DynastyProcess Values",
+      "adapter": "dynastyprocess_values",
+      "enabled": true,
+      "priority": "secondary",
+      "method": "dataset",
+      "data_types": [
+        "market_value",
+        "pick_market"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": "https://raw.githubusercontent.com/dynastyprocess/data/master/files/values.csv",
+      "docs_url": "https://github.com/dynastyprocess/data",
+      "terms": "Open dataset (GPL-3.0). Values are derived from FantasyPros dynasty ECR, so they are NOT independent of the FantasyPros consensus signal; weighted accordingly.",
+      "independence_group": "fantasypros",
+      "fallback": "FantasyCalc; manual import."
+    },
+    {
+      "id": "dynastyprocess_ids",
+      "name": "DynastyProcess ID Crosswalk",
+      "adapter": "dynastyprocess_ids",
+      "enabled": true,
+      "priority": "primary",
+      "method": "dataset",
+      "data_types": [
+        "player"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv",
+      "docs_url": "https://github.com/dynastyprocess/data",
+      "terms": "Open dataset (GPL-3.0). Maps MFL, Sportradar, FantasyPros, GSIS, PFF, Sleeper, NFL, ESPN, Yahoo, Fleaflicker, CBS, PFR, Rotowire, KTC and other IDs.",
+      "independence_group": "dynastyprocess",
+      "fallback": "The persisted local crosswalk keeps every previously learned mapping."
+    },
+    {
+      "id": "fantasypros_ecr",
+      "name": "FantasyPros ECR (via DynastyProcess)",
+      "adapter": "fantasypros_ecr",
+      "enabled": true,
+      "priority": "primary",
+      "method": "dataset (mirror)",
+      "data_types": [
+        "ranking"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_fpecr_latest.csv",
+      "docs_url": "https://github.com/dynastyprocess/data",
+      "terms": "FantasyPros' site disallows automated access to /api/ and /json/ and its official API needs a partner key. The DynastyProcess open dataset republishes the weekly ECR snapshot, which is what we consume. Direct FantasyPros CSV exports can be added via Manual Import.",
+      "independence_group": "fantasypros",
+      "fallback": "Manual import of a FantasyPros rankings CSV export (Data \u2192 Manual Import \u2192 FantasyPros Rankings)."
+    },
+    {
+      "id": "nflverse",
+      "name": "nflverse",
+      "adapter": "nflverse",
+      "enabled": true,
+      "priority": "primary",
+      "method": "dataset",
+      "data_types": [
+        "player",
+        "stat_week",
+        "injury",
+        "schedule"
+      ],
+      "auth": null,
+      "update_frequency_hours": 24,
+      "url": "https://github.com/nflverse/nflverse-data/releases",
+      "docs_url": "https://nflreadr.nflverse.com/articles/index.html",
+      "terms": "Open data (CC-BY 4.0 for most datasets). Release assets are fetched server-side (redirect to GitHub object storage).",
+      "independence_group": "nflverse",
+      "fallback": "Sleeper weekly stats replace nflverse statistics automatically if nflverse is unavailable."
+    },
+    {
+      "id": "ffc_adp",
+      "name": "Fantasy Football Calculator ADP",
+      "adapter": "ffc_adp",
+      "enabled": true,
+      "priority": "supplemental",
+      "method": "api",
+      "data_types": [
+        "adp"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": "https://fantasyfootballcalculator.com/api/v1/adp/{format}?teams={teams}&year={season}",
+      "docs_url": "https://fantasyfootballcalculator.com/resources/average-draft-position-api/",
+      "terms": "Documented free ADP API. No CORS headers, so it is fetched by the local server.",
+      "independence_group": "ffc",
+      "fallback": "Sleeper ADP fields; manual ADP import."
+    },
+    {
+      "id": "espn",
+      "name": "ESPN Projections",
+      "adapter": "espn",
+      "enabled": true,
+      "priority": "supplemental",
+      "method": "api (undocumented)",
+      "data_types": [
+        "projection",
+        "adp",
+        "injury"
+      ],
+      "auth": null,
+      "update_frequency_hours": 24,
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{season}/segments/0/leaguedefaults/3?view=kona_player_info",
+      "docs_url": "https://github.com/cwendt94/espn-api",
+      "terms": "Undocumented public endpoint behind ESPN's fantasy web app. Independent projection methodology from Rotowire. May change without notice; disable here if it breaks.",
+      "independence_group": "espn",
+      "fallback": "Sleeper/Rotowire projections; manual projections import."
+    },
+    {
+      "id": "ktc",
+      "name": "KeepTradeCut",
+      "adapter": "manual",
+      "enabled": true,
+      "priority": "secondary",
+      "method": "manual import",
+      "data_types": [
+        "market_value",
+        "pick_market"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": "https://keeptradecut.com/dynasty-rankings",
+      "docs_url": "https://keeptradecut.com/terms-and-conditions",
+      "terms": "KTC Terms & Conditions \u00a72.1 prohibit any automated data collection (scraping, bots). This app therefore never fetches KTC. You may import values you record yourself via Manual Import.",
+      "independence_group": "ktc",
+      "manual_spec": "ktc_values",
+      "fallback": "FantasyCalc and DynastyProcess remain the automated market sources."
+    },
+    {
+      "id": "fantasypros_manual",
+      "name": "FantasyPros (manual export)",
+      "adapter": "manual",
+      "enabled": true,
+      "priority": "fallback",
+      "method": "manual import",
+      "data_types": [
+        "ranking"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": "https://www.fantasypros.com/nfl/rankings/",
+      "docs_url": "https://www.fantasypros.com/terms/",
+      "terms": "Export from your own FantasyPros account/session and import here.",
+      "independence_group": "fantasypros",
+      "manual_spec": "fantasypros_rankings",
+      "fallback": "Used when the DynastyProcess mirror is stale or unavailable."
+    },
+    {
+      "id": "manual_projections",
+      "name": "Manual Projections (FFToday or any site)",
+      "adapter": "manual",
+      "enabled": true,
+      "priority": "supplemental",
+      "method": "manual import",
+      "data_types": [
+        "projection"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": "https://www.fftoday.com/rankings/",
+      "docs_url": null,
+      "terms": "Any projection table you are permitted to download/copy.",
+      "independence_group": "manual_projections",
+      "manual_spec": "projections_generic",
+      "fallback": null
+    },
+    {
+      "id": "manual_market",
+      "name": "Manual Trade Values",
+      "adapter": "manual",
+      "enabled": true,
+      "priority": "supplemental",
+      "method": "manual import",
+      "data_types": [
+        "market_value"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": null,
+      "docs_url": null,
+      "terms": "Any trade-value table you are permitted to use.",
+      "independence_group": "manual_market",
+      "manual_spec": "market_generic",
+      "fallback": null
+    },
+    {
+      "id": "manual_rankings",
+      "name": "Manual Rankings",
+      "adapter": "manual",
+      "enabled": true,
+      "priority": "supplemental",
+      "method": "manual import",
+      "data_types": [
+        "ranking"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": null,
+      "docs_url": null,
+      "terms": "Any rankings list you are permitted to use.",
+      "independence_group": "manual_rankings",
+      "manual_spec": "rankings_generic",
+      "fallback": null
+    },
+    {
+      "id": "manual_adp",
+      "name": "Manual ADP",
+      "adapter": "manual",
+      "enabled": true,
+      "priority": "supplemental",
+      "method": "manual import",
+      "data_types": [
+        "adp"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": null,
+      "docs_url": null,
+      "terms": "Any ADP table you are permitted to use.",
+      "independence_group": "manual_adp",
+      "manual_spec": "adp_generic",
+      "fallback": null
+    },
+    {
+      "id": "manual_picks",
+      "name": "Manual Rookie Pick Values",
+      "adapter": "manual",
+      "enabled": true,
+      "priority": "supplemental",
+      "method": "manual import",
+      "data_types": [
+        "pick_market"
+      ],
+      "auth": null,
+      "update_frequency_hours": 168,
+      "url": null,
+      "docs_url": null,
+      "terms": "Any pick-value chart you are permitted to use.",
+      "independence_group": "manual_picks",
+      "manual_spec": "picks_generic",
+      "fallback": null
+    }
+  ]
+}

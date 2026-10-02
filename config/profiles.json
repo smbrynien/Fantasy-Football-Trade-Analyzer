@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "_comment": "Built-in presets. Each is deep-merged over default_league in league-defaults.json. User profiles are stored separately (data/user/profiles.json and browser storage).",
+  "presets": [
+    {
+      "id": "preset_10_1qb_half",
+      "name": "10 Team — 1QB — Half PPR",
+      "mode": "redraft",
+      "teams": 10,
+      "qb_format": "1qb",
+      "scoring_preset": "half_ppr",
+      "roster": { "QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "SUPERFLEX": 0, "K": 1, "DEF": 1, "BENCH": 6, "IR": 1 }
+    },
+    {
+      "id": "preset_12_1qb_ppr",
+      "name": "12 Team — 1QB — PPR",
+      "mode": "redraft",
+      "teams": 12,
+      "qb_format": "1qb",
+      "scoring_preset": "ppr",
+      "roster": { "QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "SUPERFLEX": 0, "K": 1, "DEF": 1, "BENCH": 6, "IR": 1 }
+    },
+    {
+      "id": "preset_12_sf_ppr",
+      "name": "12 Team — Superflex — PPR",
+      "mode": "redraft",
+      "teams": 12,
+      "qb_format": "sf",
+      "scoring_preset": "ppr",
+      "roster": { "QB": 1, "RB": 2, "WR": 3, "TE": 1, "FLEX": 1, "SUPERFLEX": 1, "K": 0, "DEF": 0, "BENCH": 8, "IR": 2 }
+    },
+    {
+      "id": "preset_12_sf_half",
+      "name": "12 Team — Superflex — 0.5 PPR",
+      "mode": "redraft",
+      "teams": 12,
+      "qb_format": "sf",
+      "scoring_preset": "half_ppr",
+      "roster": { "QB": 1, "RB": 2, "WR": 3, "TE": 1, "FLEX": 1, "SUPERFLEX": 1, "K": 0, "DEF": 0, "BENCH": 8, "IR": 2 }
+    },
+    {
+      "id": "preset_14_sf_ppr",
+      "name": "14 Team — Superflex",
+      "mode": "redraft",
+      "teams": 14,
+      "qb_format": "sf",
+      "scoring_preset": "ppr",
+      "roster": { "QB": 1, "RB": 2, "WR": 3, "TE": 1, "FLEX": 1, "SUPERFLEX": 1, "K": 0, "DEF": 0, "BENCH": 10, "IR": 2 }
+    },
+    {
+      "id": "preset_dyn_12_1qb",
+      "name": "Dynasty — 12 Team — 1QB",
+      "mode": "dynasty",
+      "teams": 12,
+      "qb_format": "1qb",
+      "scoring_preset": "ppr",
+      "roster": { "QB": 1, "RB": 2, "WR": 3, "TE": 1, "FLEX": 2, "SUPERFLEX": 0, "K": 0, "DEF": 0, "BENCH": 15, "IR": 3 },
+      "dynasty": { "strategy": "balanced", "rookie_rounds": 4, "pick_years": 3 }
+    },
+    {
+      "id": "preset_dyn_12_sf",
+      "name": "Dynasty — 12 Team — Superflex",
+      "mode": "dynasty",
+      "teams": 12,
+      "qb_format": "sf",
+      "scoring_preset": "ppr",
+      "roster": { "QB": 1, "RB": 2, "WR": 3, "TE": 1, "FLEX": 2, "SUPERFLEX": 1, "K": 0, "DEF": 0, "BENCH": 15, "IR": 3 },
+      "dynasty": { "strategy": "balanced", "rookie_rounds": 4, "pick_years": 3 }
+    }
+  ]
+}

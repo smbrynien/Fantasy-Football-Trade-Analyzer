@@ -1,0 +1,18 @@
+{
+  "name": "fantasy-football-trade-analyzer",
+  "version": "1.0.0",
+  "description": "Multi-source, transparent redraft & dynasty fantasy football trade analyzer with one-click data sync.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=18.17" },
+  "scripts": {
+    "start": "node server/index.js",
+    "sync": "node scripts/sync.js",
+    "sync:force": "node scripts/sync.js --force",
+    "rebuild": "node scripts/sync.js --rebuild-only",
+    "calibrate": "node scripts/calibrate.js",
+    "backtest": "node scripts/backtest.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "license": "MIT"
+}

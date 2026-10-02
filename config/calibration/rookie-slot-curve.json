@@ -1,0 +1,692 @@
+{
+  "generated_at": "2026-10-02T13:33:02.795Z",
+  "method": "FantasyPros rookie ECR (last summer scrape, Jun-Aug of the draft year) for the 2020-2023 classes; value = discounted (0.82) 3-season PPR surplus over 12-team replacement (QB12/RB30/WR42/TE12). Mean by class rank, smoothed, isotonic; shape normalised so mean of ranks 1-12 = 1.",
+  "classes": {
+    "2020": 99,
+    "2021": 76,
+    "2022": 81,
+    "2023": 92
+  },
+  "shape": [
+    2.191,
+    1.894,
+    1.54,
+    1.004,
+    0.793,
+    0.793,
+    0.793,
+    0.69,
+    0.637,
+    0.637,
+    0.514,
+    0.514,
+    0.425,
+    0.425,
+    0.425,
+    0.425,
+    0.309,
+    0.286,
+    0.284,
+    0.267,
+    0.254,
+    0.254,
+    0.254,
+    0.214,
+    0.214,
+    0.19,
+    0.18,
+    0.18,
+    0.18,
+    0.168,
+    0.168,
+    0.168,
+    0.168,
+    0.168,
+    0.168,
+    0.168,
+    0.15,
+    0.142,
+    0.116,
+    0.1,
+    0.094,
+    0.088,
+    0.088,
+    0.087,
+    0.085,
+    0.085,
+    0.085,
+    0.059,
+    0.059,
+    0.055,
+    0.055,
+    0.055,
+    0.055,
+    0.051,
+    0.042,
+    0.029,
+    0.028,
+    0.027,
+    0.027,
+    0.026,
+    0.026,
+    0.026,
+    0.026,
+    0.026,
+    0.023,
+    0.023,
+    0.022,
+    0.022,
+    0.022,
+    0.022,
+    0.021,
+    0.021
+  ],
+  "raw_mean_by_rank": [
+    191.008,
+    223.946,
+    123.181,
+    90.364,
+    71.66,
+    61.949,
+    113.497,
+    29.386,
+    110.057,
+    11.928,
+    34.626,
+    124.351,
+    1.975,
+    19.137,
+    47.84,
+    24.142,
+    84.481,
+    0,
+    61.779,
+    0,
+    24.327,
+    14.272,
+    20.117,
+    0,
+    1.57,
+    0,
+    37.256,
+    60.317,
+    32.324,
+    11.512,
+    1.026,
+    1.681,
+    3.526,
+    0,
+    83.681,
+    0,
+    0,
+    0,
+    0,
+    26.862,
+    35.7,
+    1.765,
+    3.67,
+    8.077,
+    0,
+    0,
+    0,
+    12.977,
+    7.524,
+    0,
+    0,
+    5.699,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    28.262,
+    6.884,
+    3.85,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "hit_rates": [
+    {
+      "picks": "1-3",
+      "n": 12,
+      "top24_rate": 1,
+      "mean_value": 179.378,
+      "outcome_cv": 0.754
+    },
+    {
+      "picks": "4-6",
+      "n": 12,
+      "top24_rate": 0.75,
+      "mean_value": 74.658,
+      "outcome_cv": 0.925
+    },
+    {
+      "picks": "7-12",
+      "n": 24,
+      "top24_rate": 0.583,
+      "mean_value": 70.641,
+      "outcome_cv": 1.414
+    },
+    {
+      "picks": "13-24",
+      "n": 48,
+      "top24_rate": 0.25,
+      "mean_value": 24.839,
+      "outcome_cv": 2.079
+    },
+    {
+      "picks": "25-36",
+      "n": 48,
+      "top24_rate": 0.188,
+      "mean_value": 19.408,
+      "outcome_cv": 3.006
+    },
+    {
+      "picks": "37-72",
+      "n": 144,
+      "top24_rate": 0.097,
+      "mean_value": 3.924,
+      "outcome_cv": 4.714
+    }
+  ],
+  "examples": {
+    "2020": [
+      {
+        "p": 1,
+        "name": "Clyde Edwards-Helaire",
+        "pos": "RB",
+        "ecr": 1.1,
+        "value": 17.9,
+        "top24": true
+      },
+      {
+        "p": 2,
+        "name": "Jonathan Taylor",
+        "pos": "RB",
+        "ecr": 2.1,
+        "value": 278.79,
+        "top24": true
+      },
+      {
+        "p": 3,
+        "name": "J.K. Dobbins",
+        "pos": "RB",
+        "ecr": 4.1,
+        "value": 10.4,
+        "top24": true
+      },
+      {
+        "p": 4,
+        "name": "D'Andre Swift",
+        "pos": "RB",
+        "ecr": 4.4,
+        "value": 103.066,
+        "top24": true
+      },
+      {
+        "p": 5,
+        "name": "CeeDee Lamb",
+        "pos": "WR",
+        "ecr": 4.5,
+        "value": 204.62,
+        "top24": true
+      },
+      {
+        "p": 6,
+        "name": "Jerry Jeudy",
+        "pos": "WR",
+        "ecr": 5.9,
+        "value": 28.98,
+        "top24": true
+      },
+      {
+        "p": 7,
+        "name": "Cam Akers",
+        "pos": "RB",
+        "ecr": 6.3,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 8,
+        "name": "Jalen Reagor",
+        "pos": "WR",
+        "ecr": 8.9,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 9,
+        "name": "Justin Jefferson",
+        "pos": "WR",
+        "ecr": 9.1,
+        "value": 392.243,
+        "top24": true
+      },
+      {
+        "p": 10,
+        "name": "Henry Ruggs III",
+        "pos": "WR",
+        "ecr": 10.8,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 11,
+        "name": "Tee Higgins",
+        "pos": "WR",
+        "ecr": 13,
+        "value": 122.024,
+        "top24": true
+      },
+      {
+        "p": 12,
+        "name": "Michael Pittman Jr.",
+        "pos": "WR",
+        "ecr": 13.6,
+        "value": 104.655,
+        "top24": true
+      },
+      {
+        "p": 13,
+        "name": "Denzel Mims",
+        "pos": "WR",
+        "ecr": 14,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 14,
+        "name": "Brandon Aiyuk",
+        "pos": "WR",
+        "ecr": 14.7,
+        "value": 76.547,
+        "top24": true
+      },
+      {
+        "p": 15,
+        "name": "Ke'Shawn Vaughn",
+        "pos": "RB",
+        "ecr": 15,
+        "value": 0,
+        "top24": false
+      }
+    ],
+    "2021": [
+      {
+        "p": 1,
+        "name": "Najee Harris",
+        "pos": "RB",
+        "ecr": 1,
+        "value": 221.128,
+        "top24": true
+      },
+      {
+        "p": 2,
+        "name": "Ja'Marr Chase",
+        "pos": "WR",
+        "ecr": 2.33,
+        "value": 285.818,
+        "top24": true
+      },
+      {
+        "p": 3,
+        "name": "Kyle Pitts",
+        "pos": "TE",
+        "ecr": 2.89,
+        "value": 17.6,
+        "top24": true
+      },
+      {
+        "p": 4,
+        "name": "DeVonta Smith",
+        "pos": "WR",
+        "ecr": 4.89,
+        "value": 154.847,
+        "top24": true
+      },
+      {
+        "p": 5,
+        "name": "Trevor Lawrence",
+        "pos": "QB",
+        "ecr": 6.11,
+        "value": 19.647,
+        "top24": true
+      },
+      {
+        "p": 6,
+        "name": "Javonte Williams",
+        "pos": "RB",
+        "ecr": 6.33,
+        "value": 59.46,
+        "top24": true
+      },
+      {
+        "p": 7,
+        "name": "Jaylen Waddle",
+        "pos": "WR",
+        "ecr": 7.67,
+        "value": 199.679,
+        "top24": true
+      },
+      {
+        "p": 8,
+        "name": "Travis Etienne Jr.",
+        "pos": "RB",
+        "ecr": 8.22,
+        "value": 110.764,
+        "top24": true
+      },
+      {
+        "p": 9,
+        "name": "Rashod Bateman",
+        "pos": "WR",
+        "ecr": 9.78,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 10,
+        "name": "Elijah Moore",
+        "pos": "WR",
+        "ecr": 11,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 11,
+        "name": "Rondale Moore",
+        "pos": "WR",
+        "ecr": 11.44,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 12,
+        "name": "Justin Fields",
+        "pos": "QB",
+        "ecr": 12.33,
+        "value": 19.942,
+        "top24": true
+      },
+      {
+        "p": 13,
+        "name": "Trey Lance",
+        "pos": "QB",
+        "ecr": 12.67,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 14,
+        "name": "Terrace Marshall Jr.",
+        "pos": "WR",
+        "ecr": 13.11,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 15,
+        "name": "Trey Sermon",
+        "pos": "RB",
+        "ecr": 14.56,
+        "value": 0,
+        "top24": false
+      }
+    ],
+    "2022": [
+      {
+        "p": 1,
+        "name": "Breece Hall",
+        "pos": "RB",
+        "ecr": 1,
+        "value": 150.929,
+        "top24": true
+      },
+      {
+        "p": 2,
+        "name": "Drake London",
+        "pos": "WR",
+        "ecr": 2.67,
+        "value": 109.855,
+        "top24": true
+      },
+      {
+        "p": 3,
+        "name": "Ken Walker III",
+        "pos": "RB",
+        "ecr": 3.83,
+        "value": 80.085,
+        "top24": true
+      },
+      {
+        "p": 4,
+        "name": "Treylon Burks",
+        "pos": "WR",
+        "ecr": 4,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 5,
+        "name": "Jameson Williams",
+        "pos": "WR",
+        "ecr": 4.5,
+        "value": 32.141,
+        "top24": true
+      },
+      {
+        "p": 6,
+        "name": "Garrett Wilson",
+        "pos": "WR",
+        "ecr": 4.83,
+        "value": 159.355,
+        "top24": true
+      },
+      {
+        "p": 7,
+        "name": "Chris Olave",
+        "pos": "WR",
+        "ecr": 7,
+        "value": 97.862,
+        "top24": true
+      },
+      {
+        "p": 8,
+        "name": "Skyy Moore",
+        "pos": "WR",
+        "ecr": 8.5,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 9,
+        "name": "Jahan Dotson",
+        "pos": "WR",
+        "ecr": 10.83,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 10,
+        "name": "George Pickens",
+        "pos": "WR",
+        "ecr": 11.17,
+        "value": 47.712,
+        "top24": false
+      },
+      {
+        "p": 11,
+        "name": "Christian Watson",
+        "pos": "WR",
+        "ecr": 11.17,
+        "value": 3,
+        "top24": false
+      },
+      {
+        "p": 12,
+        "name": "James Cook",
+        "pos": "RB",
+        "ecr": 11.83,
+        "value": 120.881,
+        "top24": true
+      },
+      {
+        "p": 13,
+        "name": "Dameon Pierce",
+        "pos": "RB",
+        "ecr": 16.67,
+        "value": 7.9,
+        "top24": false
+      },
+      {
+        "p": 14,
+        "name": "Alec Pierce",
+        "pos": "WR",
+        "ecr": 17.17,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 15,
+        "name": "Rachaad White",
+        "pos": "RB",
+        "ecr": 17.33,
+        "value": 104.627,
+        "top24": true
+      }
+    ],
+    "2023": [
+      {
+        "p": 1,
+        "name": "Bijan Robinson",
+        "pos": "RB",
+        "ecr": 1,
+        "value": 374.075,
+        "top24": true
+      },
+      {
+        "p": 2,
+        "name": "Jaxon Smith-Njigba",
+        "pos": "WR",
+        "ecr": 2.6,
+        "value": 221.32,
+        "top24": true
+      },
+      {
+        "p": 3,
+        "name": "Jahmyr Gibbs",
+        "pos": "RB",
+        "ecr": 2.6,
+        "value": 384.637,
+        "top24": true
+      },
+      {
+        "p": 4,
+        "name": "Jordan Addison",
+        "pos": "WR",
+        "ecr": 4.4,
+        "value": 103.542,
+        "top24": true
+      },
+      {
+        "p": 5,
+        "name": "Quentin Johnston",
+        "pos": "WR",
+        "ecr": 5.8,
+        "value": 30.232,
+        "top24": false
+      },
+      {
+        "p": 6,
+        "name": "Anthony Richardson",
+        "pos": "QB",
+        "ecr": 5.8,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 7,
+        "name": "Zay Flowers",
+        "pos": "WR",
+        "ecr": 6.4,
+        "value": 156.448,
+        "top24": true
+      },
+      {
+        "p": 8,
+        "name": "Dalton Kincaid",
+        "pos": "TE",
+        "ecr": 9,
+        "value": 6.78,
+        "top24": true
+      },
+      {
+        "p": 9,
+        "name": "Zach Charbonnet",
+        "pos": "RB",
+        "ecr": 9.8,
+        "value": 47.986,
+        "top24": true
+      },
+      {
+        "p": 10,
+        "name": "Bryce Young",
+        "pos": "QB",
+        "ecr": 10.6,
+        "value": 0,
+        "top24": true
+      },
+      {
+        "p": 11,
+        "name": "C.J. Stroud",
+        "pos": "QB",
+        "ecr": 11,
+        "value": 13.48,
+        "top24": true
+      },
+      {
+        "p": 12,
+        "name": "De'Von Achane",
+        "pos": "RB",
+        "ecr": 13.6,
+        "value": 251.924,
+        "top24": true
+      },
+      {
+        "p": 13,
+        "name": "Kendre Miller",
+        "pos": "RB",
+        "ecr": 13.6,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 14,
+        "name": "Marvin Mims Jr.",
+        "pos": "WR",
+        "ecr": 14.2,
+        "value": 0,
+        "top24": false
+      },
+      {
+        "p": 15,
+        "name": "Jayden Reed",
+        "pos": "WR",
+        "ecr": 17.6,
+        "value": 86.732,
+        "top24": false
+      }
+    ]
+  }
+}

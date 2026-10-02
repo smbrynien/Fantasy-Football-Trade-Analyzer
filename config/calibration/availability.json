@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-10-02T13:33:02.795Z",
+  "method": "Mean share of games played next season by fantasy-relevant players who played >=4 games.",
+  "sample": {
+    "seasons": "2006-2025",
+    "players": 2975
+  },
+  "by_position": {
+    "QB": 0.815,
+    "RB": 0.806,
+    "WR": 0.827,
+    "TE": 0.819,
+    "K": 0.95,
+    "DEF": 1
+  }
+}

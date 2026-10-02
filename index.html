@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FF Trade Analyzer</title>
+  <meta name="description" content="Multi-source redraft and dynasty fantasy football trade analyzer">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-row">
+      <a class="brand" href="#/trade" aria-label="Home">
+        <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><ellipse cx="16" cy="16" rx="14" ry="9" transform="rotate(-35 16 16)" fill="currentColor"/><path d="M11 21l10-10M13 15l2 2M15 13l2 2M17 11l2 2" stroke="var(--brand-ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span>Trade Analyzer</span>
+      </a>
+      <div class="mode-toggle" role="tablist" aria-label="Valuation mode">
+        <button role="tab" data-mode="redraft" id="mode-redraft">Redraft</button>
+        <button role="tab" data-mode="dynasty" id="mode-dynasty">Dynasty</button>
+      </div>
+      <div class="topbar-right">
+        <label class="profile-select" title="League profile">
+          <span class="sr-only">League profile</span>
+          <select id="profile-select"></select>
+        </label>
+        <button class="data-pill" id="data-pill" title="Data status — open the sync dashboard"><span class="dot"></span><span class="txt">No data</span></button>
+        <button class="btn btn-primary" id="sync-btn" title="Refresh all data sources"><span class="sync-icon" aria-hidden="true">⟳</span><span class="lbl">Sync All</span></button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <a href="#/trade" data-view="trade">Trade</a>
+      <a href="#/players" data-view="players">Players</a>
+      <a href="#/compare" data-view="compare">Compare</a>
+      <a href="#/rookies" data-view="rookies" class="dynasty-only">Rookies &amp; Picks</a>
+      <a href="#/data" data-view="data">Data</a>
+      <a href="#/settings" data-view="settings">Settings</a>
+      <a href="#/model" data-view="model">Model</a>
+    </nav>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="view" class="view" tabindex="-1"><div class="loading">Loading…</div></main>
+  <div id="modal-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+  <noscript>This application requires JavaScript.</noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

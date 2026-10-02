@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "_comment": "Manual import specifications. Each spec defines the target record type, expected columns with accepted aliases, user-facing step-by-step instructions, and an example. Column matching is case/space/punctuation-insensitive.",
+  "common_aliases": {
+    "player_name": ["player_name", "player", "name", "player name", "full name", "full_name", "playername"],
+    "position": ["position", "pos", "player_position", "positions"],
+    "team": ["team", "tm", "nfl team", "nfl_team", "team_abbr", "player_team_id"],
+    "player_id": ["player_id", "id", "playerid"],
+    "sleeper_id": ["sleeper_id", "sleeperid"],
+    "fantasypros_id": ["fantasypros_id", "fp_id", "fpid"],
+    "ktc_id": ["ktc_id", "ktcid", "playerid_ktc"],
+    "espn_id": ["espn_id", "espnid"],
+    "age": ["age"],
+    "birth_date": ["birth_date", "birthdate", "dob", "date_of_birth"]
+  },
+  "specs": [
+    {
+      "id": "ktc_values",
+      "source_id": "ktc",
+      "name": "KeepTradeCut Values",
+      "record_type": "market_value",
+      "format_options": {
+        "dynasty": { "label": "Ranking type", "choices": [ { "value": true, "label": "Dynasty" }, { "value": false, "label": "Redraft" } ], "default": true },
+        "qb": { "label": "QB format", "choices": [ { "value": "1qb", "label": "1QB" }, { "value": "sf", "label": "Superflex" } ], "default": "1qb" },
+        "tep": { "label": "TE premium", "choices": [ { "value": 0, "label": "None" }, { "value": 0.5, "label": "TE+" }, { "value": 1, "label": "TE++" } ], "default": 0 }
+      },
+      "columns": [
+        { "key": "player_name", "required": true, "description": "Player name, or a pick label such as '2027 Early 1st' / '2027 Pick 1.04'" },
+        { "key": "value", "required": true, "aliases": ["value", "ktc value", "ktc_value", "trade value", "val"], "type": "number", "description": "KTC value (0–9999)" },
+        { "key": "position", "required": false, "description": "QB/RB/WR/TE/RDP (RDP or PICK = rookie draft pick)" },
+        { "key": "team", "required": false },
+        { "key": "age", "required": false, "type": "number" },
+        { "key": "rank", "required": false, "aliases": ["rank", "overall rank", "overall_rank", "#"], "type": "number" },
+        { "key": "ktc_id", "required": false }
+      ],
+      "instructions": [
+        "Open https://keeptradecut.com/dynasty-rankings (or /fantasy-rankings for redraft) in your browser.",
+        "Choose the format that matches your league: 1QB or Superflex (and TE premium if applicable).",
+        "KTC does not offer an export button and its Terms prohibit automated collection, so this app never downloads KTC data for you.",
+        "Record the players you care about (or the full list) into a spreadsheet with at least two columns: Player and Value. Optional: Position, Team, Age, Rank.",
+        "For draft picks use the exact KTC label in the Player column, e.g. '2027 Early 1st', '2027 Mid 2nd', '2028 1st'.",
+        "Save the spreadsheet as CSV (File → Download/Save As → CSV).",
+        "Return here, click 'Choose File' and select the CSV.",
+        "Set 'Ranking type' and 'QB format' to match what you copied.",
+        "Confirm the detected column mapping, review the preview and the unmatched-player report.",
+        "Click 'Import'. Values are stored as the 'KeepTradeCut' market source and the model recalculates."
+      ],
+      "example_csv": "Player,Position,Team,Age,Value\nJa'Marr Chase,WR,CIN,26.6,9998\nBijan Robinson,RB,ATL,24.7,9750\n2027 Early 1st,RDP,,,6400\n2028 1st,RDP,,,5600\n"
+    },
+    {
+      "id": "fantasypros_rankings",
+      "source_id": "fantasypros_manual",
+      "name": "FantasyPros Rankings (CSV export)",
+      "record_type": "ranking",
+      "format_options": {
+        "kind": { "label": "Ranking type", "choices": [ { "value": "ros", "label": "Rest of Season" }, { "value": "redraft", "label": "Draft / Season" }, { "value": "weekly", "label": "Weekly" }, { "value": "dynasty", "label": "Dynasty" }, { "value": "rookie", "label": "Dynasty Rookies" } ], "default": "ros" },
+        "qb": { "label": "QB format", "choices": [ { "value": "1qb", "label": "1QB" }, { "value": "sf", "label": "Superflex" } ], "default": "1qb" },
+        "scope": { "label": "List scope", "choices": [ { "value": "overall", "label": "Overall (all positions)" }, { "value": "position", "label": "Single position" } ], "default": "overall" }
+      },
+      "columns": [
+        { "key": "player_name", "required": true },
+        { "key": "rank", "required": true, "aliases": ["rk", "rank", "ecr", "overall", "overall rank", "overall_rank", "ovr"], "type": "number", "description": "Consensus rank" },
+        { "key": "position", "required": false, "aliases": ["pos", "position"], "description": "Position or positional rank like 'RB12' (the position part is extracted)" },
+        { "key": "team", "required": false },
+        { "key": "pos_rank", "required": false, "aliases": ["pos rank", "pos_rank", "position rank", "posrank"], "description": "Positional rank (e.g. 'WR5' or 5)" },
+        { "key": "best", "required": false, "aliases": ["best", "best rank", "best_rank"], "type": "number" },
+        { "key": "worst", "required": false, "aliases": ["worst", "worst rank", "worst_rank"], "type": "number" },
+        { "key": "sd", "required": false, "aliases": ["std dev", "stdev", "sd", "std. dev"], "type": "number" },
+        { "key": "fantasypros_id", "required": false }
+      ],
+      "instructions": [
+        "Sign in at https://www.fantasypros.com (a free account is sufficient for most rankings pages).",
+        "Open the rankings page you want, e.g. NFL → Rankings → Rest of Season (PPR) or Dynasty → Overall / Superflex / Rookies.",
+        "Select the scoring format that matches your league (Standard / Half PPR / PPR).",
+        "Use the page's Download/Export option (CSV) if your account offers it; otherwise select the rankings table, copy it, paste it into a spreadsheet and save as CSV.",
+        "Make sure the CSV has a rank column (RK or ECR) and a player column (Player Name).",
+        "Return here, click 'Choose File' and select the CSV.",
+        "Set 'Ranking type', 'QB format' and 'List scope' to match the page you exported.",
+        "Confirm the detected columns (e.g. 'RK' → rank, 'PLAYER NAME' → player_name, 'POS' → position).",
+        "Review the preview, duplicates and unmatched-player report.",
+        "Click 'Import'. The list is stored under 'FantasyPros (manual export)' and used as a consensus signal."
+      ],
+      "example_csv": "RK,TIERS,PLAYER NAME,TEAM,POS,BEST,WORST,AVG.,STD.DEV\n1,1,Ja'Marr Chase,CIN,WR1,1,3,1.2,0.4\n2,1,Bijan Robinson,ATL,RB1,1,5,2.4,1.1\n"
+    },
+    {
+      "id": "projections_generic",
+      "source_id": "manual_projections",
+      "name": "Projections (FFToday or any site)",
+      "record_type": "projection",
+      "format_options": {
+        "scope": { "label": "Projection scope", "choices": [ { "value": "ros", "label": "Rest of season" }, { "value": "season", "label": "Full season" }, { "value": "week", "label": "Single week" } ], "default": "ros" }
+      },
+      "columns": [
+        { "key": "player_name", "required": true },
+        { "key": "position", "required": true },
+        { "key": "team", "required": false },
+        { "key": "games", "required": false, "aliases": ["g", "gp", "games"], "type": "number" },
+        { "key": "pass_cmp", "required": false, "aliases": ["comp", "cmp", "completions", "pass comp", "passing comp"], "type": "number" },
+        { "key": "pass_att", "required": false, "aliases": ["pass att", "att", "attempts", "passing att", "pass_attempts"], "type": "number" },
+        { "key": "pass_yd", "required": false, "aliases": ["pass yds", "passing yards", "pass yd", "pass_yards", "passing yds", "yds pass"], "type": "number" },
+        { "key": "pass_td", "required": false, "aliases": ["pass td", "passing td", "pass tds", "passing tds", "td pass"], "type": "number" },
+        { "key": "pass_int", "required": false, "aliases": ["int", "ints", "interceptions", "pass int"], "type": "number" },
+        { "key": "rush_att", "required": false, "aliases": ["rush att", "carries", "car", "rushing att", "rush attempts"], "type": "number" },
+        { "key": "rush_yd", "required": false, "aliases": ["rush yds", "rushing yards", "rush yd", "rushing yds"], "type": "number" },
+        { "key": "rush_td", "required": false, "aliases": ["rush td", "rushing td", "rush tds", "rushing tds"], "type": "number" },
+        { "key": "rec_tgt", "required": false, "aliases": ["targets", "tgt", "tgts"], "type": "number" },
+        { "key": "rec", "required": false, "aliases": ["rec", "receptions", "catches"], "type": "number" },
+        { "key": "rec_yd", "required": false, "aliases": ["rec yds", "receiving yards", "rec yd", "receiving yds"], "type": "number" },
+        { "key": "rec_td", "required": false, "aliases": ["rec td", "receiving td", "rec tds", "receiving tds"], "type": "number" },
+        { "key": "fum_lost", "required": false, "aliases": ["fl", "fumbles lost", "fum lost", "fum"], "type": "number" },
+        { "key": "fantasy_points", "required": false, "aliases": ["fpts", "fantasy points", "points", "pts", "fp"], "type": "number", "description": "Only used for K/DEF or when stat columns are missing (assumed to be in YOUR league's scoring)." }
+      ],
+      "instructions": [
+        "Open a projections page you are allowed to use, e.g. https://www.fftoday.com/rankings/ (Projections → Rest of Season or Season).",
+        "Pick one position at a time if the site splits projections by position (recommended — mixed-position tables often share column names).",
+        "Copy the table into a spreadsheet. Keep the header row. Include a Position column (add one if the site omits it, e.g. fill 'RB').",
+        "Keep the raw stat columns (Pass Yds, Pass TD, INT, Rush Yds, Rush TD, Rec, Rec Yds, Rec TD …). The app re-scores them with YOUR league scoring, so a fantasy-points column is optional.",
+        "Save as CSV.",
+        "Return here, click 'Choose File', select the CSV and set 'Projection scope'.",
+        "Confirm the column mapping — check that passing and rushing yards were not swapped (sites often label both 'Yds').",
+        "Review the preview and the unmatched-player report, then click 'Import'."
+      ],
+      "example_csv": "Player,Position,Team,G,Rush Att,Rush Yds,Rush TD,Rec,Rec Yds,Rec TD\nBijan Robinson,RB,ATL,14,240,1100,9,50,420,2\n"
+    },
+    {
+      "id": "market_generic",
+      "source_id": "manual_market",
+      "name": "Trade Values (generic)",
+      "record_type": "market_value",
+      "format_options": {
+        "dynasty": { "label": "Value type", "choices": [ { "value": true, "label": "Dynasty" }, { "value": false, "label": "Redraft" } ], "default": true },
+        "qb": { "label": "QB format", "choices": [ { "value": "1qb", "label": "1QB" }, { "value": "sf", "label": "Superflex" } ], "default": "1qb" }
+      },
+      "columns": [
+        { "key": "player_name", "required": true },
+        { "key": "value", "required": true, "aliases": ["value", "trade value", "trade_value", "val", "score"], "type": "number" },
+        { "key": "position", "required": false },
+        { "key": "team", "required": false },
+        { "key": "rank", "required": false, "aliases": ["rank", "overall rank", "#"], "type": "number" },
+        { "key": "sleeper_id", "required": false }
+      ],
+      "instructions": [
+        "Use any trade-value chart you are permitted to use. The scale does not matter (the model maps values by rank onto its own scale).",
+        "Create a CSV with at least Player and Value columns. Higher value must mean a more valuable player.",
+        "Choose the value type (Dynasty/Redraft) and QB format that the chart was built for.",
+        "Choose File → confirm mapping → review → Import."
+      ],
+      "example_csv": "Player,Pos,Team,Value\nJa'Marr Chase,WR,CIN,101\nBijan Robinson,RB,ATL,99\n"
+    },
+    {
+      "id": "rankings_generic",
+      "source_id": "manual_rankings",
+      "name": "Rankings (generic)",
+      "record_type": "ranking",
+      "format_options": {
+        "kind": { "label": "Ranking type", "choices": [ { "value": "ros", "label": "Rest of Season" }, { "value": "redraft", "label": "Draft / Season" }, { "value": "dynasty", "label": "Dynasty" }, { "value": "rookie", "label": "Dynasty Rookies" } ], "default": "ros" },
+        "qb": { "label": "QB format", "choices": [ { "value": "1qb", "label": "1QB" }, { "value": "sf", "label": "Superflex" } ], "default": "1qb" },
+        "scope": { "label": "List scope", "choices": [ { "value": "overall", "label": "Overall" }, { "value": "position", "label": "Single position" } ], "default": "overall" }
+      },
+      "columns": [
+        { "key": "player_name", "required": true },
+        { "key": "rank", "required": true, "aliases": ["rank", "rk", "overall", "ecr", "#"], "type": "number" },
+        { "key": "position", "required": false },
+        { "key": "team", "required": false },
+        { "key": "pos_rank", "required": false, "aliases": ["pos rank", "pos_rank", "position rank"] }
+      ],
+      "instructions": [
+        "Use any ranking list you trust (an analyst's column, your own rankings, a league-mate's sheet).",
+        "Make a CSV with Rank and Player columns (Position strongly recommended).",
+        "Choose File → set ranking type/QB format → confirm mapping → review → Import."
+      ],
+      "example_csv": "Rank,Player,Pos,Team\n1,Ja'Marr Chase,WR,CIN\n2,Bijan Robinson,RB,ATL\n"
+    },
+    {
+      "id": "adp_generic",
+      "source_id": "manual_adp",
+      "name": "ADP (generic)",
+      "record_type": "adp",
+      "format_options": {
+        "format": { "label": "Draft format", "choices": [ { "value": "redraft_ppr", "label": "Redraft PPR" }, { "value": "redraft_half", "label": "Redraft Half PPR" }, { "value": "redraft_std", "label": "Redraft Standard" }, { "value": "redraft_sf", "label": "Redraft Superflex" }, { "value": "dynasty", "label": "Dynasty startup" }, { "value": "dynasty_sf", "label": "Dynasty startup SF" }, { "value": "rookie", "label": "Rookie draft" } ], "default": "redraft_ppr" }
+      },
+      "columns": [
+        { "key": "player_name", "required": true },
+        { "key": "adp", "required": true, "aliases": ["adp", "avg", "average pick", "avg pick", "overall adp", "average draft position"], "type": "number" },
+        { "key": "position", "required": false },
+        { "key": "team", "required": false },
+        { "key": "pos_adp", "required": false, "aliases": ["pos adp", "positional adp"] }
+      ],
+      "instructions": [
+        "Export or copy ADP from your draft platform or an ADP site (e.g. Underdog, Sleeper, FFC).",
+        "Make a CSV with Player and ADP columns (decimal overall pick, e.g. 14.3).",
+        "Choose File → set draft format → confirm mapping → review → Import."
+      ],
+      "example_csv": "Player,Pos,Team,ADP\nJahmyr Gibbs,RB,DET,1.1\nBijan Robinson,RB,ATL,2.6\n"
+    },
+    {
+      "id": "picks_generic",
+      "source_id": "manual_picks",
+      "name": "Rookie Pick Values (generic)",
+      "record_type": "pick_market",
+      "format_options": {
+        "qb": { "label": "QB format", "choices": [ { "value": "1qb", "label": "1QB" }, { "value": "sf", "label": "Superflex" } ], "default": "1qb" }
+      },
+      "columns": [
+        { "key": "pick", "required": true, "aliases": ["pick", "player", "name", "asset", "player_name"], "description": "Pick label: '2027 1.04', '2027 Pick 1.04', '2027 Early 1st', '2028 1st', '2027 2nd (Mid)'" },
+        { "key": "value", "required": true, "aliases": ["value", "trade value", "val"], "type": "number" }
+      ],
+      "instructions": [
+        "Use any pick-value chart you are permitted to use.",
+        "Make a CSV with a Pick column and a Value column. Supported labels: '2027 1.04', '2027 Pick 1.04', '2027 Early 1st', '2027 1st (Late)', '2028 1st', '2029 2nd'.",
+        "Choose File → set QB format → confirm mapping → review → Import."
+      ],
+      "example_csv": "Pick,Value\n2027 1.01,7800\n2027 Early 1st,6900\n2028 1st,5600\n"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "scoring_presets": {
+    "standard": { "rec": 0 },
+    "half_ppr": { "rec": 0.5 },
+    "ppr": { "rec": 1 }
+  },
+  "base_scoring": {
+    "pass_yd": 0.04,
+    "pass_td": 4,
+    "pass_int": -2,
+    "pass_2pt": 2,
+    "pass_fd": 0,
+    "pass_cmp": 0,
+    "pass_inc": 0,
+    "pass_sack": 0,
+    "rush_yd": 0.1,
+    "rush_td": 6,
+    "rush_2pt": 2,
+    "rush_fd": 0,
+    "rush_att": 0,
+    "rec": 1,
+    "rec_yd": 0.1,
+    "rec_td": 6,
+    "rec_2pt": 2,
+    "rec_fd": 0,
+    "fum_lost": -2,
+    "bonus_rec_te": 0,
+    "bonus_rec_rb": 0,
+    "bonus_rec_wr": 0,
+    "bonus_fd_te": 0,
+    "bonuses": [
+      { "stat": "pass_yd", "threshold": 300, "points": 0 },
+      { "stat": "pass_yd", "threshold": 400, "points": 0 },
+      { "stat": "rush_yd", "threshold": 100, "points": 0 },
+      { "stat": "rush_yd", "threshold": 200, "points": 0 },
+      { "stat": "rec_yd", "threshold": 100, "points": 0 },
+      { "stat": "rec_yd", "threshold": 200, "points": 0 }
+    ]
+  },
+  "default_league": {
+    "id": "default",
+    "name": "12 Team — 1QB — PPR",
+    "teams": 12,
+    "qb_format": "1qb",
+    "scoring_preset": "ppr",
+    "scoring": {},
+    "roster": { "QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "SUPERFLEX": 0, "K": 1, "DEF": 1, "BENCH": 6, "IR": 1 },
+    "flex_eligibility": {
+      "FLEX": ["RB", "WR", "TE"],
+      "SUPERFLEX": ["QB", "RB", "WR", "TE"]
+    },
+    "dynasty": { "strategy": "balanced", "rookie_rounds": 4, "pick_years": 3 },
+    "overrides": {}
+  },
+  "_comment": "'overrides' in a league profile may override any key of config/model.json (deep-merged), e.g. {\"dynasty\": {\"weights\": {\"market\": 0.5}}}."
+}

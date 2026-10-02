@@ -1,0 +1,352 @@
+{
+  "model_version": "1.0.0",
+  "_comment": "Valuation model parameters. Bump model_version whenever a formula or default changes so stored trades/values remain comparable. Every parameter is documented in docs/VALUATION_MODEL.md, docs/DYNASTY_MODEL.md and docs/ROOKIE_PICK_MODEL.md.",
+  "scale": {
+    "top_value": 10000,
+    "_comment": "10,000 = most valuable asset in the reference league. The same points\u2192value factor is applied to the user's league so values are comparable across settings."
+  },
+  "reference_league": {
+    "teams": 12,
+    "qb_format": "1qb",
+    "roster": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 2,
+      "TE": 1,
+      "FLEX": 1,
+      "SUPERFLEX": 0,
+      "K": 0,
+      "DEF": 0,
+      "BENCH": 6,
+      "IR": 1
+    },
+    "scoring_preset": "ppr"
+  },
+  "phase": {
+    "regular_season_weeks": 18,
+    "full_in_season_week": 8,
+    "_comment": "Weights move linearly from the preseason set (week<=1) to the in-season set (week>=full_in_season_week)."
+  },
+  "redraft": {
+    "weights": {
+      "preseason": {
+        "projection": 0.35,
+        "consensus": 0.3,
+        "market": 0.15,
+        "adp": 0.2,
+        "production": 0.0
+      },
+      "in_season": {
+        "projection": 0.3,
+        "consensus": 0.25,
+        "market": 0.15,
+        "adp": 0.0,
+        "production": 0.3
+      }
+    },
+    "production": {
+      "regression_games": 4,
+      "xfp_blend": 0.4,
+      "min_games": 1,
+      "sos_strength": 0.5,
+      "sos_min_weeks": 3,
+      "_comment": "Production rate = (gp*rate + k*prior)/(gp+k). xfp_blend mixes opportunity-based expected points into actual points per game. SoS multiplier is shrunk by sos_strength."
+    },
+    "injury_games_lost": {
+      "Out": 1,
+      "Doubtful": 0.8,
+      "Questionable": 0.25,
+      "IR": 5,
+      "PUP": 5,
+      "NFI": 5,
+      "Suspended": 3,
+      "Sus": 3,
+      "COV": 1,
+      "DNR": 2
+    },
+    "bench_value_fraction": 0.35,
+    "trend": {
+      "weight": 0.2,
+      "cap_pct": 0.05
+    }
+  },
+  "dynasty": {
+    "horizon_years": 5,
+    "strategy_discount": {
+      "contending": 0.7,
+      "balanced": 0.82,
+      "rebuilding": 0.92
+    },
+    "weights": {
+      "fundamental": 0.4,
+      "market": 0.3,
+      "consensus": 0.25,
+      "adp": 0.05
+    },
+    "season_games": 17,
+    "rate_evidence": {
+      "projection_weight": 1.0,
+      "current_season_full_games": 8,
+      "last_season_weight": 0.8,
+      "last_season_min_games": 4,
+      "prior_pseudo_games": 10
+    },
+    "uncertainty": {
+      "cv_year1": {
+        "QB": 0.22,
+        "RB": 0.32,
+        "WR": 0.28,
+        "TE": 0.32,
+        "K": 0.2,
+        "DEF": 0.2
+      },
+      "annual_cv_growth": {
+        "QB": 0.1,
+        "RB": 0.14,
+        "WR": 0.12,
+        "TE": 0.13,
+        "K": 0.1,
+        "DEF": 0.1
+      },
+      "rookie_extra_cv": 0.2
+    },
+    "default_availability": {
+      "QB": 0.9,
+      "RB": 0.8,
+      "WR": 0.85,
+      "TE": 0.84,
+      "K": 0.95,
+      "DEF": 1.0
+    },
+    "default_aging_curves": {
+      "_comment": "Fallback relative-PPG multipliers by age (peak = 1.0). Replaced by config/calibration/aging-curves.json when present (run `npm run calibrate`).",
+      "QB": {
+        "21": 0.8,
+        "22": 0.85,
+        "23": 0.9,
+        "24": 0.94,
+        "25": 0.97,
+        "26": 0.99,
+        "27": 1.0,
+        "28": 1.0,
+        "29": 1.0,
+        "30": 1.0,
+        "31": 0.99,
+        "32": 0.97,
+        "33": 0.95,
+        "34": 0.92,
+        "35": 0.88,
+        "36": 0.84,
+        "37": 0.79,
+        "38": 0.73,
+        "39": 0.66,
+        "40": 0.58,
+        "41": 0.5,
+        "42": 0.42
+      },
+      "RB": {
+        "20": 0.86,
+        "21": 0.9,
+        "22": 0.95,
+        "23": 0.99,
+        "24": 1.0,
+        "25": 1.0,
+        "26": 0.97,
+        "27": 0.93,
+        "28": 0.87,
+        "29": 0.8,
+        "30": 0.72,
+        "31": 0.64,
+        "32": 0.56,
+        "33": 0.48,
+        "34": 0.4,
+        "35": 0.33
+      },
+      "WR": {
+        "20": 0.75,
+        "21": 0.8,
+        "22": 0.86,
+        "23": 0.92,
+        "24": 0.96,
+        "25": 0.99,
+        "26": 1.0,
+        "27": 1.0,
+        "28": 0.99,
+        "29": 0.97,
+        "30": 0.93,
+        "31": 0.88,
+        "32": 0.82,
+        "33": 0.75,
+        "34": 0.68,
+        "35": 0.6,
+        "36": 0.52,
+        "37": 0.45
+      },
+      "TE": {
+        "20": 0.65,
+        "21": 0.7,
+        "22": 0.76,
+        "23": 0.83,
+        "24": 0.9,
+        "25": 0.95,
+        "26": 0.99,
+        "27": 1.0,
+        "28": 1.0,
+        "29": 0.98,
+        "30": 0.95,
+        "31": 0.91,
+        "32": 0.86,
+        "33": 0.8,
+        "34": 0.73,
+        "35": 0.66,
+        "36": 0.58,
+        "37": 0.5
+      },
+      "K": {
+        "20": 1.0,
+        "45": 1.0
+      },
+      "DEF": {
+        "0": 1.0,
+        "99": 1.0
+      }
+    },
+    "default_attrition": {
+      "_comment": "Annual probability of dropping out of fantasy relevance = base + slope*max(0, age-onset), capped at 0.9. Replaced by calibration when present.",
+      "QB": {
+        "base": 0.06,
+        "onset": 33,
+        "slope": 0.06
+      },
+      "RB": {
+        "base": 0.1,
+        "onset": 27,
+        "slope": 0.07
+      },
+      "WR": {
+        "base": 0.08,
+        "onset": 29,
+        "slope": 0.05
+      },
+      "TE": {
+        "base": 0.08,
+        "onset": 30,
+        "slope": 0.05
+      },
+      "K": {
+        "base": 0.08,
+        "onset": 38,
+        "slope": 0.05
+      },
+      "DEF": {
+        "base": 0.0,
+        "onset": 99,
+        "slope": 0.0
+      }
+    },
+    "injury_year1_fraction": {
+      "IR": 0.35,
+      "PUP": 0.35,
+      "NFI": 0.35,
+      "Suspended": 0.15,
+      "Sus": 0.15,
+      "Out": 0.04,
+      "Doubtful": 0.03,
+      "Questionable": 0.01
+    },
+    "trend": {
+      "weight": 0.25,
+      "cap_pct": 0.06
+    }
+  },
+  "picks": {
+    "default_rounds": 4,
+    "max_rounds": 6,
+    "years_ahead": 3,
+    "upcoming_class_switch_month": 9,
+    "_switch_comment": "From this calendar month on, the 'upcoming' rookie class is next calendar year's.",
+    "weights": {
+      "market": 0.45,
+      "historical": 0.3,
+      "current_class": 0.25
+    },
+    "future_year_discount": 0.88,
+    "class_strength": 1.0,
+    "buckets": {
+      "early": [
+        0.0,
+        0.3334
+      ],
+      "mid": [
+        0.3333,
+        0.6667
+      ],
+      "late": [
+        0.6666,
+        1.0
+      ]
+    },
+    "reference_teams": 12,
+    "unknown_slot_extra_cv": 0.1,
+    "hit_rate_cv": 0.55,
+    "prior_class_adjustment": 0.8,
+    "_prior_class_comment": "When the rookie class used for the current-class/historical curves is an already-drafted class (e.g. 2026 rookies used to price 2027 picks), its values are partly 'resolved' (landing spots, early production) and ordered by today's rankings, which favours players who already hit. This multiplier removes that optimism. Market data typically prices the upcoming class's early 1st at ~0.65-0.8x the prior class's 1.01-1.04."
+  },
+  "source_weights": {
+    "_comment": "Relative weight of each source WITHIN a signal group. Rationale in docs/VALUATION_MODEL.md \u00a7Source weighting.",
+    "projection": {
+      "sleeper_projections": 1.0,
+      "espn": 0.8,
+      "manual_projections": 1.0
+    },
+    "consensus": {
+      "fantasypros_ecr": 1.0,
+      "fantasypros_manual": 1.0,
+      "manual_rankings": 0.8
+    },
+    "market": {
+      "fantasycalc": 1.0,
+      "ktc": 1.0,
+      "dynastyprocess_values": 0.35,
+      "manual_market": 0.8
+    },
+    "adp": {
+      "sleeper_projections": 1.0,
+      "ffc_adp": 0.8,
+      "espn": 0.8,
+      "manual_adp": 0.8
+    },
+    "pick_market": {
+      "fantasycalc": 1.0,
+      "ktc": 1.0,
+      "dynastyprocess_values": 0.8,
+      "manual_picks": 0.8
+    }
+  },
+  "mapping": {
+    "min_source_players": 20,
+    "_comment": "A ranking/market list must contain at least this many matched players at a position to be mapped onto that position's value curve."
+  },
+  "package": {
+    "enabled": true,
+    "redraft": {
+      "displacement_strength": 1.0,
+      "roster_slot_cost": 1.0,
+      "min_retained_fraction": 0.25
+    },
+    "dynasty": {
+      "displacement_strength": 0.6,
+      "roster_slot_cost": 1.0,
+      "min_retained_fraction": 0.35
+    },
+    "_comment": "Extra players received in an uneven trade are charged lineup displacement (surplus of the average team's worst starter at that position \u00d7 strength) and a roster-slot cost (value of the last rostered player). Picks are exempt from both."
+  },
+  "confidence": {
+    "high": 65,
+    "moderate": 40,
+    "dispersion_full_penalty_cv": 0.6,
+    "sample_games_full": 12,
+    "min_range_pct": 0.05,
+    "range_sd_multiplier": 1.0
+  }
+}
