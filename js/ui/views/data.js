@@ -187,6 +187,13 @@ function importView(body) {
   }
 
   async function commit(confirmOverwrite = false) {
+    // Ask before sending when the preview already shows records being replaced; the server's 409 stays as a
+    // safeguard (asking only after a refused request logged a failed request in the console on every overwrite).
+    const replaced = preview?.existing?.replaced || 0;
+    if (!confirmOverwrite && replaced > 0) {
+      if (!confirm(`This import replaces ${replaced} existing records with the same format. Overwrite them?`)) return;
+      confirmOverwrite = true;
+    }
     try {
       const r = await api.post('/api/import/commit', { spec_id: spec.id, text: fileText, filename: fileName, options, mapping, confirmOverwrite });
       toast(`Imported ${r.imported.players} matched players${r.imported.picks ? ` and ${r.imported.picks} picks` : ''}. ${r.unmatched} unmatched and ${r.ambiguous} ambiguous rows are kept on file but not used until resolved (Data quality).`);

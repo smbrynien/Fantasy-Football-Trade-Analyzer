@@ -915,7 +915,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   settings sanitized, offseason projects the upcoming season (L1, D1) → batch 5: corrupt stored UI state, phone
   overflow on Model/Data pages (UI1, UI2) → batch 6: sync stores only valid, de-duplicated records; API body
   validation (SY1–SY3, A6) → batch 7: search de-dupe/suffixes/team prefixes; performance and leak checks (SR1–SR3,
-  PF1, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  PF1) → batch 8: import overwrite confirmation, CSV signed-number regression; import/export workflows verified
+  (I4, I5, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

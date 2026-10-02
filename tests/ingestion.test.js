@@ -149,5 +149,7 @@ test('CSV export neutralizes spreadsheet formulas but keeps numbers (BUG_AUDIT I
   assert.equal(row.b, '\'@SUM(A1)');
   assert.equal(row.c, '-12.5');
   assert.equal(row.d, '-3');
+  const r2 = parseCSV(toCSV([{ pct: '+12.3%', neg: '-1,234', f: '-A1+1' }])).records[0];
+  assert.deepEqual([r2.pct, r2.neg, r2.f], ['+12.3%', '-1,234', '\'-A1+1'], 'signed numbers/percentages stay numbers; formulas do not');
   assert.equal(row.e, 'Ja\'Marr, "J"', 'quotes/commas round-trip');
 });

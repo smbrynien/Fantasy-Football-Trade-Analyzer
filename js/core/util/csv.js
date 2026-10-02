@@ -89,8 +89,8 @@ function escapeField(v) {
   let s = typeof v === 'number' ? (Number.isFinite(v) ? String(v) : '') : String(v);
   // Spreadsheet formula injection: a text cell from a source or an import (e.g. a player "name" of =HYPERLINK(…))
   // would run as a formula when the export is opened in Excel/Sheets. Prefix such text with ' — numbers (including
-  // negative ones written as text, like "-12.5") are left alone.
-  if (typeof v !== 'number' && /^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+(\.\d+)?$/.test(s)) s = `'${s}`;
+  // negative ones written as text, like "-12.5", "+12.3%" or "-1,234") are left alone.
+  if (typeof v !== 'number' && /^[=+\-@\t\r]/.test(s) && !/^[-+]?\d[\d,]*(\.\d+)?%?$/.test(s)) s = `'${s}`;
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

@@ -296,3 +296,19 @@ regression test, verification.
 * Valuation scales ~linearly: 2,208 → 13,248 players: redraft 136 → 372 ms, dynasty 254 → 844 ms; 100 keystroke
   searches ≤ 18 ms at every size. Browser: 3 rounds × 15 cycles of 8 routes + player modal + 2 mode switches → event
   listeners stay at 2, DOM nodes at 351, heap flat at 16 MB after warm-up, no leftover modals (no leaks).
+
+### I4 · Low · Import UX — Every overwrite logged a failed (409) request in the console
+* The UI discovered the "replaces N records" conflict by sending the import and getting HTTP 409. **Fix:** it asks
+  first when the preview already shows records being replaced (the server's 409 remains as a guard).
+  **File:** `js/ui/views/data.js`. **Verification:** browser run of the full import flow → no console errors.
+* **Import workflow verified (no defect):** malformed CSV → clear error; fixed file → preview shows the invalid row as
+  skipped and "Import 2 players"; commit stores 2 matched + 1 unmatched (kept for resolution), not the invalid one;
+  re-import → overwrite banner + confirmation; **declining changes nothing**; accepting replaces (3 → 2 records);
+  "Remove all imported data" → source back to "not imported".
+
+### I5 · Low · Export — Signed percentages were prefixed with ' (regression from I3, fixed before release)
+* The trade CSV's difference row holds text like `+12.3%`; the I3 formula guard prefixed it. **Fix:** numeric-looking
+  text (`-12.5`, `+12.3%`, `-1,234`) is not prefixed; formulas still are. **Test:** extended "CSV export neutralizes…".
+* **Exports verified:** trade CSV/JSON totals agree with each other and the engine; JSON audit carries model version,
+  data version, settings hash, league and mode; names with apostrophes/hyphens round-trip; players CSV has one row per
+  valued player (no duplicates), model/data version and league on every row, no NaN/undefined/Infinity cells.
