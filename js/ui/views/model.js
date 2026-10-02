@@ -28,8 +28,8 @@ export function renderModel(root) {
     root.append(h('div.panel', {},
       h('h2', {}, `Your league structure (${app.mode})`),
       h('p.small.muted', {}, `${league.name}: ${league.teams} teams. Phase: ${res.phase.phase}, week ${res.phase.week} (${Math.round(res.phase.alpha * 100)}% in-season weights). Points basis: ${app.mode === 'redraft' ? 'rest-of-season points' : 'expected next-season points'}.`),
-      h('table.data', {}, h('thead', {}, h('tr', {}, ['Position', 'Starters', 'Replacement pts', 'Waiver pts', 'Rostered', 'Avg. worst starter pts'].map((c) => h('th', { class: c === 'Position' ? '' : 'num' }, c)))),
-        h('tbody', {}, Object.keys(st.starters).map((p) => h('tr', {}, h('td', {}, p), h('td.num', {}, st.starters[p]), h('td.num', {}, fmt1(st.replacement[p])), h('td.num', {}, fmt1(st.waiver[p])), h('td.num', {}, st.rostered[p]), h('td.num', {}, fmt1(st.displacement[p])))))),
+      h('div.table-wrap', {}, h('table.data', {}, h('thead', {}, h('tr', {}, ['Position', 'Starters', 'Replacement pts', 'Waiver pts', 'Rostered', 'Avg. worst starter pts'].map((c) => h('th', { class: c === 'Position' ? '' : 'num' }, c)))),
+        h('tbody', {}, Object.keys(st.starters).map((p) => h('tr', {}, h('td', {}, p), h('td.num', {}, st.starters[p]), h('td.num', {}, fmt1(st.replacement[p])), h('td.num', {}, fmt1(st.waiver[p])), h('td.num', {}, st.rostered[p]), h('td.num', {}, fmt1(st.displacement[p]))))))),
       h('h3.mt', {}, 'Current signal weights'),
       h('p', {}, Object.entries(res.weights).filter(([, w]) => w > 0).map(([k, w]) => `${k} ${Math.round(w * 100)}%`).join(' · ')),
       h('p.small.muted', {}, `Points→value factor ${res.factor.toFixed(2)} · computed in ${res.meta.compute_ms} ms · data ${res.meta.data_version}.`)));
@@ -60,8 +60,8 @@ export function renderModel(root) {
       const rc = cal.rookie_slot_curve;
       calPanel.append(h('h3.mt', {}, 'Rookie slot value curve'),
         lineChart([{ label: 'Smoothed shape (top-12 avg = 1)', color: 'var(--accent)', points: rc.shape.map((v, i) => [i + 1, v]) }, { label: 'Raw mean (scaled)', color: 'var(--faint)', dashed: true, points: (rc.raw_mean_by_rank || []).map((v, i) => [i + 1, v / (rc.raw_mean_by_rank.slice(0, 12).reduce((a, b) => a + b, 0) / 12 || 1)]) }], { yMin: 0, xLabel: 'Consensus rookie rank in class', yFormat: (v) => v.toFixed(1), height: 220 }),
-        h('table.data.mt-s', {}, h('thead', {}, h('tr', {}, ['Rookie rank', 'n', 'Top-24 season within 3 yrs', 'Mean 3-yr surplus', 'Outcome CV'].map((c) => h('th', { class: c === 'Rookie rank' ? '' : 'num' }, c)))),
-          h('tbody', {}, rc.hit_rates.map((r) => h('tr', {}, h('td', {}, r.picks), h('td.num', {}, r.n), h('td.num', {}, fmtPctPlain(r.top24_rate)), h('td.num', {}, fmt1(r.mean_value)), h('td.num', {}, fmt1(r.outcome_cv)))))),
+        h('div.table-wrap', {}, h('table.data.mt-s', {}, h('thead', {}, h('tr', {}, ['Rookie rank', 'n', 'Top-24 season within 3 yrs', 'Mean 3-yr surplus', 'Outcome CV'].map((c) => h('th', { class: c === 'Rookie rank' ? '' : 'num' }, c)))),
+          h('tbody', {}, rc.hit_rates.map((r) => h('tr', {}, h('td', {}, r.picks), h('td.num', {}, r.n), h('td.num', {}, fmtPctPlain(r.top24_rate)), h('td.num', {}, fmt1(r.mean_value)), h('td.num', {}, fmt1(r.outcome_cv))))))),
         h('p.small.muted', {}, `${rc.method} Classes: ${Object.entries(rc.classes).map(([y, n]) => `${y} (${n})`).join(', ')}. Small samples — treat as directional.`));
     }
   }

@@ -129,7 +129,7 @@ function sourceDetail(s) {
         h('dt', {}, 'Independence group'), h('dd', {}, s.independence_group),
         h('dt', {}, 'Terms / notes'), h('dd', {}, s.terms || '—'),
         h('dt', {}, 'Fallback'), h('dd', {}, s.fallback || '—')),
-      s.types ? h('div.mt', {}, h('h3', {}, 'Last run by data type'), h('table.data', {}, h('tbody', {}, Object.entries(s.types).map(([t, v]) => h('tr', {}, h('td', {}, t), h('td', {}, statusIcon(v.status), ' ', v.status), h('td.num', {}, v.records ?? '—'), h('td.small', {}, v.error || (v.issues || []).map((i) => i.message).join(' '))))))) : null,
+      s.types ? h('div.mt', {}, h('h3', {}, 'Last run by data type'), h('div.table-wrap', {}, h('table.data', {}, h('tbody', {}, Object.entries(s.types).map(([t, v]) => h('tr', {}, h('td', {}, t), h('td', {}, statusIcon(v.status), ' ', v.status), h('td.num', {}, v.records ?? '—'), h('td.small', {}, v.error || (v.issues || []).map((i) => i.message).join(' ')))))))) : null,
       spec ? h('div.mt', {}, h('h3', {}, 'Manual fallback'), h('ol.steps', {}, spec.instructions.map((i) => h('li', {}, i))), h('a.btn.btn-sm', { href: `#/data/import?spec=${spec.id}`, onclick: () => close() }, 'Open manual import')) : h('p.small.muted.mt', {}, 'Manual fallback: any of the generic import templates (Data → Manual Import) can stand in for this source\'s data type.'))));
 }
 
@@ -161,8 +161,8 @@ function importView(body) {
       h('p.small.muted', {}, `Stored as source "${src?.name || spec.source_id}" (${spec.record_type}). ${src?.terms || ''}`),
       h('ol.steps', {}, spec.instructions.map((i) => h('li', {}, i))),
       h('h4.mt', {}, 'Expected columns'),
-      h('table.data', {}, h('thead', {}, h('tr', {}, h('th', {}, 'Column'), h('th', {}, 'Required'), h('th', {}, 'Accepted names'))),
-        h('tbody', {}, spec.columns.map((c) => h('tr', {}, h('td.mono', {}, c.key), h('td', {}, c.required ? h('span.badge.bad', {}, 'required') : h('span.faint', {}, 'optional')), h('td.small', {}, [...new Set([...(c.aliases || []), ...(app.config.importSpecs.common_aliases[c.key] || [])])].join(', ') || c.key, c.description ? h('div.tiny.muted', {}, c.description) : null))))),
+      h('div.table-wrap', {}, h('table.data', {}, h('thead', {}, h('tr', {}, h('th', {}, 'Column'), h('th', {}, 'Required'), h('th', {}, 'Accepted names'))),
+        h('tbody', {}, spec.columns.map((c) => h('tr', {}, h('td.mono', {}, c.key), h('td', {}, c.required ? h('span.badge.bad', {}, 'required') : h('span.faint', {}, 'optional')), h('td.small', {}, [...new Set([...(c.aliases || []), ...(app.config.importSpecs.common_aliases[c.key] || [])])].join(', ') || c.key, c.description ? h('div.tiny.muted', {}, c.description) : null)))))),
       h('div.flex.mt-s', {}, h('button.btn.btn-sm', { onclick: () => download(`${spec.id}-example.csv`, spec.example_csv, 'text/csv') }, '⤓ Example CSV'), h('code.small', {}, spec.example_csv.split('\n')[0])),
       optEls.length ? h('div.fields.mt', {}, optEls) : null,
       h('div.mt', {}, drop), h('div.mt-s', {}, paste),
@@ -208,9 +208,9 @@ function importView(body) {
     if (!preview) { right.append(h('p.muted', {}, 'Load a file to see the detected columns, a preview, validation results and the unmatched-player report before anything is saved.')); return; }
     if (preview.headers) {
       right.append(h('h3', {}, 'Column mapping'), h('p.small.muted', {}, 'Detected automatically (exact or alias match). Adjust if needed, then re-validate.'),
-        h('table.data', {}, h('tbody', {}, spec.columns.map((c) => h('tr', {}, h('td.mono', {}, c.key, c.required ? ' *' : ''),
+        h('div.table-wrap', {}, h('table.data', {}, h('tbody', {}, spec.columns.map((c) => h('tr', {}, h('td.mono', {}, c.key, c.required ? ' *' : ''),
           h('td', {}, h('select', { onchange: (e) => { mapping = { ...mapping, [c.key]: e.target.value || undefined }; if (!e.target.value) delete mapping[c.key]; } }, h('option', { value: '' }, '— not mapped —'), preview.headers.map((hd) => h('option', { value: hd, selected: mapping && mapping[c.key] === hd ? true : null }, hd)))),
-          h('td.tiny.muted', {}, preview.auto?.method?.[c.key] ? `${preview.auto.method[c.key]} match` : ''))))),
+          h('td.tiny.muted', {}, preview.auto?.method?.[c.key] ? `${preview.auto.method[c.key]} match` : '')))))),
         preview.auto?.unmapped?.length ? h('p.tiny.muted', {}, `Ignored columns: ${preview.auto.unmapped.join(', ')}`) : null,
         h('button.btn.btn-sm.mt-s', { onclick: runPreview }, 'Re-validate with this mapping'));
     }
@@ -264,9 +264,9 @@ function qualityView(body) {
       h('p.small.muted', {}, 'Records are matched by external IDs first, then normalized name + position, then team/birth date/age/draft year. Ambiguous players are never merged automatically — resolve them here (stored in data/players/overrides.json).'),
       h('div.table-wrap', {}, h('table.data', {}, h('thead', {}, h('tr', {}, ['Source', 'Matched', 'Unresolved', 'Ambiguous', 'Fuzzy'].map((c) => h('th', {}, c)))),
         h('tbody', {}, Object.entries(id.matched || {}).map(([src, m]) => h('tr', {}, h('td', {}, src), h('td.num', {}, fmtInt(m.matched)), h('td.num', {}, fmtInt(m.unresolved)), h('td.num', {}, fmtInt(m.ambiguous)), h('td.num', {}, fmtInt(m.fuzzy))))))),
-      (id.ambiguous || []).length ? h('div.mt', {}, h('h3', {}, `Ambiguous (${id.ambiguous.length})`), h('table.data', {}, h('tbody', {}, id.ambiguous.slice(0, 100).map((a) => h('tr', {},
+      (id.ambiguous || []).length ? h('div.mt', {}, h('h3', {}, `Ambiguous (${id.ambiguous.length})`), h('div.table-wrap', {}, h('table.data', {}, h('tbody', {}, id.ambiguous.slice(0, 100).map((a) => h('tr', {},
         h('td', {}, `${a.source}: `, h('strong', {}, a.name), ` ${a.position || ''} ${a.team || ''}`),
-        h('td', {}, h('div.flex', {}, a.candidates.map((c) => h('button.btn.btn-xs', { title: `Map to ${c.name} (${c.cid})`, onclick: () => resolve(a, c.cid) }, `${c.name} · ${c.team} · ${c.birth_date || 'dob ?'}`)), h('button.btn.btn-xs.btn-ghost', { onclick: () => resolve(a, null) }, 'Ignore')))))))) : null,
+        h('td', {}, h('div.flex', {}, a.candidates.map((c) => h('button.btn.btn-xs', { title: `Map to ${c.name} (${c.cid})`, onclick: () => resolve(a, c.cid) }, `${c.name} · ${c.team} · ${c.birth_date || 'dob ?'}`)), h('button.btn.btn-xs.btn-ghost', { onclick: () => resolve(a, null) }, 'Ignore'))))))))) : null,
       unresolved.length ? h('details.mt', {}, h('summary', {}, `Unmatched records (${unresolved.length}) — usually prospects or players not in the player database`), h('ul.small', {}, unresolved.slice(0, 300).map((u) => h('li', {}, `${u.src}: ${u.name} ${u.position || ''} ${u.team || ''}`)))) : null,
       Object.keys(id.fuzzy || {}).length ? h('details.mt', {}, h('summary', {}, 'Fuzzy matches (review)'), h('ul.small', {}, Object.entries(id.fuzzy).flatMap(([src, l]) => l.map((x) => h('li', {}, `${src}: ${x.name} → ${x.matched_to}`))))) : null));
 

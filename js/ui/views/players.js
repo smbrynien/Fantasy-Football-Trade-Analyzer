@@ -1,7 +1,7 @@
 // PLAYER DATABASE — search, filters, sortable/customisable columns, CSV export.
 
 import { h, clear, fmtValue, fmt1, fmtAge, posBadge, confBadge, injuryBadge, download, debounce, timeAgo } from '../dom.js';
-import { app, getValuations, load, save, playerData } from '../state.js';
+import { app, getValuations, load, save, playerData, isPlainObject, isStringArray } from '../state.js';
 import { openPlayer } from './player-modal.js';
 import { toCSV } from '../../core/util/csv.js';
 import { TEAMS } from '../../core/util/teams.js';
@@ -33,8 +33,10 @@ export function renderPlayers(root) {
   const red = getValuations('redraft');
   const dyn = getValuations('dynasty');
   const cur = app.mode === 'dynasty' ? dyn : red;
-  const f = load(`players.filters.${app.mode}`, { q: '', pos: [], team: '', ageMin: '', ageMax: '', valMin: '', inj: 'all', exp: 'all', sort: app.mode === 'dynasty' ? 'dyn' : 'red', dir: 'desc', limit: 150 });
-  let visible = load(`players.cols.${app.mode}`, DEFAULT_VISIBLE[app.mode]);
+  const defaults = { q: '', pos: [], team: '', ageMin: '', ageMax: '', valMin: '', inj: 'all', exp: 'all', sort: app.mode === 'dynasty' ? 'dyn' : 'red', dir: 'desc', limit: 150 };
+  const f = { ...defaults, ...load(`players.filters.${app.mode}`, {}, isPlainObject) };
+  if (!isStringArray(f.pos)) f.pos = [];
+  let visible = load(`players.cols.${app.mode}`, DEFAULT_VISIBLE[app.mode], isStringArray);
 
   const rows = [];
   for (const a of cur.assets.values()) {

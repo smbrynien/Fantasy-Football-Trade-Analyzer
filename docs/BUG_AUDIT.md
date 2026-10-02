@@ -215,3 +215,29 @@ regression test, verification.
   **File:** `server/sync-engine.js`. **Test:** `tests/sync.test.js` "season transitions…" simulates end of 2026 season →
   2027 offseason → 2027 preseason → 2027 regular season. **Limit:** verified against Sleeper's documented state shape;
   a live offseason response could not be observed (it is October 2026).
+
+### UI1 · High · Persistence — Malformed stored UI state broke pages permanently
+* **Steps:** localStorage `ffta.trade.redraft = {"a":"x","b":null}` → the Trade page showed "Something went wrong" on
+  every visit; `ffta.mode = "nonsense"` → Players page crash; `ffta.profiles = [null,5]` and `ffta.trades = {…}` →
+  uncaught TypeErrors. Only clearing site data recovered. (Sources: older versions, another tab, manual edits; the
+  server copy of profiles is also merged in.)
+* **Root cause:** `load()` returned whatever JSON was stored; callers assumed the shape.
+* **Fix:** `load(key, fallback, valid)` with shape checks at every read (trade sides, saved trades, profiles incl. the
+  server copy, mode, remembered profile, compare list, player filters/columns). **Files:** `js/ui/state.js`,
+  `js/ui/views/{trade,players,compare}.js`.
+* **Test:** E2E "corrupt localStorage: trade page still works" (fails on the old UI); a probe of 13 corrupt
+  values × 5 routes → no errors.
+
+### UI2 · Medium · Responsive — Model, Data quality and Import pages scrolled sideways on phones
+* **Steps:** 375–430 px wide → `#/model` overflowed 341–396 px (also 10 px at 768), `#/data/quality` 3–58 px,
+  `#/data/import` 2–4 px. Measured on all 14 routes × 7 viewport sizes (375×812 … 1920×1080) × both modes.
+* **Root cause:** six tables were not inside the horizontally scrolling `.table-wrap`; the single-column grid used
+  `1fr`, which cannot shrink below its content. **Fix:** wrapped them; `minmax(0, 1fr)`. **Files:**
+  `js/ui/views/{model,data}.js`, `css/app.css`. **Test:** E2E "<route>: no sideways page scroll" on 10 routes at
+  1360/721/390 px; the full 7-size sweep now reports no overflow anywhere.
+
+### V1 · Info (verified, no defect) — UI state vs engine after rapid switching
+* Built a trade, switched through all league profiles 3× rapidly, toggled Redraft/Dynasty 10×, used back/forward:
+  displayed side totals equal the engine's totals for the selected profile in every case (5 profiles checked), the
+  final mode/profile/body class agree, no console errors. The valuation cache key includes mode + data version +
+  profile hash, so no stale values were observed.

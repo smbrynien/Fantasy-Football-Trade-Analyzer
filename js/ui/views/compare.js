@@ -1,7 +1,7 @@
 // COMPARISON TOOL — side-by-side players (and picks in dynasty).
 
 import { h, clear, fmtValue, fmt1, fmtAge, fmtPctPlain, posBadge, confBadge, fmtRange } from '../dom.js';
-import { app, getValuations, load, save, playerData } from '../state.js';
+import { app, getValuations, load, save, playerData, isStringArray } from '../state.js';
 import { assetSearchBox } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
 import { lineChart } from '../charts.js';
@@ -12,7 +12,7 @@ export function renderCompare(root) {
   const res = getValuations();
   const red = getValuations('redraft');
   const dyn = app.mode === 'dynasty' ? res : null;
-  let ids = load(`compare.${app.mode}`, []).filter((id) => res.getAsset(id));
+  let ids = load(`compare.${app.mode}`, [], isStringArray).filter((id) => res.getAsset(id));
   const host = h('div');
   root.append(h('div.panel', {},
     h('div.panel-head', {}, h('h2', {}, 'Compare'), h('span.small.muted', {}, app.mode === 'dynasty' ? 'Players and picks — player vs player, player vs pick, pick vs pick.' : 'Up to 8 players side by side.')),

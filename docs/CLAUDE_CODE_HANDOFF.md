@@ -912,7 +912,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   reliability (docs/BUG_AUDIT.md A1–A5, B1, C1, C2) → batch 2: import validation, CSV export formula injection,
   identity conflicts, pick validity + monotone pick curves (model 2.1.2; I1–I3, ID1–ID2, P1–P2) → batch 3: duplicate
   generic picks, single player modal + URL, dialog focus, injection probe (T1, U1, U2, S1) → batch 4: hostile league
-  settings sanitized, offseason projects the upcoming season (L1, D1, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  settings sanitized, offseason projects the upcoming season (L1, D1) → batch 5: corrupt stored UI state, phone
+  overflow on Model/Data pages (UI1, UI2, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

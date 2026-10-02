@@ -1,7 +1,7 @@
 // TRADE CALCULATOR — the central experience.
 
 import { h, clear, fmtValue, fmtSigned, fmtPct, fmtRange, fmtAge, posBadge, confBadge, injuryBadge, toast, download, fmtTime } from '../dom.js';
-import { app, getValuations, load, save, activeProfile, playerData } from '../state.js';
+import { app, getValuations, load, save, activeProfile, playerData, isPlainObject, isStringArray } from '../state.js';
 import { analyzeTrade } from '../../core/valuation/trade.js';
 import { COMPONENT_LABELS } from '../../core/valuation/engine.js';
 import { pickAssetId, parsePickAssetId, pickDisplayName } from '../../core/pick-labels.js';
@@ -16,7 +16,9 @@ import { starterSlotsSummary } from '../../core/settings.js';
 const SIGNAL_LABELS = { market: 'Market value', consensus: 'Expert consensus', projection: 'Projection', production: 'Production', adp: 'ADP', fundamental: 'Fundamental (multi-year model)' };
 
 function tradeKey() { return `trade.${app.mode}`; }
-function getTrade() { return load(tradeKey(), { a: [], b: [] }); }
+function getTrade() { return load(tradeKey(), { a: [], b: [] }, (t) => isPlainObject(t) && isStringArray(t.a) && isStringArray(t.b)); }
+const isSavedTrade = (t) => isPlainObject(t) && isStringArray(t.a) && isStringArray(t.b);
+const localTrades = () => load('trades', [], Array.isArray).filter(isSavedTrade);
 function setTrade(t) { save(tradeKey(), t); }
 const assetName = (id) => playerData(id)?.name || (String(id).startsWith('pick:') && parsePickAssetId(id) ? pickDisplayName(parsePickAssetId(id)) : id);
 // Generic picks (slot unknown, early/mid/late, projected range) can legitimately appear more than once — e.g. two
@@ -242,7 +244,7 @@ export function renderTrade(root) {
     if (hasServer()) {
       try { await api.post('/api/trades', entry); toast('Trade saved to history.'); drawHistory(); return; } catch (e) { toast(`Server save failed (${e.message}); saved locally.`, 'warn'); }
     }
-    const local = load('trades', []);
+    const local = localTrades();
     local.unshift({ id: `l_${Date.now().toString(36)}`, saved_at: new Date().toISOString(), ...entry });
     save('trades', local.slice(0, 200));
     toast('Trade saved locally.');
@@ -263,7 +265,7 @@ export function renderTrade(root) {
     history.append(h('div.panel-head', {}, h('h3', {}, 'Saved trades'), h('span.small.muted', {}, 'Every saved trade stores model version, data snapshot, league settings and per-asset values so it can be re-checked later.')));
     let trades = [];
     if (hasServer()) { try { trades = (await api.get('/api/trades')).trades || []; } catch { /* ignore */ } }
-    trades = [...trades, ...load('trades', [])].filter((t) => t.mode === app.mode).sort((x, y) => (y.saved_at || '').localeCompare(x.saved_at || ''));
+    trades = [...trades.filter(isSavedTrade), ...localTrades()].filter((t) => t.mode === app.mode).sort((x, y) => (y.saved_at || '').localeCompare(x.saved_at || ''));
     if (!trades.length) { history.append(h('p.muted.small', {}, 'No saved trades in this mode yet.')); return; }
     const tbl = h('table.data', {}, h('thead', {}, h('tr', {}, h('th', {}, 'Saved'), h('th', {}, 'Team A receives'), h('th', {}, 'Team B receives'), h('th.num', {}, 'Then'), h('th.num', {}, 'Now'), h('th', {}, ''))));
     const tb = h('tbody');
@@ -277,7 +279,7 @@ export function renderTrade(root) {
         h('td.nowrap', {}, h('button.btn.btn-xs', { onclick: () => { trade.a = [...t.a]; trade.b = [...t.b]; rerender(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Load'), ' ',
           h('button.btn.btn-xs', { onclick: () => explainChange(t) }, 'Why changed?'), ' ',
           h('button.btn.btn-xs.btn-danger', { onclick: async () => {
-            if (String(t.id).startsWith('l_')) save('trades', load('trades', []).filter((x) => x.id !== t.id));
+            if (String(t.id).startsWith('l_')) save('trades', localTrades().filter((x) => x.id !== t.id));
             else if (hasServer()) await api.del(`/api/trades/${t.id}`).catch(() => {});
             drawHistory();
           } }, '✕'))));

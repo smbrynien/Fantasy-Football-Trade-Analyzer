@@ -17,9 +17,22 @@ export const app = {
 };
 
 // ---------- persistence (browser storage is a convenience only; always guarded) ----------
-export function load(key, fallback) {
-  try { const v = localStorage.getItem(`ffta.${key}`); return v === null ? fallback : JSON.parse(v); } catch { return fallback; }
+/**
+ * Read a persisted UI value. `valid(v)` (optional) checks its shape: stored state can be malformed (older versions,
+ * manual edits, another tab) and used to crash views permanently — a non-array trade side broke the Trade page on every
+ * visit until site data was cleared. Invalid values fall back.
+ */
+export function load(key, fallback, valid) {
+  try {
+    const raw = localStorage.getItem(`ffta.${key}`);
+    if (raw === null) return fallback;
+    const v = JSON.parse(raw);
+    return valid && !valid(v) ? fallback : v;
+  } catch { return fallback; }
 }
+export const isStringArray = (v) => Array.isArray(v) && v.every((x) => typeof x === 'string');
+export const isProfile = (p) => Boolean(p) && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string';
+export const isPlainObject = (v) => Boolean(v) && typeof v === 'object' && !Array.isArray(v);
 export function save(key, value) {
   try { localStorage.setItem(`ffta.${key}`, JSON.stringify(value)); } catch { /* storage unavailable */ }
 }
@@ -37,10 +50,10 @@ export function activeProfile() {
 export function activeLeague() { return buildLeague(activeProfile(), app.config.leagueDefaults); }
 
 export async function initProfiles() {
-  app.userProfiles = load('profiles', []);
+  app.userProfiles = load('profiles', [], Array.isArray).filter(isProfile);
   if (hasServer()) {
     try {
-      const remote = (await api.get('/api/profiles')).profiles || [];
+      const remote = ((await api.get('/api/profiles')).profiles || []).filter(isProfile);
       const byId = new Map(app.userProfiles.map((p) => [p.id, p]));
       for (const r of remote) {
         const l = byId.get(r.id);
@@ -49,8 +62,8 @@ export async function initProfiles() {
       app.userProfiles = [...byId.values()];
     } catch { /* offline */ }
   }
-  app.mode = load('mode', 'redraft');
-  app.profileId = load(`profile.${app.mode}`, null);
+  app.mode = load('mode', 'redraft', (m) => m === 'redraft' || m === 'dynasty');
+  app.profileId = load(`profile.${app.mode}`, null, (v) => typeof v === 'string');
 }
 
 export async function persistProfiles() {
@@ -79,7 +92,7 @@ export function setMode(mode) {
   if (mode === app.mode) return;
   app.mode = mode;
   save('mode', mode);
-  const remembered = load(`profile.${mode}`, null);
+  const remembered = load(`profile.${mode}`, null, (v) => typeof v === 'string');
   if (remembered && allProfiles().some((p) => p.id === remembered)) app.profileId = remembered;
   else {
     const cur = activeProfile();

@@ -74,6 +74,13 @@ try {
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
     page.on('pageerror', (e) => errors.push(String(e)));
 
+    // Corrupt persisted state (older versions, manual edits) must not break any page (BUG_AUDIT UI1).
+    await page.goto(`${base}/#/help`);
+    await page.evaluate(() => { localStorage.setItem('ffta.trade.redraft', '{"a":"x","b":null}'); localStorage.setItem('ffta.mode', '"nonsense"'); localStorage.setItem('ffta.profiles', '[null,5]'); localStorage.setItem('ffta.trades', '{"x":1}'); });
+    await page.goto(`${base}/#/trade`); await page.reload();
+    const builderUp = await page.locator('.trade-side input[type=search]').first().waitFor({ timeout: 8000 }).then(() => true, () => false);
+    check(builderUp && !/Something went wrong/.test(await page.locator('#view').innerText()), 'corrupt localStorage: trade page still works');
+    await page.evaluate(() => localStorage.clear());
     await page.goto(`${base}/#/trade`);
     await page.locator('#tabs a').first().waitFor({ timeout: 15000 });
     const boxes = page.locator('.trade-side input[type=search], input[type=search]');
@@ -93,10 +100,12 @@ try {
     const level = (await verdict.count()) ? await verdict.first().getAttribute('class') : '';
     check(/\b(even|lean|clear)\b/.test(level || ''), `trade: verdict computed (${level || 'none'})`);
 
-    for (const route of ['#/players', '#/compare', '#/data', '#/settings', '#/model', '#/help']) {
+    for (const route of ['#/players', '#/compare', '#/data', '#/data/import', '#/data/quality', '#/data/snapshots', '#/settings', '#/settings/roster', '#/model', '#/help']) {
       await page.goto(`${base}/${route}`);
       await page.waitForTimeout(700);
       check((await page.locator('main, #app, body').first().innerText()).trim().length > 50, `${route} renders`);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      check(over <= 0, `${route}: no sideways page scroll (${over}px)`);
     }
     // Layout (handoff bugs #6/#7 and the mid-width header overflow): every section tab and the Sync button are on
     // screen, and the page never scrolls sideways.
