@@ -143,3 +143,38 @@ test('sanity: elite players are well above replacement in every mode', () => {
     assert.ok(a.value > 1000, `${r.mode} ${pos}1 = ${a.value}`);
   }
 });
+
+// Handoff bug #1 (fixed in model 2.1.0): long ADP lists rank undrafted / out-of-league players, so ADP alone must not
+// value a player in redraft. ADP still contributes when another signal corroborates it.
+const adpOnlyPlayer = (cid, team, adp) => ({ cid, name: `ADP Only ${cid}`, position: 'WR', positions: ['WR'], team, birth_date: '1995-01-01', draft: {}, ids: {}, aliases: [], rankings: [], projections: [], market: [], weekly: [], last_season: null, injury: null, adp: [{ src: 'sleeper_projections', format: 'redraft_ppr', adp }] });
+const withAdpOnly = (base) => {
+  const d2 = deepClone(base);
+  d2.players.push(adpOnlyPlayer('ADP_FA', 'FA', 40.5), adpOnlyPlayer('ADP_ROSTERED', 'DAL', 41.5));
+  const corroborated = adpOnlyPlayer('ADP_PLUS_MKT', 'FA', 42.5);
+  corroborated.market = [{ src: 'fantasycalc', dynasty: false, qb: '1qb', ppr: 1, teams: 12, value: 3000 }];
+  d2.players.push(corroborated);
+  return d2;
+};
+
+test('ADP-only players (free agent or rostered) get no redraft value, in season and preseason', () => {
+  const pre = deepClone(ds); pre.state.season_type = 'pre'; pre.state.week = 0;
+  for (const p of pre.players) for (const pr of p.projections) pr.scope = 'season';
+  for (const base of [ds, pre]) {
+    const r = run(withAdpOnly(base), 'preset_12_1qb_ppr', 'redraft');
+    assert.ok(r.weights.adp > 0, 'fixture must give ADP a positive weight for this test to mean anything');
+    assert.equal(r.assets.get('ADP_FA'), undefined);
+    assert.equal(r.assets.get('ADP_ROSTERED'), undefined);
+    const c = r.assets.get('ADP_PLUS_MKT');
+    assert.ok(c && c.value > 0);
+    assert.deepEqual(Object.keys(c.weights).sort(), ['adp', 'market']);
+    assert.ok(c.contributions.adp > 0);
+  }
+});
+
+test('ADP corroboration rule is configurable (off restores ADP-only values)', () => {
+  const league = { ...preset('preset_12_1qb_ppr'), overrides: { redraft: { adp_requires_corroboration: false } } };
+  const r = computeValuations({ dataset: withAdpOnly(ds), league, mode: 'redraft', config });
+  const a = r.assets.get('ADP_FA');
+  assert.ok(a && a.value > 0);
+  assert.deepEqual(Object.keys(a.weights), ['adp']);
+});

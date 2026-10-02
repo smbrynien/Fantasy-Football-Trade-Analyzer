@@ -1,5 +1,5 @@
 {
-  "model_version": "2.0.0",
+  "model_version": "2.1.0",
   "_comment": "Valuation model parameters. Bump model_version whenever a formula or default changes so stored trades/values remain comparable. Every parameter is documented in docs/VALUATION_MODEL.md, docs/DYNASTY_MODEL.md and docs/ROOKIE_PICK_MODEL.md.",
   "scale": {
     "top_value": 10000,
@@ -46,6 +46,8 @@
         "production": 0.1
       }
     },
+    "adp_requires_corroboration": true,
+    "_adp_comment": "ADP is a corroborating signal only: a player whose only usable signal is ADP gets no redraft value (N/A). Long ADP lists rank undrafted/out-of-league players by placeholder or stale draft positions (model 2.1.0, handoff bug #1).",
     "production": {
       "regression_games": 2,
       "xfp_blend": 0.25,

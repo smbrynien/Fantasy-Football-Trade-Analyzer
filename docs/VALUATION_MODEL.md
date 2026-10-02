@@ -1,7 +1,7 @@
 # Valuation Model (common framework + redraft)
 
 Model version: see `model_version` in [`config/model.json`](../config/model.json) (2.0.0 after the
-[model audit](MODEL_AUDIT.md)). Every parameter mentioned here is configurable there or in **Settings** (per league
+[model audit](MODEL_AUDIT.md); 2.1.0 adds the ADP corroboration rule). Every parameter mentioned here is configurable there or in **Settings** (per league
 profile, stored as `overrides`).
 
 Code: `js/core/valuation/` — `engine.js` (orchestration), `context.js` (inputs), `replacement.js` (scarcity),
@@ -90,7 +90,7 @@ Values display rounded to 10 with an approximate fair-value range.
 | **Production** | Weekly actual stats (nflverse; Sleeper fallback) scored with your settings, blended 75/25 with **opportunity-based expected points** (targets/carries/attempts × league-average points per opportunity at the position), regressed toward last season's PPG with 2 pseudo-games (players without a last season: ≥3 games required, regressed to the positional median), × remaining games × **availability** (QB .80, RB .77, WR .83, TE .82) × strength-of-schedule, minus injury games | surplus |
 | **Consensus** | ROS/redraft expert rankings (FantasyPros ECR, manual rankings) | **Positional-rank mapping**: k-th RB by experts → value of the k-th RB on your league's curve |
 | **Market** | Redraft trade values in the best-matching format (FantasyCalc, manual) | Positional-rank mapping |
-| **ADP** | Redraft ADP (Sleeper, FFC, ESPN, manual) in the matching scoring/QB format | Overall-rank mapping |
+| **ADP** | Redraft ADP (Sleeper, FFC, ESPN, manual) in the matching scoring/QB format | Overall-rank mapping. **Corroborating only** (2.1.0): a player whose only usable signal is ADP gets no value (N/A) |
 | **Trend** | Market source's own 30-day trend | displayed only (weight 0 since 2.0: no evidence it predicts outcomes, and it is already in the market level) |
 
 Positional-rank mapping keeps each source's *ordering and sentiment* while the *magnitudes* come from your league's
@@ -105,6 +105,14 @@ finding these are judgment defaults (no free history exists to fit them) and are
 
 `score = Σ wᵍ·signalᵍ / Σ wᵍ (available)` — weights renormalize over the signals a player actually has.
 Missing signals are never imputed; they lower confidence instead.
+
+**ADP needs corroboration** (`redraft.adp_requires_corroboration`, default true since 2.1.0). Long ADP lists rank
+hundreds of undrafted and out-of-league players by placeholder or stale draft positions (one source assigns ≈170 to
+every undrafted player; another runs to ADP ≈500). Mapped by overall rank onto the expected-surplus curve, those deep
+positions still carry a small positive value, and renormalizing a lone ADP group to 100% turned it into real value
+(e.g. a retired QB at 417 in 12-team 1QB). Redraft therefore values a player only if at least one other signal
+(projection, production, consensus or market) exists; ADP then contributes at its normal weight. Players with ADP alone
+are N/A, like players with no signal. Setting the flag to false restores the 2.0.0 behaviour.
 
 Weights interpolate from the **preseason** set (consensus .40, projection .30, market .15, ADP .15, production 0) to the
 **in-season** set (consensus .45, projection .30, market .15, production .10, ADP 0) linearly between week 1 and
@@ -176,6 +184,7 @@ is in [MODEL_AUDIT.md](MODEL_AUDIT.md); candidate models are compared in [MODEL_
 |---|---|
 | 1.0.0 | initial model |
 | 2.0.0 | audit: expected surplus; consensus-dominant redraft weights; production x .25 / k 2 / availability / median prior with ≥3 games; trend display-only; DP player values weight 0; dynasty weights .25/.35/.40/0, aging power 2, prior k 20, evidence gate; least-squares exponential rookie slot curve; top-12 scale anchor |
+| 2.1.0 | redraft: ADP is corroborating only (`redraft.adp_requires_corroboration`); ADP-only players are N/A instead of being valued from deep ADP ranks. No other value changes (verified on the frozen 2026-10-02 dataset: all 7 presets × both modes × in-season/preseason, only ADP-only assets removed) |
 
 `model_version` (config/model.json) changes whenever formulas/defaults change; `data_version` identifies the data
 snapshot; `settings_hash` the league + effective model. All three are stored with every calculation and export.

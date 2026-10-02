@@ -91,6 +91,10 @@ export function runRedraft(dataset, league, model, env) {
       market: market.get(cid)?.value ?? null,
       adp: adp.get(cid)?.value ?? null,
     };
+    // ADP only corroborates: long ADP lists rank undrafted and out-of-league players (placeholder or stale draft
+    // positions), so a player whose ONLY usable signal is ADP has no value (N/A) rather than a deep-curve value.
+    if (cfg.adp_requires_corroboration && groups.adp !== null
+      && !Object.entries(groups).some(([g, v]) => g !== 'adp' && weights[g] > 0 && typeof v === 'number' && Number.isFinite(v))) continue;
     const b = blendGroups(groups, weights);
     if (b.score === null) continue;
 

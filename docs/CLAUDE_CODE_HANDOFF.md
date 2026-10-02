@@ -1,7 +1,8 @@
 # Claude Code Handoff — Fantasy Football Trade Analyzer
 
 > **Read this first in any new session.** It records the *actual* state of the repository as inspected on
-> **2026-10-02**, at commit `464841f` ("Model audit and valuation model 2.0.0"), plus the commit that adds this file.
+> **2026-10-02**. Originally written at commit `464841f` ("Model audit and valuation model 2.0.0"); last updated with
+> the model 2.1.0 commit (fix for bug #1, ADP-only redraft values) — see §38 for the git state.
 > The code is the source of truth. Verify anything here before acting on it, and **update this file** when the
 > project's state changes (see §42 "Maintaining this handoff").
 >
@@ -35,7 +36,7 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 
 | Capability | Status |
 |---|---|
-| Redraft valuation | **Implemented** (model 2.0.0) — one known regression, see §19 bug #1 |
+| Redraft valuation | **Implemented** (model 2.1.0; bug #1 ADP-only values fixed) |
 | Dynasty valuation | **Implemented** |
 | Rookie / future pick values | **Implemented** |
 | Trade analyzer (multi-asset, packages, uncertainty) | **Implemented** |
@@ -51,11 +52,11 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 ## 2. Current project status
 
 ```text
-Overall Status:  Working, tested, released. Model 2.0.0 shipped after a quantitative audit. Clean working tree.
-                 Two real bugs found while writing this handoff (§19 #1, #2); neither is fixed yet.
+Overall Status:  Working, tested. Model 2.1.0 (2.0.0 audit model + ADP corroboration rule). Bug #1 FIXED;
+                 bug #2 (audit fresh-clone crash) still open.
 
-Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. BUG: free agents valued from
-                 stale ADP alone (63 FA players ≥100 value in 12-team 1QB; Philip Rivers 417).
+Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
+                 corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
 Dynasty:         Implemented. Multi-year fundamental (aging power 2, attrition, draft priors, evidence gate)
                  blended with consensus/market.
 Rookie Picks:    Implemented. Market + historical LS-exponential slot curve + current class; unknown, bucketed and
@@ -67,7 +68,7 @@ Player Database: Implemented. 17 external ID systems, never merges ambiguous pla
 Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool crashes on a fresh clone at the
                  compare step (needs the git-ignored frozen dataset).
 UX Audit:        Not done. Known UX issues in §16.
-Testing:         66/66 node:test tests pass (≈6 s, offline). Browser E2E exists only as /tmp scripts, NOT in repo.
+Testing:         68/68 node:test tests pass (≈5 s, offline). Browser E2E exists only as /tmp scripts, NOT in repo.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions builds and publishes ZIPs on every push to main; last run succeeded [verified].
 ```
@@ -86,7 +87,7 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --failed` | Retry only failed/partial/quarantined sources | inferred |
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
-| `npm test` | `node --test tests/*.test.js` — 66 tests, offline | **yes, 66/66** |
+| `npm test` | `node --test tests/*.test.js` — 68 tests, offline | **yes, 68/68** |
 | `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--snapshot-before`) | yes, but see §19 bug #2 |
 | `npm run calibrate` | Re-derive `config/calibration/*.json` from nflverse 2006–2025 (downloads ~60 MB to `scripts/.cache/`) | ran earlier in project |
 | `npm run backtest` | ECR vs realised production → `reports/backtest.json` (shown on the Model page) | ran earlier in project |
@@ -288,14 +289,16 @@ Planned (not implemented): Yahoo, FantasyPros API (`.env.example` placeholders o
 * **Rookies:** created by authoritative sources once they appear (Sleeper/DP crosswalk), with draft info.
 * **Retired players:** **not removed** from the player DB or dataset. A retired player who still appears in any
   source list keeps that signal (e.g. 41-year-old Adrian Peterson has FantasyCalc dynasty values of ~22). Since
-  model 2.0.0, dynasty no longer gives them fundamental value from draft capital alone, but **redraft can still
-  value them from stale ADP** (§19 #1). `status` (Active/Inactive/IR) is carried but not used for eligibility.
-* **Data shape note [verified]:** 1,359 of 2,211 dataset players have team `FA`; 1,151 of them have **only** ADP
-  records (median ADP 372) from Sleeper/ESPN's long ADP lists.
+  model 2.0.0, dynasty no longer gives them fundamental value from draft capital alone; since 2.1.0 redraft no
+  longer values them from ADP alone (§19 #1, fixed). `status` (Active/Inactive/IR) is carried but not used for eligibility.
+* **Data shape note [verified at handoff time]:** 1,359 of 2,211 dataset players have team `FA`; 1,151 of them have
+  **only** ADP records (median ADP 372) from the long ADP lists of two sources. On the 2026-10-02 re-sync (2,208
+  players), 782 of ESPN's 1,050 redraft ADP entries sit at its ≈168–170 "undrafted" placeholder, and Sleeper's PPR list
+  runs to ADP ≈500 with 605 free agents. These players stay in the dataset but get no redraft value since 2.1.0.
 * **Weaknesses:** name-only sources (FFC, manual imports) depend on name/team matching; fuzzy matches need
   review; no automatic retirement detection.
 
-## 11. Current redraft model (model 2.0.0) — `js/core/valuation/redraft.js`
+## 11. Current redraft model (model 2.1.0) — `js/core/valuation/redraft.js`
 
 Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your** scoring:
 
@@ -333,6 +336,10 @@ Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your**
   | production | 0 | .10 |
 
   Pre/offseason forces production 0. Trend weight 0 (30-day trend displayed only).
+* **ADP corroboration (2.1.0):** `redraft.adp_requires_corroboration` (default true). If ADP is a player's only
+  usable group (no projection, production, consensus or market with weight > 0), the player gets **no asset** (N/A in
+  the UI, "unavailable" in trades) instead of renormalizing ADP to 100%. With any other group, ADP blends at its normal
+  weight. `false` restores 2.0.0 behaviour (test "ADP corroboration rule is configurable").
 * **Value:** `value = score × factor` (engine.js `scaleFactor`: `7000 / mean(top-12 reference scores)`;
   reference = 12-team 1QB PPR, roster QB1 RB2 WR2 TE1 FLEX1 BENCH6, no K/DEF). Components (`contributions`) sum to
   the value; production is split into production and injury.
@@ -451,11 +458,21 @@ No formal usability audit has been done.
    analyses, package simulation, before/after comparison, `npm run audit-model`, `docs/MODEL_AUDIT.md`,
    `docs/MODEL_COMPARISON.md`, 13 new sanity/monotonicity tests; fixes for prior-only veterans, one-game backups,
    non-monotone scale, deterministic-surplus bias; re-weighting (§11–13). CI release run succeeded.
+5. `ac054d8`, `a0548bd` — this handoff and the CLAUDE.md rule to keep it current.
+6. **Model 2.1.0 — bug #1 fixed** (ADP corroboration rule, §11). Validation on the frozen 2026-10-02 dataset
+   (`2026-10-02-46adf62e`): full before/after of every asset in all 7 presets × redraft/dynasty × actual phase
+   (week 4) and forced preseason — the **only** change is that ADP-only players lose their value (12-team 1QB in
+   season: 990 ADP-only assets removed, 70 of them ≥100; 14-team SF: 159 ≥100; preseason 12-team 1QB: 95 ≥100);
+   **0** value changes for every other asset; dynasty unchanged (ADP weight 0). `audit-model --only=current,compare`:
+   monotonicity 75 checks / 0 failures, before/after Spearman 1.0 and median change 0 in all four reference leagues,
+   scorecard metrics unchanged. 2 new tests (failing on 2.0.0). Committed `reports/audit/` was deliberately left as
+   the 2.0.0 audit record (the 2.1.0 run only relabels it).
 
 ## 18. What is currently in progress
 
-Nothing is mid-edit: the working tree was clean at `464841f` before this handoff was added. Open items that were
-consciously deferred (not half-written code):
+Nothing is mid-edit (clean tree after the 2.1.0 commit). Open items that were consciously deferred (not half-written
+code). The owner approved (2026-10-02): dev-only ESLint/Playwright run via globally installed tools / `npx`, **no**
+`package.json` devDependencies; ESPN placeholder-ADP filter as a separate adapter commit.
 
 | Feature | Current state | What remains | Files | Blocker | Next step |
 |---|---|---|---|---|---|
@@ -467,7 +484,7 @@ consciously deferred (not half-written code):
 
 | # | Bug | Severity | Reproduce | Expected | Actual | Likely cause | Files | Workaround |
 |---|---|---|---|---|---|---|---|---|
-| 1 | **Free agents valued from stale ADP alone in redraft** (regression in 2.0.0) | **High** | `computeValuations` redraft, `preset_12_1qb_ppr`, current data → filter `team==='FA'` & value ≥100 | out-of-league players ≈ 0 / N/A | 63 FA players ≥100 (Justin Tucker 550, Philip Rivers 417); weights = `{adp: 1}` | expected surplus gives deep overall-rank curve positions a positive tail; a lone ADP group is renormalized to 100%; in-season ADP weight is still >0 until week 8 | `redraft.js` (blend), `blend.js`, `signals.js collectADP` | none in UI |
+| 1 | ~~Free agents valued from stale ADP alone in redraft~~ **FIXED in model 2.1.0** | was High | handoff snippet (PICK UP HERE) | ADP-only players N/A | now 3 FA ≥100 in 12-team 1QB in season (Tyreek Hill 297, Zane Gonzalez 217, Odell Beckham 186 — all corroborated by consensus; kept deliberately, owner decision 2026-10-02); 0 ADP-only assets | was: placeholder/stale deep ADP ranks × expected-surplus tail × lone-group renormalization | `redraft.js` (`adp_requires_corroboration`), `config/model.json` | — |
 | 2 | `npm run audit-model` crashes on a fresh clone | Medium (dev tooling) | delete/omit `data/benchmark/dataset-frozen.json`, run `node scripts/audit-model.js --only=compare` | skip or explain | `Error: data_version mismatch` thrown, runner exits before writing `scorecard.csv` | baseline `reports/audit/values-v1.json` was computed on a frozen dataset that is git-ignored and was created by a manual copy; no command recreates it | `scripts/audit/compare.js` L30, `scripts/audit-model.js`, `scripts/audit/current.js loadFrozenDataset` | run `--only=e1,e2,e3,e4,current` |
 | 3 | Value history mixes model versions | Medium | Player → Trends after the 2.0.0 upgrade | model changes marked or series reset | `history.json` has entries from 1.0.0 and 2.0.0; the chart shows the model change as a value move | `server/history.js` records `model_version` per entry but the UI doesn't use it | `server/history.js`, `js/ui/views/player-modal.js` (trends) | "Why did this value change?" re-runs the current model on old snapshots (correct) |
 | 4 | Format-mismatched market lists used silently | Low (no current impact: FantasyCalc provides SF lists) | a source with only 1QB lists in an SF league | warn or exclude | `formatMismatch: true` is set but never read | unfinished guard | `js/core/valuation/signals.js` L35 | — |
@@ -476,8 +493,10 @@ consciously deferred (not half-written code):
 | 7 | Rookie prospect table wider than desktop viewport | Low (UX) | `#/rookies` at 1360 px | fits or scrolls clearly | last column cut | many columns | `js/ui/views/rookies.js`, `css/app.css` | horizontal scroll |
 | 8 | `js/core/version.js` comment references `js/core/schema.js migrate*`, which doesn't exist | Low (doc/code) | read file | migration helpers exist, or no reference | no schema migration code at all | aspirational comment | `js/core/version.js` | — |
 | 9 | `config/calibration/rookie-slot-curve.json` `generated_at` predates its current shape | Low | compare `generated_at` with git history | timestamp of the LS-exponential refit | shape was refit in place from `raw_mean_by_rank` during the audit; `generated_at` still 13:33 | manual refit | that file; `npm run calibrate` regenerates consistently | rerun `npm run calibrate` |
+| 10 | ESPN ADP placeholder (≈168–170) treated as a real ADP | Low since 2.1.0 (only affects players that have other signals) | `data/normalized/espn/adp.json`: 782 of 1,050 entries at 168–170.3 | undrafted players carry no ADP | they get overall ranks ≈228–1050 and a small ADP contribution | ESPN reports ~170 for undrafted players; adapter only drops `adp >= 300` | `adapters/espn.js fetchADP` | — (fix planned as the next commit) |
+| 11 | Trade note "Unavailable assets" lists raw ids (e.g. `P1f0ff3e3`), and a missing asset still counts as "Team A consolidates" | Low (UX) | `analyzeTrade` with an N/A player (e.g. Philip Rivers since 2.1.0, or a saved trade containing one) | player name; missing assets ignored for the consolidation note | raw cid; consolidation note fires | `trade.js` notes use ids; `playersA/B` count resolved assets only | `js/core/valuation/trade.js` | — |
 
-No flaky tests have been observed (66/66 across several runs this session).
+No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68/68 in the 2.1.0 session).
 
 ## 20. Known model / data problems (not software bugs)
 
@@ -488,7 +507,12 @@ No flaky tests have been observed (66/66 across several runs this session).
 * **σ / ± ranges are a signal-disagreement heuristic**, not calibrated intervals; trade z-scores inherit that
   (`js/core/valuation/confidence.js`).
 * **Expected surplus has hindsight optimism** for deep players (audit §5); combined with single-signal
-  renormalization this produces bug #1.
+  renormalization this produced bug #1 (fixed for ADP in 2.1.0; a lone projection/consensus/market group is still
+  renormalized to 100%, which is intended — those are real evidence).
+* **Forced-preseason observation (2.1.0 validation):** running preseason weights on today's in-season data values
+  ~25–39 free agents ≥100 in SF leagues from **projection alone** (e.g. Derek Carr, Teddy Bridgewater), because
+  last summer's season projections are still in the dataset. This is an artifact of forcing the phase; in a real
+  preseason the projections are current. Worth re-checking in the next real preseason (August).
 * **Rookie curve** smooths the historical drop after pick 2 (1.01–1.02 mean 228 vs fit 177); class strength is
   not modelled (CV .28 across 4 classes).
 * **Dynasty backtest** covers only 2020–2023 (4 seasons); ρ differences < .01 are noise.
@@ -496,7 +520,8 @@ No flaky tests have been observed (66/66 across several runs this session).
   the package adjustment for 3+ player trades (simulation correlation .49–.54).
 * **Not modelled:** contracts, coaching, college production, landing spot (only via consensus/market), TE-premium
   dynasty consensus, Superflex-specific redraft ECR beyond what FP provides.
-* **Dataset bloat:** 1,151 ADP-only free agents (≈half the dataset) — a source of bug #1 and wasted compute.
+* **Dataset bloat:** ≈1,000 ADP-only players (≈45% of the dataset) are kept but get no redraft value since 2.1.0 — wasted
+  compute/size only (backlog: prune or flag).
 * **Source age biases** (audit §4): ESPN projections are less favourable to young QBs; FantasyCalc favours veteran
   TEs vs ECR (+7.6 pct pts). Not corrected.
 
@@ -511,7 +536,7 @@ No flaky tests have been observed (66/66 across several runs this session).
   * Still open from the audit: SoS (inconclusive), injury table (untestable), σ calibration, 3+-player package
     under-correction, ESPN young-QB bias, MAE-vs-mean pick curve trade-off.
   * **Not found by the audit, discovered while writing this handoff:** bug #1 (FA ADP-only values). The audit's
-    monotonicity and extreme-case checks covered top players, not deep free agents.
+    monotonicity and extreme-case checks covered top players, not deep free agents. Fixed in 2.1.0 (§17 item 6).
 * **Usability audit:** none performed. `docs/USABILITY_AUDIT.md` / `FEATURE_AUDIT.md` don't exist.
 
 ## 22. Design principles
@@ -542,12 +567,12 @@ No flaky tests have been observed (66/66 across several runs this session).
 ## 24. Model version / data version
 
 ```text
-Model version:   2.0.0          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
+Model version:   2.1.0          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
 App version:     1.0.0          js/core/version.js APP_VERSION and package.json "version" (release tag v<version>-build.<n>)
 Schemas:         NORMALIZED_SCHEMA_VERSION 1, DATASET_SCHEMA_VERSION 1 (js/core/version.js); history.json schema_version 1;
                  config files carry their own schema_version
-Data version:    2026-10-02-228e23b8 at handoff time (data/calculated/dataset.json; changes every build;
-                 format <date>-<hash>); the audit's frozen dataset is 2026-10-02-77e3c35d
+Data version:    2026-10-02-46adf62e at the 2.1.0 validation (data/calculated/dataset.json; changes every build;
+                 format <date>-<hash>); the committed 2.0.0 audit reports used 2026-10-02-77e3c35d
 settings_hash:   stableHash(league + model) per calculation (js/core/settings.js)
 ```
 
@@ -560,7 +585,7 @@ parameter tweaks with no formula change, minor for new optional components, majo
 
 | File | Key settings (current) | Effect |
 |---|---|---|
-| `config/model.json` | `scale` (top_value 10000, anchor_top_n 12, anchor_value null → 7000); `reference_league`; `phase.full_in_season_week` 8; `redraft.weights`, `.production` (regression_games 2, xfp_blend .25, min_games_without_history 3, sos_strength .5, availability), `.uncertainty.sd_per_game`, `.injury_games_lost`, `.bench_value_fraction` .35, `.trend.weight` 0; `dynasty.weights` (.25/.35/.40/0), `horizon_years` 5, `strategy_discount`, `rate_evidence` (prior_pseudo_games 20), `aging_power` 2, `require_current_evidence_after_year` 1, `uncertainty`, `injury_year1_fraction`, `trend.weight` 0; `picks` (weights .45/.30/.25, future_year_discount .88, buckets, prior_class_adjustment .8, upcoming_class_switch_month 9); `source_weights` (projection/consensus/market/adp/pick_market); `mapping.min_source_players` 20; `package`; `confidence` | all valuation; per-league overrides via the profile's `overrides` |
+| `config/model.json` | `scale` (top_value 10000, anchor_top_n 12, anchor_value null → 7000); `reference_league`; `phase.full_in_season_week` 8; `redraft.weights`, `.production` (regression_games 2, xfp_blend .25, min_games_without_history 3, sos_strength .5, availability), `.uncertainty.sd_per_game`, `.injury_games_lost`, `.bench_value_fraction` .35, `.trend.weight` 0, `.adp_requires_corroboration` true (2.1.0); `dynasty.weights` (.25/.35/.40/0), `horizon_years` 5, `strategy_discount`, `rate_evidence` (prior_pseudo_games 20), `aging_power` 2, `require_current_evidence_after_year` 1, `uncertainty`, `injury_year1_fraction`, `trend.weight` 0; `picks` (weights .45/.30/.25, future_year_discount .88, buckets, prior_class_adjustment .8, upcoming_class_switch_month 9); `source_weights` (projection/consensus/market/adp/pick_market); `mapping.min_source_players` 20; `package`; `confidence` | all valuation; per-league overrides via the profile's `overrides` |
 | `config/sources.json` | per source: enabled, priority, method, data_types, update_frequency_hours, urls, terms, fallback, independence_group; `freshness_hours`; `exclusive_data_types`; `authoritative_player_sources`; `history_series` | sync, failover, staleness, identity |
 | `config/league-defaults.json`, `config/profiles.json` | §15 | leagues |
 | `config/import-specs.json` | templates `ktc_values`, `fantasypros_rankings`, `projections_generic`, `market_generic`, `rankings_generic`, `adp_generic`, `picks_generic` | manual import |
@@ -572,7 +597,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **66 tests, 66 pass, ≈6 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **68 tests, 68 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
@@ -583,9 +608,9 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `sync.test.js` | 7 | partial failures, exclusive failover, retry failed, freshness skip, quarantine keeps previous, stale flag, snapshots/history |
 | `trade.test.js` | 8 | 1-for-1, 2-for-1, 3-for-2 package math, disable package, player vs picks, z-score verdict, missing ids, dynasty age notes |
 | `valuation.test.js` | 15 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection |
-| `model-audit.test.js` | 13 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement |
+| `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
-Gaps: no test for **FA/ADP-only values** (bug #1), adapters against recorded real responses, the HTTP API routes,
+Gaps: no test for adapters against recorded real responses, the HTTP API routes,
 the UI (no E2E in repo), Sleeper league import, history/trends, the audit scripts. Browser E2E used during
 development lived in `/tmp/claude-0/*.cjs` (Playwright global install) and **is gone in a new container**.
 Manual checks still worth doing after UI changes: trade builder on mobile, import wizard end-to-end in the browser,
@@ -656,6 +681,10 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 2. Before changing anything: `npm test`; save a baseline:
    `node scripts/audit-model.js --snapshot-before` (writes `reports/audit/values-v1.json` from the **frozen** dataset —
    create `data/benchmark/dataset-frozen.json` first by copying `data/calculated/dataset.json`; see bug #2).
+   **Caution:** this and `--only=current,compare` overwrite the *committed* `reports/audit/` files. The 2.1.0 session
+   copied the outputs elsewhere and ran `git checkout -- reports/` so the committed reports stay the 2.0.0 audit
+   record; decide deliberately whether a change warrants committing a new audit. A full-asset diff (every asset, all
+   presets, both modes, forced preseason) is a cheap, stronger check than the top-400 compare for targeted fixes.
 3. Make the change; **bump `model_version`**.
 4. Validate: `npm test`; `node scripts/audit-model.js --only=current,compare` (monotonicity, stability,
    before/after); for formula changes with historical relevance, the relevant backtest (`--only=e1|e2|e3|e4`).
@@ -718,7 +747,7 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 | Priority | Task | Why it matters | Current state | Dependencies | Files |
 |---|---|---|---|---|---|
-| High | Fix FA / ADP-only redraft values (bug #1) | 63 out-of-league players carry real value; can mislead trades and rankings | unfixed | none | `redraft.js`, `blend.js`, tests |
+| Medium | Filter ESPN's undrafted ADP placeholder in the adapter (bug #10) | removes fake deep ADP ranks feeding corroborated players | planned next commit | none | `adapters/espn.js` |
 | Medium | Make `audit-model` reproducible on fresh clones (bug #2) | model changes need before/after validation | crashes at compare | none | `scripts/audit-model.js`, `scripts/audit/compare.js`, `current.js` |
 | Medium | Mark/segment model versions in value history (bug #3) | trends show model changes as value moves | unfixed | none | `server/history.js`, `js/ui/views/player-modal.js` |
 | Medium | Commit a repo E2E smoke test (Playwright optional/dev-only) | UI regressions are currently uncaught | E2E only in /tmp | zero-dependency decision | new `tests/e2e/` or script |
@@ -726,22 +755,17 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 | Medium | Mobile nav + wide-table UX fixes (bugs #6, #7) | many users on phones | unfixed | none | `css/app.css`, `js/app.js`, `js/ui/views/rookies.js` |
 | Low | Use `formatMismatch` and TEP list preference (bugs #4, #5) | correctness for future sources/imports | unfixed | none | `signals.js` |
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
-| Low | Prune ADP-only FA players from the dataset (or flag them) | halves dataset size; reduces bug #1 surface | not done | decide with bug #1 | `server/dataset-builder.js` |
+| Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
+| Low | Trade notes: names instead of raw ids; ignore missing assets in the consolidation note (bug #11) | clarity | unfixed | none | `trade.js` |
 | Low | Schema migration helpers or remove the stale comment (bug #8) | doc/code consistency | stale comment | none | `js/core/version.js` |
 | Research | Calibrate σ (± ranges) against outcomes; archive projections/markets for future backtests | trust in verdicts | not started | months of snapshots | `confidence.js`, snapshots |
 | Research | 3+-player package adjustment; roster-specific valuation | multi-player trades are the weakest area | evidence insufficient | simulation work | `trade.js`, `scripts/audit/current.js` |
 
 ## 35. Recommended next steps
 
-1. **Fix bug #1 (FA ADP-only redraft values).**
-   *Why now:* shipped regression; affects every redraft league. *Files:* `js/core/valuation/redraft.js`,
-   maybe `blend.js`, `tests/model-audit.test.js`. *Approach options (choose with evidence, keep the existing test
-   "player with only one signal (market) still valued" passing):* (a) in redraft, the ADP group requires
-   corroboration — an ADP-only player gets no value in season (or at all); (b) a player with `team === 'FA'` and no
-   projection in season is N/A; (c) cap the renormalized weight of a lone weak group. Option (a)+(b) is the simplest
-   defensible rule. *Verify:* new test (synthetic FA with only ADP → absent or ≈0); rerun the quantification
-   (FA players with redraft value ≥100 on current data → near 0, list reviewed manually); `npm test`;
-   `audit-model --only=current,compare`; bump `model_version` to 2.0.1 or 2.1.0; update docs.
+1. **ESPN undrafted-ADP placeholder (bug #10)** — owner-approved as the commit right after 2.1.0: drop ESPN ADP
+   entries at the placeholder in `adapters/espn.js` (source-specific logic belongs in the adapter). Verify: ADP list
+   distribution before/after, full-asset value diff, `npm test`.
 2. **Make the audit reproducible (bug #2).** Add `--freeze` (copies `data/calculated/dataset.json` to
    `data/benchmark/dataset-frozen.json`), make `compare` print a clear message and skip (not throw) on a
    data_version mismatch, and still write `scorecard.csv`. *Verify:* run on a machine without the frozen file:
@@ -753,41 +777,39 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
    are visibly reachable. *Files:* `css/app.css`, `index.html`. *Verify:* screenshot at 390×844.
 5. **Rookies table width:** hide low-value columns (College, Rookie ADP when empty) under 1400 px or allow
    horizontal scroll with a sticky name column. *Files:* `js/ui/views/rookies.js`, `css/app.css`.
-6. **Lint tooling:** add `eslint.config.mjs` (flat config, browser+node globals incl. `AbortSignal`, `no-unused-vars`)
-   and a script that runs `npx eslint` without adding a runtime dependency; document it here.
+6. **Lint tooling (owner-approved 2026-10-02: dev-only, no devDependencies):** add `eslint.config.mjs` (flat config,
+   browser+node globals incl. `AbortSignal`, `no-unused-vars`) and a script that runs `npx eslint` without adding a
+   runtime dependency; document it here.
    *Verify:* runs clean (it was clean with the /tmp config at 464841f).
-7. **Repo E2E smoke test:** a script that starts the server on a temp port with `FFTA_DATA_DIR` pointing at a
-   fixture dataset, loads `#/trade`, adds two players and asserts no console errors. Keep it optional so
-   `npm test` stays dependency-free.
+7. **Repo E2E smoke test (owner-approved, optional, skips without Playwright):** a script that starts the server on
+   a temp port with `FFTA_DATA_DIR` pointing at a fixture dataset, loads `#/trade`, adds two players and asserts no
+   console errors. Keep it optional so `npm test` stays dependency-free.
 8. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
    `STATIC_ALLOW` and render it in `js/ui/views/model.js`.
 9. **signals.js correctness:** honour `formatMismatch` (skip or flag the list and lower confidence) and prefer
    TEP lists when the league has a TE premium (`bonus_rec_te` > 0). Add tests.
-10. **Dataset pruning:** decide whether ADP-only free agents should stay in `dataset.json` (after #1). Measure size
-    and valuation time before and after.
+10. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
+    dead weight in redraft). Measure size and valuation time before and after.
+11. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
 
 # PICK UP HERE
 
 ```text
-Current state:            Model 2.0.0 released (commit 464841f + this handoff). All 10 sources sync; 66/66 tests
-                          pass; CI release green. Working tree clean apart from whatever you change.
-Most important unfinished: Bug #1 — free agents valued from stale ADP alone in REDRAFT (63 players ≥100 value in
-                          12-team 1QB, e.g. Philip Rivers 417). Regression introduced by expected surplus + single-
-                          signal renormalization in 2.0.0.
-Secondary:                Bug #2 audit-model fresh-clone crash; bug #3 history mixes model versions; mobile nav;
-                          lint + E2E tooling in repo.
-Known blockers:           None technical. Decide whether dev-only tooling (ESLint/Playwright) is acceptable under the
-                          zero-dependency rule before adding it.
-Files to inspect first:   js/core/valuation/redraft.js (blend + groups), js/core/valuation/blend.js,
-                          js/core/valuation/signals.js (collectADP), tests/model-audit.test.js, config/model.json
-Tests to run first:       npm test   (expect 66/66)
+Current state:            Model 2.1.0 (bug #1 fixed: ADP corroborates only). All 10 sources sync; 68/68 tests pass.
+Most important unfinished: Bug #10 ESPN undrafted-ADP placeholder (adapter filter, approved next commit);
+                          dev-only lint + optional E2E tooling (approved: no devDependencies, run via npx/global).
+Secondary:                Bug #2 audit-model fresh-clone crash; bug #3 history mixes model versions (now also
+                          1.0.0/2.0.0/2.1.0); mobile nav; bug #11 trade-note ids.
+Known blockers:           None.
+Files to inspect first:   adapters/espn.js (fetchADP), scripts/audit-model.js, server/history.js
+Tests to run first:       npm test   (expect 68/68)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
-Expected immediate action: Reproduce bug #1 with the snippet below, write a failing test, fix, bump model_version,
-                          rerun tests + `node scripts/audit-model.js --only=current`, update docs and this handoff,
-                          commit, push to main (CLAUDE.md).
+Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
+                          assigned branch and main (CLAUDE.md).
 ```
 
-Reproduction snippet (run from the repo root after a sync):
+Bug #1 check (run from the repo root after a sync; expected since 2.1.0: a handful of FA players, all with
+consensus/market/projection, and no `adp`-only weights):
 
 ```bash
 node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
@@ -817,19 +839,26 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
 9. Update this file after **any** change to the project (owner's standing instruction in `CLAUDE.md`), in the same
    commit, and add new bugs, decisions or architectural changes here.
 
-## 38. Git / version control state (at handoff)
+## 38. Git / version control state
 
 * Remote: `https://github.com/smbrynien/Fantasy-Football-Trade-Analyzer` (public). Default branch `main`.
-* Branch used by the last session: `claude/brave-mccarthy-uib8s8`; it equals `origin/main` at `464841f` before this
-  handoff commit. Both are pushed per `CLAUDE.md`.
-* Working tree: clean before adding this file (no uncommitted work to protect).
+* Branches: the 2.0.0 session used `claude/brave-mccarthy-uib8s8`; the 2.1.0 session uses
+  `claude/funny-heisenberg-v7kjan`. Per `CLAUDE.md` every commit is pushed to the session branch **and** to `main`
+  (fast-forward; never force-push `main`).
 * Recent commits: `cb8e7ff` initial full app → `f80fcc6` CLAUDE.md → `7ac5d50` non-technical distribution →
-  `464841f` model audit + 2.0.0 → `ac054d8` this handoff → CLAUDE.md rule "update the handoff after any change".
+  `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
+  model 2.1.0 (bug #1 fix, this update).
+* Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
 ## 39. Confidence in this handoff
 
-* **Verified this session:** test run (66/66), lint with the /tmp config (clean), sync (10/10 OK), server health and
+* **Verified in the 2.1.0 session (2026-10-02):** git state (HEAD = main = branch at `a0548bd` before the fix),
+  `npm test` 66/66 before and 68/68 after, `npm run sync` 10/10 OK (9.6 s, 92.6 MB), `npm start` + headless Chromium
+  over Trade/Players/Data/Model (no console errors), bug #1 reproduced exactly (63) and fixed (3, all corroborated),
+  full before/after asset diff, `audit-model --only=current,compare`, trade analysis with an N/A player. Global
+  ESLint 10.1.0 and Playwright 1.56.1 exist in the cloud container (`/opt/node22/lib/node_modules`).
+* **Verified in the 2.0.0 session:** test run (66/66), lint with the /tmp config (clean), sync (10/10 OK), server health and
   status API, browser E2E (no console errors; desktop + mobile screenshots), import API flow, CI run status, valuation
   timings, bugs #1–#3 reproduced, the FA/ADP data counts, git state.
 * **Inferred from code (not exercised this session):** `--failed`/`--force` CLI flags, rebuild-only, Sleeper league
