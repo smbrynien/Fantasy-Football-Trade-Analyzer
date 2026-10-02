@@ -84,7 +84,7 @@ export function makeDataset({ season = 2026, week = 6, counts = { QB: 36, RB: 70
     const m = label.match(/^(\d{4}) (\d)\w\w(?: \((\w+)\))?$/);
     picks.push({ src: 'fantasycalc', label, season: +m[1], round: +m[2], slot: null, bucket: m[3] ? m[3].toLowerCase() : null, dynasty: true, qb: '1qb', value: v });
   }
-  const teams = Object.fromEntries(TEAMS.map((t, i) => [t, { bye: 10, remaining_games: 18 - week - 1, remaining_opponents: TEAMS.filter((x) => x !== t).slice(0, 18 - week - 1), games: 17 }]));
+  const teams = Object.fromEntries(TEAMS.map((t) => [t, { bye: 10, remaining_games: 18 - week - 1, remaining_opponents: TEAMS.filter((x) => x !== t).slice(0, 18 - week - 1), games: 17 }]));
   return {
     schema_version: 1, data_version: 'test-fixture', built_at: `${season}-10-15T12:00:00.000Z`,
     state: { season, week, season_type: 'regular', as_of: `${season}-10-15T12:00:00.000Z` },

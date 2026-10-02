@@ -45,7 +45,8 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 | Canonical player DB / identity resolution | **Implemented** |
 | Model audit tooling (`npm run audit-model`) | **Implemented**, with a fresh-clone reproducibility bug (§19 bug #2) |
 | Usability (UX) audit | **Not performed** (no UX audit document exists) |
-| Lint / type-check in repo | **Not implemented** (no script, no config, no dependency) |
+| Lint in repo | **Implemented** dev-only: `eslint.config.mjs` + `npm run lint` (no dependency); no type-check |
+| Browser E2E in repo | **Implemented** optional: `npm run test:e2e` (Playwright if installed, else skips) |
 | Custom K/DEF scoring, contracts, IDP, best ball, auction, keeper | **Not implemented** |
 | Yahoo / FantasyPros API adapters | **Planned only** (reserved env vars in `.env.example`) |
 
@@ -68,7 +69,8 @@ Player Database: Implemented. 17 external ID systems, never merges ambiguous pla
 Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool crashes on a fresh clone at the
                  compare step (needs the git-ignored frozen dataset).
 UX Audit:        Not done. Known UX issues in §16.
-Testing:         69/69 node:test tests pass (≈5 s, offline). Browser E2E exists only as /tmp scripts, NOT in repo.
+Testing:         69/69 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
+                 (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions builds and publishes ZIPs on every push to main; last run succeeded [verified].
 ```
@@ -88,14 +90,19 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
 | `npm test` | `node --test tests/*.test.js` — 69 tests, offline | **yes, 69/69** |
+| `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`) | **yes, clean** |
+| `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360 px and 390 px: trade 1-for-1 with verdict, every main route, no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
 | `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--snapshot-before`) | yes, but see §19 bug #2 |
 | `npm run calibrate` | Re-derive `config/calibration/*.json` from nflverse 2006–2025 (downloads ~60 MB to `scripts/.cache/`) | ran earlier in project |
 | `npm run backtest` | ECR vs realised production → `reports/backtest.json` (shown on the Model page) | ran earlier in project |
 | `npm run package` | Build release ZIPs into `dist/` (`scripts/package-release.sh`) | CI runs it |
 
-* **No build step** (vanilla ES modules served as-is). **No lint or type-check command exists.** During
-  development an ESLint flat config was used from `/tmp` via `npx eslint` (ESLint was available globally in the
-  container). It is not in the repo. See §35 task 6.
+* **No build step** (vanilla ES modules served as-is). **Lint:** `npm run lint` (dev-only, owner-approved
+  2026-10-02: no devDependencies, no lockfile). `eslint.config.mjs` imports nothing; globals are scoped per tree and
+  the blocks are **disjoint** (flat config merges globals of overlapping blocks): Node for server/adapters/scripts/
+  tests, browser for `js/**`, and only shared APIs for `js/core/**` — so lint also enforces that the valuation engine
+  stays isomorphic. Rules: a core subset of eslint:recommended + `no-unused-vars` (`_`-prefixed args ignored). No
+  type-check command exists.
 * A backend **is required** for sync, import, profiles and saved trades. `index.html` opened via `file://` shows a
   help page; the server must serve the app.
 * Environment variables are optional (§25). Copy `.env.example` → `.env` (git-ignored).
@@ -196,7 +203,7 @@ UI     js/ui/views/*  (hash router in js/app.js; valuation cached per mode+leagu
 | Vanilla DOM + `css/app.css` (custom properties, light/dark) | UI | No framework/build. |
 | Hand-written SVG charts (`js/ui/charts.js`) | charts | No charting library. |
 | `node:test` + `node:assert` | tests | `npm test`; synthetic fixture, fake adapters, no network. |
-| Playwright (global install in the cloud container only) | ad-hoc E2E | **Not part of the repo** (see §26). |
+| ESLint 10 / Playwright (global installs; `npx`) | `npm run lint`, optional `npm run test:e2e` | **Dev-only, never dependencies** (owner decision 2026-10-02). The release ZIPs contain the config/script files but need neither tool. |
 | GitHub Actions | release ZIPs with bundled Node | `.github/workflows/release.yml` |
 
 ## 7. Important architectural decisions (do not undo casually)
@@ -476,18 +483,20 @@ No formal usability audit has been done.
    redraft; Kyle Juszczyk 172 → 104), forced preseason ≤ ~10-point rises; SF presets unaffected (no ESPN SF ADP);
    dynasty unaffected. Data normalization, not a formula/default change → `model_version` stays 2.1.0. New
    `tests/adapters.test.js` (stubbed HTTP).
+8. **Dev tooling:** `eslint.config.mjs` + `npm run lint`, `tests/e2e/smoke.mjs` + `npm run test:e2e` (both dev-only,
+   §3, §26). Lint found and the commit fixed 3 dead variables (unused `.map` index in `js/ui/views/compare.js` and
+   the test fixture; unused `binary` option of `cached()` in `scripts/lib/history-data.js`). No behaviour change.
 
 ## 18. What is currently in progress
 
 Nothing is mid-edit (clean tree after the 2.1.0 commit). Open items that were consciously deferred (not half-written
-code). The owner approved (2026-10-02): dev-only ESLint/Playwright run via globally installed tools / `npx`, **no**
-`package.json` devDependencies; ESPN placeholder-ADP filter as a separate adapter commit.
+code). Owner decisions (2026-10-02): dev-only ESLint/Playwright via global tools / `npx`, **no** `package.json`
+devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a tie rather than a drop — §17 item 7).
 
 | Feature | Current state | What remains | Files | Blocker | Next step |
 |---|---|---|---|---|---|
-| Lint/type-check tooling | none in repo | add a dev-only ESLint flat config + script, or a documented `npx` command | new `eslint.config.mjs`, `package.json` | zero-dependency policy (decide dev-only) | §35 task 6 |
-| Audit reproducibility on fresh clones | compare step crashes | freeze command + graceful skip | `scripts/audit-model.js`, `scripts/audit/compare.js`, `current.js` | none | §35 task 2 |
-| Audit results in the UI | only `reports/backtest.json` shown | serve/show `reports/audit/scorecard.csv` or a summary JSON | `server/index.js` STATIC_ALLOW, `js/ui/views/model.js` | none | §35 task 8 |
+| Audit reproducibility on fresh clones | compare step crashes | freeze command + graceful skip | `scripts/audit-model.js`, `scripts/audit/compare.js`, `current.js` | none | §35 item 1 |
+| Audit results in the UI | only `reports/backtest.json` shown | serve/show `reports/audit/scorecard.csv` or a summary JSON | `server/index.js` STATIC_ALLOW, `js/ui/views/model.js` | none | §35 item 7 |
 
 ## 19. Known bugs
 
@@ -620,9 +629,12 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `valuation.test.js` | 15 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection |
 | `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
+Optional browser E2E: `npm run test:e2e` (`tests/e2e/smoke.mjs`, not matched by the `npm test` glob; §3). It covers
+the trade builder (desktop + mobile width), every main route and console errors — not the import wizard, Settings
+round-trips, the player modal or dynasty picks. CI does not run lint or E2E (release.yml runs `npm test` only).
+
 Gaps: no test for most adapters against recorded real responses (only ESPN ADP, stubbed), the HTTP API routes,
-the UI (no E2E in repo), Sleeper league import, history/trends, the audit scripts. Browser E2E used during
-development lived in `/tmp/claude-0/*.cjs` (Playwright global install) and **is gone in a new container**.
+deeper UI flows (see above), Sleeper league import, history/trends, the audit scripts.
 Manual checks still worth doing after UI changes: trade builder on mobile, import wizard end-to-end in the browser,
 Settings overrides round-trip, Sleeper league import with a real league ID.
 
@@ -759,10 +771,9 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 |---|---|---|---|---|---|
 | Medium | Make `audit-model` reproducible on fresh clones (bug #2) | model changes need before/after validation | crashes at compare | none | `scripts/audit-model.js`, `scripts/audit/compare.js`, `current.js` |
 | Medium | Mark/segment model versions in value history (bug #3) | trends show model changes as value moves | unfixed | none | `server/history.js`, `js/ui/views/player-modal.js` |
-| Medium | Commit a repo E2E smoke test (Playwright optional/dev-only) | UI regressions are currently uncaught | E2E only in /tmp | zero-dependency decision | new `tests/e2e/` or script |
-| Medium | Add lint tooling | consistency, catches unused vars/undefined globals | none in repo | zero-dependency decision | `package.json`, `eslint.config.mjs` |
 | Medium | Mobile nav + wide-table UX fixes (bugs #6, #7) | many users on phones | unfixed | none | `css/app.css`, `js/app.js`, `js/ui/views/rookies.js` |
 | Low | Use `formatMismatch` and TEP list preference (bugs #4, #5) | correctness for future sources/imports | unfixed | none | `signals.js` |
+| Low | Run `npm run lint` (and optionally E2E) in CI | catch regressions before release | not in release.yml | decide: lint failures would block releases | `.github/workflows/release.yml` |
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
 | Low | Trade notes: names instead of raw ids; ignore missing assets in the consolidation note (bug #11) | clarity | unfixed | none | `trade.js` |
@@ -772,44 +783,39 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 ## 35. Recommended next steps
 
-1. **Lint + optional E2E tooling** (owner-approved 2026-10-02, items 6–7 below) — next.
-2. **Make the audit reproducible (bug #2).** Add `--freeze` (copies `data/calculated/dataset.json` to
+1. **Make the audit reproducible (bug #2).** Add `--freeze` (copies `data/calculated/dataset.json` to
    `data/benchmark/dataset-frozen.json`), make `compare` print a clear message and skip (not throw) on a
    data_version mismatch, and still write `scorecard.csv`. *Verify:* run on a machine without the frozen file:
    exits 0, prints the instructions; with `--freeze --snapshot-before` → change → `--only=compare` works.
-3. **Mark model versions in value history (bug #3):** draw a vertical marker or break the series where
+2. **Mark model versions in value history (bug #3):** draw a vertical marker or break the series where
    `entries[i].model_version` changes, in the Trends tab. *Verify:* Trends for any player shows the 1.0.0 → 2.0.0
    boundary.
-4. **Mobile header nav:** make `nav` tabs wrap or show a scroll affordance at ≤480 px so Data/Settings/Model/Help
+3. **Mobile header nav:** make `nav` tabs wrap or show a scroll affordance at ≤480 px so Data/Settings/Model/Help
    are visibly reachable. *Files:* `css/app.css`, `index.html`. *Verify:* screenshot at 390×844.
-5. **Rookies table width:** hide low-value columns (College, Rookie ADP when empty) under 1400 px or allow
+4. **Rookies table width:** hide low-value columns (College, Rookie ADP when empty) under 1400 px or allow
    horizontal scroll with a sticky name column. *Files:* `js/ui/views/rookies.js`, `css/app.css`.
-6. **Lint tooling (owner-approved 2026-10-02: dev-only, no devDependencies):** add `eslint.config.mjs` (flat config,
-   browser+node globals incl. `AbortSignal`, `no-unused-vars`) and a script that runs `npx eslint` without adding a
-   runtime dependency; document it here.
-   *Verify:* runs clean (it was clean with the /tmp config at 464841f).
-7. **Repo E2E smoke test (owner-approved, optional, skips without Playwright):** a script that starts the server on
-   a temp port with `FFTA_DATA_DIR` pointing at a fixture dataset, loads `#/trade`, adds two players and asserts no
-   console errors. Keep it optional so `npm test` stays dependency-free.
-8. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
+5. *(done — lint tooling, §3)*
+6. *(done — optional E2E smoke test, §26)*. Possible extension: import wizard, player modal, dynasty pick adder.
+7. **Model page shows the audit scorecard:** allow `/reports/audit/scorecard.csv` (or a small summary JSON) in
    `STATIC_ALLOW` and render it in `js/ui/views/model.js`.
-9. **signals.js correctness:** honour `formatMismatch` (skip or flag the list and lower confidence) and prefer
+8. **signals.js correctness:** honour `formatMismatch` (skip or flag the list and lower confidence) and prefer
    TEP lists when the league has a TE premium (`bonus_rec_te` > 0). Add tests.
-10. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
+9. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
     dead weight in redraft). Measure size and valuation time before and after.
-11. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
+10. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
 
 # PICK UP HERE
 
 ```text
 Current state:            Model 2.1.0 (bug #1 fixed: ADP corroborates only); ESPN undrafted ADP collapsed to a tie
-                          (bug #10 fixed). All 10 sources sync; 69/69 tests pass.
-Most important unfinished: dev-only lint + optional E2E tooling (approved: no devDependencies, run via npx/global).
-Secondary:                Bug #2 audit-model fresh-clone crash; bug #3 history mixes model versions (now also
-                          1.0.0/2.0.0/2.1.0); mobile nav; bug #11 trade-note ids.
+                          (bug #10 fixed); dev-only `npm run lint` + optional `npm run test:e2e` added. All 10 sources
+                          sync; 69/69 tests, lint clean, E2E pass.
+Most important unfinished: Bug #2 audit-model fresh-clone crash (§35 item 1) — it is what makes model before/after
+                          checks awkward; then bug #3 history mixes model versions (now 1.0.0/2.0.0/2.1.0).
+Secondary:                mobile nav (#6), rookies table (#7), trade-note ids (#11), lint in CI (decide).
 Known blockers:           None.
 Files to inspect first:   scripts/audit-model.js, scripts/audit/compare.js, server/history.js
-Tests to run first:       npm test   (expect 68/68)
+Tests to run first:       npm test (expect 69/69); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
                           assigned branch and main (CLAUDE.md).
@@ -841,8 +847,9 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
 5. Don't undo the decisions in §7 without understanding their rationale and recording the new one.
 6. Run `npm test` before and after changes; for model changes follow §31 (before/after, monotonicity, extremes).
 7. Never fabricate data, never scrape sources whose terms forbid it, never commit `data/` or `.env`.
-8. The container is ephemeral: `/tmp` helpers (E2E scripts, the ESLint config) and `data/` (git-ignored) won't
-   exist in a new session; run `npm run sync` to get data.
+8. The container is ephemeral: `data/` (git-ignored) won't exist in a new session — run `npm run sync`. Lint and E2E
+   are in the repo now (`npm run lint`, `npm run test:e2e`); the cloud container has ESLint 10 and Playwright
+   installed globally.
 9. Update this file after **any** change to the project (owner's standing instruction in `CLAUDE.md`), in the same
    commit, and add new bugs, decisions or architectural changes here.
 
@@ -854,7 +861,7 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   (fast-forward; never force-push `main`).
 * Recent commits: `cb8e7ff` initial full app → `f80fcc6` CLAUDE.md → `7ac5d50` non-technical distribution →
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
-  model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10, this update).
+  model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling (this update).
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
@@ -874,7 +881,9 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   project session by the audit scripts (reproducible with `npm run audit-model`), not re-run while writing this.
 * **Doc/code discrepancies found:** `js/core/version.js` references a non-existent `js/core/schema.js`; the
   rookie-slot-curve `generated_at` predates its shape; `docs/MODEL_AUDIT.md` doesn't mention bug #1 (added to its §20
-  with this handoff); README/docs don't mention that there is no lint command (none claim one exists).
+  with this handoff); README/docs didn't mention that there was no lint command (resolved: `npm run lint` exists and
+  is in the README). 2.1.0 session: §9 listed wrong state file names (fixed: `sources-status.json`,
+  `quality-report.json`); the handoff skips from §35 to §38 (no §36–37).
 
 ## 40. Handoff quality check
 

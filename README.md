@@ -69,6 +69,8 @@ Other commands:
 | `npm run audit-model` | Full model audit: walk-forward backtests, correlations, ablations, stability, monotonicity, before/after → `reports/audit/` ([MODEL_AUDIT](docs/MODEL_AUDIT.md)) |
 | `npm run package` | Build the ready-to-run ZIPs into `dist/` (what the release workflow publishes) |
 | `npm test` | Run the automated test suite (offline) |
+| `npm run lint` | Lint with ESLint (dev-only: uses a global ESLint 10 or fetches it via `npx`; nothing is added to the project) |
+| `npm run test:e2e` | Optional browser smoke test on synthetic data (needs Playwright installed globally; skips otherwise) |
 
 Optional settings: copy `.env.example` to `.env` (port, bind address, user agent, timeouts). No default source needs
 an API key. Keep `HOST=127.0.0.1` unless you deliberately want to open it to your phone on the LAN (`HOST=0.0.0.0`).

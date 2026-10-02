@@ -16,7 +16,7 @@ import { readJSONSync } from '../../server/lib/store.js';
 export const CACHE = path.join(ROOT, 'scripts', '.cache');
 const http = createHttp({ timeoutMs: 300000 });
 
-export async function cached(name, url, { binary = false } = {}) {
+export async function cached(name, url) {
   const file = path.join(CACHE, name);
   if (fs.existsSync(file)) return file;
   await fsp.mkdir(CACHE, { recursive: true });
@@ -66,7 +66,7 @@ export async function loadSeasons(from, to) {
 
 /** Stream the DynastyProcess FantasyPros ECR archive, keeping rows that pass `filter(row)` (row = header-keyed object). */
 export async function streamECRArchive(filter) {
-  const f = await cached('db_fpecr.csv.gz', 'https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_fpecr.csv.gz', { binary: true });
+  const f = await cached('db_fpecr.csv.gz', 'https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_fpecr.csv.gz');
   const rl = readline.createInterface({ input: fs.createReadStream(f).pipe(zlib.createGunzip()), crlfDelay: Infinity });
   let header = null;
   const out = [];

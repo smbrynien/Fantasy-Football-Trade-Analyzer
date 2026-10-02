@@ -56,7 +56,7 @@ export function renderCompare(root) {
       h('tbody', {}, rows)));
     host.append(h('div.panel.mt', {}, table));
     if (dyn) {
-      const series = assets.filter((a) => a.details?.years).map((a, i) => ({ label: a.name, color: COLORS[ids.indexOf(a.id) % COLORS.length], points: a.details.years.map((y) => [y.season, y.ppg]) }));
+      const series = assets.filter((a) => a.details?.years).map((a) => ({ label: a.name, color: COLORS[ids.indexOf(a.id) % COLORS.length], points: a.details.years.map((y) => [y.season, y.ppg]) }));
       if (series.length) host.append(h('div.panel.mt', {}, h('h3', {}, 'Projected points per game by season (aging curve)'), lineChart(series, { yMin: 0, yFormat: (v) => v.toFixed(0), height: 240 }), h('p.small.muted', {}, 'Multi-year projections are uncertain; see each player\'s Dynasty tab for ranges.')));
     }
   }

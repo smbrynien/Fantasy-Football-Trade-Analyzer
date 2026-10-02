@@ -16,6 +16,8 @@
     "backtest": "node scripts/backtest.js",
     "package": "bash scripts/package-release.sh",
     "test": "node --test tests/*.test.js",
+    "test:e2e": "node tests/e2e/smoke.mjs",
+    "lint": "npx --yes eslint@10 .",
     "audit-model": "node scripts/audit-model.js"
   },
   "license": "MIT"
