@@ -241,3 +241,38 @@ regression test, verification.
   displayed side totals equal the engine's totals for the selected profile in every case (5 profiles checked), the
   final mode/profile/body class agree, no console errors. The valuation cache key includes mode + data version +
   profile hash, so no stale values were observed.
+
+### SY1 · High · Sync/data integrity — Invalid values were stored although the report said "skipped"
+* **Steps:** chaos test with fake adapters; a market batch containing `NaN`, `"abc"`, `-50` and `1e300` (under the
+  25 % quarantine threshold). **Actual:** all four stored and attached to the dataset; the quality issue read
+  "4 invalid records were skipped". `1e300` gave that player the best rank in the source's market list (top value from
+  one corrupt number); `-50` was used as a real value.
+* **Root cause:** `assessBatch` counted invalid records but `storeBatch` wrote `result.records` unfiltered; "invalid"
+  also accepted any number ≥ 0 (no finiteness/outlier check).
+* **Fix:** one shared rule `isInvalidRecord` (finite, non-negative; market values > 20× the batch's 95th percentile are
+  outliers — scale-free) used by the verdict **and** by `cleanBatch`, which removes invalid records before storage;
+  the number dropped is recorded with the batch. **Files:** `js/core/quality.js`, `server/sync-engine.js`.
+* **Verification:** on the real normalized data `cleanBatch` drops **nothing** (no current impact); chaos test now stores
+  only valid values. **Test:** `tests/sync.test.js` "stored batches exclude invalid values…".
+
+### SY2 · Medium · Sync/data integrity — Duplicate records within one source batch were stored twice
+* Five duplicated players in a batch → two market rows from the same source on each; in rank mapping the extra rows
+  pushed every player listed below them down one rank. The warning existed; nothing deduplicated. **Fix:** `cleanBatch`
+  keeps the first record per player + list variant (stats/projections/picks exempt). **Test:** same as SY1.
+
+### SY3 · Low · Sync/UX — An empty response was reported as "Source format changed"
+* An empty batch tripped the schema check ("Expected fields missing: value"). **Fix:** `no_records` — "The source
+  returned no records." (still quarantined; previous data kept). **Test:** same as SY1.
+
+### A6 · Low · Server — Non-object JSON bodies produced 500 TypeErrors; profiles accepted garbage entries
+* `null`/array/scalar bodies → 500 with a raw TypeError on four endpoints; `PUT /api/profiles` stored `[null, 1]`, which
+  the UI then crashed on (UI1). **Fix:** bodies must be JSON objects (400); profile entries must be objects with an id.
+  **Test:** `tests/server.test.js` "API: non-object JSON bodies…". API fuzz (18 bodies × 11 endpoints, incl. a 2 MB
+  upload and traversal attempts in ids): no 5xx, server healthy afterwards.
+
+### SY4 · Info (verified, no defect) — Chaos and idempotency
+* Sources: success, timeout, malformed JSON, empty, duplicates, ID change between syncs, invalid values; then the same
+  sync five times. Successful sources update; failed ones are marked `error` with the message; the empty one is
+  quarantined with the previous batch kept; a player whose source ID changed still resolves to the same player (no
+  duplicate); repeated identical syncs leave the player set, market rows and values unchanged (no duplication or
+  compounding); snapshots/history grow by one entry per new data version only.

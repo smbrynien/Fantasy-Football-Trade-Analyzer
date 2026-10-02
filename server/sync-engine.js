@@ -8,7 +8,7 @@ import { createHttp } from './lib/http.js';
 import { loadConfig } from './lib/config.js';
 import { createAdapter } from '../adapters/index.js';
 import { METHOD_FOR_TYPE } from '../adapters/base.js';
-import { assessBatch } from '../js/core/quality.js';
+import { assessBatch, cleanBatch } from '../js/core/quality.js';
 import { NORMALIZED_SCHEMA_VERSION } from '../js/core/version.js';
 import { buildPlayerDB, buildDataset } from './dataset-builder.js';
 import { updateHistory } from './history.js';
@@ -78,11 +78,12 @@ async function storeBatch(sourceId, type, result, runStamp) {
   if (q.verdict === 'quarantine') {
     return { status: 'quarantined', records: result.records.length, issues: q.issues, kept_previous: Boolean(prev), previous_fetched_at: prev?.fetched_at || null };
   }
+  const clean = cleanBatch(type, result.records);
   await writeJSON(P.normalizedFile(sourceId, type), {
     schema_version: NORMALIZED_SCHEMA_VERSION, source: sourceId, type, fetched_at: new Date().toISOString(), run: runStamp,
-    meta: result.meta || null, quality: { verdict: q.verdict, issues: q.issues }, records: result.records,
+    meta: result.meta || null, quality: { verdict: q.verdict, issues: q.issues, dropped: clean.dropped }, records: clean.records,
   });
-  return { status: q.verdict === 'warning' ? 'warning' : 'ok', records: result.records.length, issues: q.issues };
+  return { status: q.verdict === 'warning' ? 'warning' : 'ok', records: clean.records.length, dropped: clean.dropped, issues: q.issues };
 }
 
 async function runSource(source, ctx, runStamp, log, factory = createAdapter) {

@@ -172,3 +172,21 @@ test('season transitions: offseason state projects the upcoming season (BUG_AUDI
   assert.equal(target(normalizeNflState({ season: '2026', league_season: '2027', week: 0, season_type: 'off' })), 2027);
   assert.equal(target({ season: 2027, week: 3, season_type: 'regular' }), 2027);
 });
+
+test('stored batches exclude invalid values, outliers and duplicates; empty responses are named (BUG_AUDIT SY1/SY2)', async () => {
+  const { cleanBatch, assessBatch } = await import('../js/core/quality.js');
+  const base = Array.from({ length: 30 }, (_, i) => ({ name: `P${i}`, position: 'WR', dynasty: true, qb: '1qb', value: 5000 - i * 100 }));
+  const dirty = [...base, { name: 'X1', position: 'WR', dynasty: true, qb: '1qb', value: NaN }, { name: 'X2', position: 'WR', dynasty: true, qb: '1qb', value: 'abc' },
+    { name: 'X3', position: 'WR', dynasty: true, qb: '1qb', value: -50 }, { name: 'X4', position: 'WR', dynasty: true, qb: '1qb', value: 1e300 }, { ...base[0], value: 1 }];
+  const c = cleanBatch('market_value', dirty);
+  assert.deepEqual(c.dropped, { invalid: 4, duplicates: 1 });
+  assert.equal(c.records.find((r) => r.name === 'P0').value, 5000, 'first of a duplicate pair is kept');
+  assert.ok(c.records.every((r) => Number.isFinite(r.value) && r.value >= 0 && r.value < 1e6));
+  // the same rule decides the verdict and what is stored
+  assert.equal(assessBatch({ type: 'market_value', records: dirty }).counts.invalid, 4);
+  // rankings/ADP: non-positive or non-finite ranks are invalid
+  assert.equal(cleanBatch('ranking', [{ name: 'a', rank: 0 }, { name: 'b', rank: Infinity }, { name: 'c', rank: 3 }]).records.length, 1);
+  const empty = assessBatch({ type: 'market_value', records: [], schema: { expected: { required: ['value'] }, received: [] }, minRecords: 10 });
+  assert.equal(empty.verdict, 'quarantine');
+  assert.ok(empty.issues.some((i) => i.code === 'no_records') && !empty.issues.some((i) => i.code === 'schema_changed'));
+});

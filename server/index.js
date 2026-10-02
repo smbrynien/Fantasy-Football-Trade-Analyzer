@@ -45,7 +45,11 @@ async function readBody(req, limit = 25e6) {
     req.on('end', () => {
       const txt = Buffer.concat(chunks).toString('utf8');
       if (!txt) return resolve({});
-      try { resolve(JSON.parse(txt)); } catch { reject(Object.assign(new Error('Invalid JSON body'), { status: 400 })); }
+      let v;
+      try { v = JSON.parse(txt); } catch { return reject(Object.assign(new Error('Invalid JSON body'), { status: 400 })); }
+      // Every endpoint expects an object; `null`, arrays or scalars used to surface as 500 TypeErrors.
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return reject(Object.assign(new Error('Request body must be a JSON object'), { status: 400 }));
+      resolve(v);
     });
     req.on('error', reject);
   });
@@ -145,7 +149,9 @@ route('DELETE', /^\/api\/import\/([\w-]+)$/, async (req, url, m) => clearManualS
 route('GET', /^\/api\/profiles$/, async () => (await readJSON(P.userProfiles, { profiles: [] })));
 route('PUT', /^\/api\/profiles$/, async (req) => {
   const body = await readBody(req);
-  if (!Array.isArray(body.profiles)) throw Object.assign(new Error('profiles must be an array'), { status: 400 });
+  if (!Array.isArray(body.profiles) || !body.profiles.every((p) => p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string')) {
+    throw Object.assign(new Error('profiles must be an array of profile objects with an id'), { status: 400 });
+  }
   await writeJSON(P.userProfiles, { profiles: body.profiles, updated_at: new Date().toISOString() }, { pretty: true });
   return { ok: true };
 });

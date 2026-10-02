@@ -15,6 +15,48 @@ export function schemaCheck(expected, received) {
   return { missing, missingOptional, received: [...rec].slice(0, 60) };
 }
 
+const DEDUPE_EXEMPT = ['stat_week', 'stat_season', 'projection', 'pick_market', 'schedule', 'state'];
+const dupKey = (r) => `${r.source_player_id ?? nameKey(r.name)}|${r.position}|${r.format || r.kind || ''}|${r.qb || ''}|${r.scope || ''}|${r.pos || ''}|${r.dynasty ?? ''}|${r.ppr ?? ''}|${r.teams ?? ''}`;
+const finitePos = (v) => typeof v === 'number' && Number.isFinite(v) && v > 0;
+
+/** Upper plausibility bound for a market batch: values > 20× the batch's 95th percentile are corrupt (scale-free). */
+function marketCeiling(records) {
+  const vs = records.map((r) => r.value).filter((v) => typeof v === 'number' && Number.isFinite(v) && v > 0).sort((a, b) => a - b);
+  return vs.length >= 20 ? vs[Math.floor(0.95 * (vs.length - 1))] * 20 : Infinity;
+}
+
+/** One rule for "invalid record", shared by the quality verdict and by cleanBatch (what is actually stored). */
+export function isInvalidRecord(type, r, ctx = {}) {
+  if (r.position !== undefined && r.position !== null && !VALID_POS.has(r.position)) return true;
+  if (type === 'market_value') return !(typeof r.value === 'number' && Number.isFinite(r.value) && r.value >= 0 && r.value <= (ctx.ceiling ?? Infinity));
+  if (type === 'ranking') return !finitePos(r.ecr ?? r.rank);
+  if (type === 'adp') return !finitePos(r.adp);
+  if (type === 'projection') return !r.stats || typeof r.stats !== 'object';
+  return false;
+}
+
+/**
+ * What gets stored: invalid records and same-batch duplicates (same player + list variant; the first is kept) are
+ * removed. The quality message said invalid records "were skipped", but they used to be stored — so NaN/text values,
+ * negative values and absurd outliers (1e300 ranked a player first in a market list) reached the dataset.
+ */
+export function cleanBatch(type, records) {
+  const ctx = type === 'market_value' ? { ceiling: marketCeiling(records) } : {};
+  const seen = new Set();
+  let invalid = 0, duplicates = 0;
+  const kept = [];
+  for (const r of records || []) {
+    if (isInvalidRecord(type, r, ctx)) { invalid++; continue; }
+    if (!DEDUPE_EXEMPT.includes(type)) {
+      const k = dupKey(r);
+      if (seen.has(k)) { duplicates++; continue; }
+      seen.add(k);
+    }
+    kept.push(r);
+  }
+  return { records: kept, dropped: { invalid, duplicates } };
+}
+
 /**
  * @param batch { type, records:[normalized], schema?: {expected, received}, minRecords? }
  * @param prev  previous normalized records of the same source+type (for change detection), optional
@@ -27,7 +69,10 @@ export function assessBatch(batch, prev = null, { maxInvalidShare = 0.25, extrem
   const badTeams = [], badAges = [];
   const add = (level, code, message, extra) => issues.push({ level, code, message, ...(extra || {}) });
 
-  if (batch.schema) {
+  if (!recs.length) {
+    // An empty response is not a "format change" (that message misled): say what happened.
+    add('error', 'no_records', 'The source returned no records.');
+  } else if (batch.schema) {
     const sc = schemaCheck(batch.schema.expected, batch.schema.received);
     if (sc.missing.length) {
       add('error', 'schema_changed', `Source format changed. Expected fields missing: ${sc.missing.join(', ')}.`, { expected: batch.schema.expected.required, received: sc.received });
@@ -39,29 +84,25 @@ export function assessBatch(batch, prev = null, { maxInvalidShare = 0.25, extrem
     add('error', 'too_few_records', `Only ${recs.length} records (expected at least ${batch.minRecords}).`);
   }
 
+  const ctx = batch.type === 'market_value' ? { ceiling: marketCeiling(recs) } : {};
   for (const r of recs) {
-    let bad = false;
-    if (r.position !== undefined && r.position !== null && !VALID_POS.has(r.position)) { bad = true; }
+    const bad = isInvalidRecord(batch.type, r, ctx);
     if (r.team !== undefined && r.team !== null && !isValidTeam(r.team)) badTeams.push(`${r.name} (${r.team})`);
     if (typeof r.age === 'number' && (r.age < 19 || r.age > 46)) badAges.push(`${r.name} (${r.age})`);
     if (r.birth_date) {
       const y = Number(String(r.birth_date).slice(0, 4));
       if (!(y > 1970 && y < 2012)) badAges.push(`${r.name} (born ${r.birth_date})`);
     }
-    if (batch.type === 'market_value' && !(typeof r.value === 'number' && r.value >= 0)) bad = true;
-    if (batch.type === 'ranking' && !(typeof (r.ecr ?? r.rank) === 'number' && (r.ecr ?? r.rank) > 0)) bad = true;
-    if (batch.type === 'adp' && !(typeof r.adp === 'number' && r.adp > 0)) bad = true;
-    if (batch.type === 'projection' && (!r.stats || typeof r.stats !== 'object')) bad = true;
     if (bad) invalid++;
-    if (!['stat_week', 'stat_season', 'projection', 'pick_market', 'schedule', 'state'].includes(batch.type)) {
-      const k = `${r.source_player_id ?? nameKey(r.name)}|${r.position}|${r.format || r.kind || ''}|${r.qb || ''}|${r.scope || ''}|${r.pos || ''}|${r.dynasty ?? ''}|${r.ppr ?? ''}|${r.teams ?? ''}`;
+    if (!DEDUPE_EXEMPT.includes(batch.type)) {
+      const k = dupKey(r);
       dupKeys.set(k, (dupKeys.get(k) || 0) + 1);
     }
   }
   if (badTeams.length) add('warning', 'invalid_team', `${badTeams.length} records with unrecognised teams: ${badTeams.slice(0, 6).join(', ')}${badTeams.length > 6 ? ' …' : ''}`);
   if (badAges.length) add('warning', 'impossible_age', `${badAges.length} records with implausible age/birth date: ${badAges.slice(0, 6).join(', ')}${badAges.length > 6 ? ' …' : ''}`);
   const dups = [...dupKeys.values()].filter((n) => n > 1).length;
-  if (dups) add('warning', 'duplicate_records', `${dups} duplicated player records in this batch.`);
+  if (dups) add('warning', 'duplicate_records', `${dups} duplicated player records in this batch (only the first of each is kept).`);
   if (recs.length && invalid / recs.length > maxInvalidShare) add('error', 'invalid_records', `${invalid} of ${recs.length} records are invalid (bad position/value/rank).`);
   else if (invalid) add('warning', 'invalid_records', `${invalid} invalid records were skipped.`);
 

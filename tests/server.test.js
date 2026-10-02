@@ -80,3 +80,12 @@ test('saved trades: server-assigned id and timestamp cannot be overridden by the
   assert.equal((await fetch(`http://127.0.0.1:${port}/api/trades/${id}`, { method: 'DELETE' })).status, 200);
   assert.ok(!(await (await fetch(`http://127.0.0.1:${port}/api/trades`)).json()).trades.some((x) => x.id === id));
 });
+
+test('API: non-object JSON bodies and malformed profiles are 400, never 500 (BUG_AUDIT A6)', async () => {
+  const call = (m, p, body) => fetch(`http://127.0.0.1:${port}${p}`, { method: m, headers: { 'Content-Type': 'application/json' }, body });
+  for (const [m, p] of [['POST', '/api/import/preview'], ['POST', '/api/import/commit'], ['PUT', '/api/profiles'], ['POST', '/api/overrides'], ['POST', '/api/trades']]) {
+    for (const body of ['null', '[]', '5', '"x"', '{bad']) assert.equal((await call(m, p, body)).status, 400, `${m} ${p} ${body}`);
+  }
+  assert.equal((await call('PUT', '/api/profiles', JSON.stringify({ profiles: [null, 1] }))).status, 400);
+  assert.equal((await call('PUT', '/api/profiles', JSON.stringify({ profiles: [{ id: 'u1', name: 'ok' }] }))).status, 200);
+});
