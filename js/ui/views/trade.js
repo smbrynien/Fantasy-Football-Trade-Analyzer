@@ -18,13 +18,19 @@ const SIGNAL_LABELS = { market: 'Market value', consensus: 'Expert consensus', p
 function tradeKey() { return `trade.${app.mode}`; }
 function getTrade() { return load(tradeKey(), { a: [], b: [] }); }
 function setTrade(t) { save(tradeKey(), t); }
+const assetName = (id) => playerData(id)?.name || id;
 
 export function renderTrade(root) {
   const result = getValuations();
   if (!result) return;
   const trade = getTrade();
-  // Drop assets that no longer exist (e.g. data changed) but keep custom pick ids (valued on demand).
-  for (const side of ['a', 'b']) trade[side] = trade[side].filter((id) => result.getAsset(id));
+  // Drop assets that no longer exist (e.g. data changed) but keep custom pick ids (valued on demand) — and say which.
+  const dropped = [];
+  for (const side of ['a', 'b']) trade[side] = trade[side].filter((id) => result.getAsset(id) || (dropped.push(id), false));
+  if (dropped.length) {
+    setTrade(trade);
+    toast(`Removed from the trade (no value in this mode with current data): ${dropped.map(assetName).join(', ')}.`, 'warn');
+  }
 
   const sides = h('div.trade-layout');
   const summary = h('div.trade-summary');
@@ -121,7 +127,7 @@ export function renderTrade(root) {
 
   function drawSummary() {
     clear(summary);
-    const ana = analyzeTrade(result, trade.a, trade.b, { dataSources: Object.fromEntries(Object.entries(app.dataset.sources).map(([k, v]) => [k, v.last_success])) });
+    const ana = analyzeTrade(result, trade.a, trade.b, { names: assetName, dataSources: Object.fromEntries(Object.entries(app.dataset.sources).map(([k, v]) => [k, v.last_success])) });
     const [A, B] = ana.sides;
     if (!A.assets.length && !B.assets.length) {
       summary.append(h('div.panel.muted.center', {}, 'Add assets to both sides to see the analysis.'));
@@ -259,7 +265,7 @@ export function renderTrade(root) {
     const tb = h('tbody');
     for (const t of trades.slice(0, 30)) {
       let now = null;
-      try { const ana = analyzeTrade(result, t.a, t.b); now = ana.diff; } catch { /* ignore */ }
+      try { const ana = analyzeTrade(result, t.a, t.b, { names: assetName }); now = ana.diff; } catch { /* ignore */ }
       tb.append(h('tr', {},
         h('td.small.nowrap', {}, fmtTime(t.saved_at), h('div.tiny.muted', {}, `model ${t.audit?.model_version} · ${t.audit?.data_version}`)),
         h('td.small', {}, (t.names?.a || []).join(', ')), h('td.small', {}, (t.names?.b || []).join(', ')),

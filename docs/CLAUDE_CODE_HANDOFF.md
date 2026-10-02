@@ -69,7 +69,7 @@ Player Database: Implemented. 17 external ID systems, never merges ambiguous pla
 Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool works on fresh clones: `--freeze`,
                  `--out=DIR`, before/after skipped with instructions on data mismatch (bug #2 fixed).
 UX Audit:        Not done. Known UX issues in §16.
-Testing:         77/77 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
+Testing:         78/78 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
                  (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions: lint → tests → build → publish ZIPs on every push to main (lint step added in
@@ -90,7 +90,7 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --failed` | Retry only failed/partial/quarantined sources | inferred |
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
-| `npm test` | `node --test tests/*.test.js` — 77 tests, offline | **yes, 77/77** |
+| `npm test` | `node --test tests/*.test.js` — 78 tests, offline | **yes, 78/78** |
 | `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`). **CI runs it before the tests; a lint error blocks the release** | **yes, clean** |
 | `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360 px and 390 px: trade 1-for-1 with verdict, every main route, player Trends with a seeded two-model history (marker, broken line, within-model change), no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
 | `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--freeze`, `--snapshot-before`, `--out=DIR`). `--freeze`/`--snapshot-before` without `--only` do only that (no backtests) | yes (fresh clone, mismatch and full before/after workflow; §17 item 10) |
@@ -517,6 +517,11 @@ No formal usability audit has been done.
     sets on the frozen dataset (current data has both QB formats for every source and no TEP lists, so only imports
     are affected); monotonicity 75/0 (`audit-model --only=current --out=<scratch>`). 2 new tests in
     `valuation.test.js` (both fail on 2.1.0).
+13. **Bug #11 fixed (trade notes / unavailable assets)** — see §19. Not a valuation-model change (asset values are
+    untouched; only how a trade treats ids that have no value), so `model_version` stays 2.1.1. Before the fix, a
+    1-for-1 with an unavailable player charged the other side's player a consolidation package adjustment. Verified
+    in Node (Philip Rivers for Jeremiyah Love: package 0, named note) and in the browser (toast when a stored trade
+    loses an N/A player, saved-trade "Now" column). 1 new test in `trade.test.js` (fails on the old code).
 
 ## 18. What is currently in progress
 
@@ -542,7 +547,7 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 | 8 | `js/core/version.js` comment references `js/core/schema.js migrate*`, which doesn't exist | Low (doc/code) | read file | migration helpers exist, or no reference | no schema migration code at all | aspirational comment | `js/core/version.js` | — |
 | 9 | `config/calibration/rookie-slot-curve.json` `generated_at` predates its current shape | Low | compare `generated_at` with git history | timestamp of the LS-exponential refit | shape was refit in place from `raw_mean_by_rank` during the audit; `generated_at` still 13:33 | manual refit | that file; `npm run calibrate` regenerates consistently | rerun `npm run calibrate` |
 | 10 | ~~ESPN ADP placeholder (≈168–170) treated as a real ADP~~ **FIXED in the adapter** (after 2.1.0) | was Low | `data/normalized/espn/adp.json` | undrafted players tie | 815 of 1,050 entries are now exactly 170 with `undrafted: true`; they share one average overall rank (≈0 value) instead of being ordered by noise | was: adapter kept every ADP < 300 | `adapters/espn.js` (`ESPN_UNDRAFTED_ADP`, `ESPN_UNDRAFTED_MARGIN`) | — |
-| 11 | Trade note "Unavailable assets" lists raw ids (e.g. `P1f0ff3e3`), and a missing asset still counts as "Team A consolidates" | Low (UX) | `analyzeTrade` with an N/A player (e.g. Philip Rivers since 2.1.0, or a saved trade containing one) | player name; missing assets ignored for the consolidation note | raw cid; consolidation note fires | `trade.js` notes use ids; `playersA/B` count resolved assets only | `js/core/valuation/trade.js` | — |
+| 11 | ~~Trade note "Unavailable assets" lists raw ids, and a missing asset still counts as "Team A consolidates"~~ **FIXED** (2.1.0 session) | was Low | `analyzeTrade` with an N/A player (e.g. Philip Rivers) | names; no false consolidation | note names the player (`names` option: function or map; falls back to the id); unavailable non-pick ids count as players (value 0), so a 1-for-1 with an N/A player no longer charges the other side a package adjustment; a side with only unavailable assets is no longer "incomplete"; the live trade builder tells you by name (toast) when it drops unavailable assets, and saved-trade "Now" uses the same names/counting | was: notes used ids; player count only included resolved assets | `js/core/valuation/trade.js`, `js/ui/views/trade.js`, `tests/trade.test.js` | — |
 | 12 | `npm test` leaves one `ffta-sync-*` temp dir per run in the OS temp folder | Low (test hygiene) | run `npm test`, list `$TMPDIR/ffta-sync-*` | removed after the suite | stays | `tests/sync.test.js` creates it with `mkdtemp` and never removes it | `tests/sync.test.js` | delete them by hand |
 
 No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68–72 in the 2.1.0 session).
@@ -646,7 +651,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **77 tests, 77 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **78 tests, 78 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
@@ -658,7 +663,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `ingestion.test.js` | 8 | CSV parsing (quotes, BOM, CRLF, malformed), delimiter detection, auto column mapping, required fields, duplicates, JSON uploads, pick labels |
 | `scoring.test.js` | 6 | PPR/half/std, QB scoring, TE premium, first downs, bonuses, K/DEF |
 | `sync.test.js` | 7 | partial failures, exclusive failover, retry failed, freshness skip, quarantine keeps previous, stale flag, snapshots/history |
-| `trade.test.js` | 8 | 1-for-1, 2-for-1, 3-for-2 package math, disable package, player vs picks, z-score verdict, missing ids, dynasty age notes |
+| `trade.test.js` | 9 | 1-for-1, 2-for-1, 3-for-2 package math, disable package, player vs picks, z-score verdict, missing ids, dynasty age notes |
 | `valuation.test.js` | 17 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection, market list QB-format exclusion, TEP list preference |
 | `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
@@ -803,7 +808,6 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 | Medium | Mobile nav + wide-table UX fixes (bugs #6, #7) | many users on phones | unfixed | none | `css/app.css`, `js/app.js`, `js/ui/views/rookies.js` |
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
-| Low | Trade notes: names instead of raw ids; ignore missing assets in the consolidation note (bug #11) | clarity | unfixed | none | `trade.js` |
 | Low | Schema migration helpers or remove the stale comment (bug #8) | doc/code consistency | stale comment | none | `js/core/version.js` |
 | Research | Calibrate σ (± ranges) against outcomes; archive projections/markets for future backtests | trust in verdicts | not started | months of snapshots | `confidence.js`, snapshots |
 | Research | 3+-player package adjustment; roster-specific valuation | multi-player trades are the weakest area | evidence insufficient | simulation work | `trade.js`, `scripts/audit/current.js` |
@@ -820,20 +824,19 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
    `STATIC_ALLOW` and render it in `js/ui/views/model.js`.
 6. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
     dead weight in redraft). Measure size and valuation time before and after.
-7. **Trade notes (bug #11):** show names for unavailable assets; don't count them for the consolidation note.
 
 # PICK UP HERE
 
 ```text
 Current state:            Model 2.1.1 (bug #1 fixed: ADP corroborates only; #4/#5 market list format rules); ESPN undrafted ADP collapsed to a tie
                           (bug #10); dev-only `npm run lint` (also in CI) + optional `npm run test:e2e`; audit-model
-                          reproducible (bug #2); Trends marks model changes (bug #3). All 10 sources sync; 77/77
+                          reproducible (bug #2); Trends marks model changes (bug #3). All 10 sources sync; 78/78
                           tests, lint clean, E2E pass.
 Most important unfinished: Mobile header nav clipped at 390 px (bug #6, §35 item 1), then rookies table width (#7).
-Secondary:                trade-note ids (#11), sync-test temp-dir leak (#12), audit scorecard on Model page.
+Secondary:                sync-test temp-dir leak (#12), #8/#9 doc/metadata, audit scorecard on Model page.
 Known blockers:           None.
 Files to inspect first:   css/app.css (header/nav), index.html, js/app.js, js/ui/views/rookies.js
-Tests to run first:       npm test (expect 77/77); npm run lint (clean); npm run test:e2e (pass or SKIP)
+Tests to run first:       npm test (expect 78/78); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
                           assigned branch and main (CLAUDE.md).
@@ -882,7 +885,7 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
   model 2.1.0 (bug #1 fix) → ESPN undrafted-ADP collapse (bug #10) → dev-only lint + E2E tooling → lint in CI +
   audit-model reproducibility (bug #2) → Trends model-version markers (bug #3) → model 2.1.1 market list
-  format rules (bugs #4, #5, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  format rules (bugs #4, #5) → trade notes / unavailable assets (bug #11, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

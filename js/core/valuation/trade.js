@@ -84,14 +84,19 @@ function sideSummary(assets, result) {
  * @param result    computeValuations() output
  * @param idsA      asset ids Team A RECEIVES
  * @param idsB      asset ids Team B RECEIVES
+ * @param names     optional id → display name lookup (function or object) for assets without a value
  */
-export function analyzeTrade(result, idsA, idsB, { dataSources = {} } = {}) {
+export function analyzeTrade(result, idsA, idsB, { dataSources = {}, names = null } = {}) {
   const resolve = (ids) => ids.map((id) => getAsset(result, id)).filter(Boolean);
   const A = resolve(idsA), B = resolve(idsB);
   const missing = [...idsA, ...idsB].filter((id) => !getAsset(result, id));
+  const nameOf = (id) => (typeof names === 'function' ? names(id) : names?.[id]) || id;
   const sa = sideSummary(A, result), sb = sideSummary(B, result);
-  const playersA = A.filter((a) => a.kind === 'player').length;
-  const playersB = B.filter((a) => a.kind === 'player').length;
+  // An unavailable player (no value in this mode/data) still changes hands and takes a roster spot: count him for the
+  // package adjustment so the other side isn't charged for "consolidating". Unvalued picks stay exempt like all picks.
+  const unvaluedPlayers = (ids) => ids.filter((id) => !getAsset(result, id) && !String(id).startsWith('pick:')).length;
+  const playersA = A.filter((a) => a.kind === 'player').length + unvaluedPlayers(idsA);
+  const playersB = B.filter((a) => a.kind === 'player').length + unvaluedPlayers(idsB);
   const pkgA = packageAdjustment(A, playersB, result);
   const pkgB = packageAdjustment(B, playersA, result);
   const adjA = sa.raw - pkgA.total, adjB = sb.raw - pkgB.total;
@@ -102,7 +107,7 @@ export function analyzeTrade(result, idsA, idsB, { dataSources = {} } = {}) {
   const z = sigmaDiff > 0 ? Math.abs(diff) / sigmaDiff : (diff === 0 ? 0 : Infinity);
 
   let assessment;
-  if (!A.length || !B.length) assessment = { level: 'incomplete', text: 'Add at least one asset to each side to compare.' };
+  if (!idsA.length || !idsB.length) assessment = { level: 'incomplete', text: 'Add at least one asset to each side to compare.' };
   else if (z < 1) assessment = { level: 'even', text: `The model considers this trade close: the ${Math.round(Math.abs(diff)).toLocaleString()}-point gap is smaller than the combined uncertainty of ±${Math.round(sigmaDiff).toLocaleString()}.` };
   else if (z < 2) assessment = { level: 'lean', text: `Team ${diff > 0 ? 'A' : 'B'} receives more value (${Math.abs(pct * 100).toFixed(1)}%). The gap exceeds the model's uncertainty, but only modestly — reasonable people could disagree.` };
   else assessment = { level: 'clear', text: `Team ${diff > 0 ? 'A' : 'B'} receives clearly more value in this model (${Math.abs(pct * 100).toFixed(1)}%, about ${z.toFixed(1)}× the combined uncertainty).` };
@@ -129,7 +134,7 @@ export function analyzeTrade(result, idsA, idsB, { dataSources = {} } = {}) {
   }
   const lowConf = [...A, ...B].filter((a) => a.confidence && a.confidence.label === 'Low');
   if (lowConf.length) notes.push(`Low-confidence values: ${lowConf.map((a) => a.name).join(', ')}.`);
-  if (missing.length) notes.push(`Unavailable assets (no value in this mode/data): ${missing.join(', ')}.`);
+  if (missing.length) notes.push(`Unavailable assets (no value in this mode/data, counted as 0): ${missing.map(nameOf).join(', ')}.`);
 
   const summarize = (a) => ({ id: a.id, name: a.name, kind: a.kind, position: a.position, team: a.team, age: a.age, value: a.value, range: a.range, sigma: a.sigma, confidence: a.confidence?.label, components: a.components });
   return {

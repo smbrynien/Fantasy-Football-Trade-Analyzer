@@ -78,3 +78,18 @@ test('dynasty age implications are summarised', () => {
   const t = analyzeTrade(dyn, ['TR1'], ['TQB12']);
   assert.ok(t.sides[0].valueWeightedAge < t.sides[1].valueWeightedAge);
 });
+
+test('unavailable player (handoff bug #11): named in the note, counted as a player, no consolidation charge on the other side', () => {
+  const t = analyzeTrade(red, ['GONE_PLAYER'], ['TWR5'], { names: { GONE_PLAYER: 'Retired Veteran' } });
+  assert.deepEqual(t.missing, ['GONE_PLAYER']);
+  assert.ok(t.notes.some((n) => n.includes('Retired Veteran') && !n.includes('GONE_PLAYER')), t.notes.join(' | '));
+  assert.ok(!t.notes.some((n) => /consolidates/.test(n)), 'a 1-for-1 is not a consolidation');
+  assert.equal(t.sides[1].package.total, 0);
+  assert.equal(t.sides[1].adjusted, red.assets.get('TWR5').value);
+  assert.notEqual(t.assessment.level, 'incomplete', 'a side with only unavailable assets is still a side (worth 0)');
+  // Name lookup as a function; unknown ids fall back to the id.
+  assert.ok(analyzeTrade(red, ['GONE_PLAYER'], ['TWR5'], { names: () => null }).notes.some((n) => n.includes('GONE_PLAYER')));
+  // An unvalued pick id is exempt from player counting, like all picks.
+  const p = analyzeTrade(red, ['pick:2099:1'], ['TWR5', 'TWR6']);
+  assert.equal(p.sides[0].package.total, 0);
+});
