@@ -312,3 +312,101 @@ regression test, verification.
 * **Exports verified:** trade CSV/JSON totals agree with each other and the engine; JSON audit carries model version,
   data version, settings hash, league and mode; names with apostrophes/hyphens round-trip; players CSV has one row per
   valued player (no duplicates), model/data version and league on every row, no NaN/undefined/Infinity cells.
+
+### O1 · Low · Degraded operation — "Could not start sync: Failed to fetch" when the local server was gone
+* After the server window is closed mid-session the app keeps working from memory (verified), but Sync showed a raw
+  browser error. **Fix:** "The app's local server is not responding — if you closed its window, start the app again.
+  Values already loaded stay available." **File:** `js/ui/sync.js`. Verified in the browser.
+
+### X1 · Info (verified, no defect) — Explanations, degraded modes, clean install, concurrency
+* **Explanation integrity:** all 12,418 assets (7 presets × 2 modes, real data): components sum exactly to the value,
+  signal weights sum to 1, value lies inside its ± range (incl. picks rescaled by P2).
+* **Static/read-only hosting** (no API): trade builder, players and search work; Sync explains the read-only mode;
+  only the expected `/api/health` 404.
+* **Clean environment:** fresh clone (no `data/`, no `node_modules`) → 103/103 tests, lint, E2E pass; first launch shows
+  "Getting your data ready…", auto-syncs 10/10 sources in ≈6 s and the trade builder appears without a reload; the
+  data pill shows "just now · 10/10"; search works on the fresh data.
+* **Concurrency:** 10 simultaneous `POST /api/sync` → exactly one run (others get `already_running` with the new run's
+  progress); 47 HTTP requests (same as a normal run), no retry storm.
+
+## 5. Tests performed (matrix)
+
+| Area | How | Result |
+|---|---|---|
+| Startup: clean install, empty/corrupt cache, missing data | fresh clone; corrupt state/normalized files; empty data dir | C2 fixed; first-run flow OK |
+| Server/API security & robustness | raw-socket probes, CSRF/DNS-rebinding, 18 bodies × 11 endpoints fuzz | A1–A6 fixed |
+| Navigation: routes, refresh, back/forward, deep links | Playwright | U1 fixed; back/forward OK |
+| Redraft/dynasty valuation, league cross-tests | 7 presets × 2 modes × 2 phases full-value diffs; 25 hostile/extreme leagues | L1 fixed; no stale values |
+| Rookie picks (exact, bucket, range, unknown, invalid) | label/id/valuer probes; whole-grid monotonicity property | P1, P2 fixed (model 2.1.2) |
+| Search | 40 queries incl. apostrophes, suffixes, initials, HTML; latency | SR1–SR3 fixed |
+| Player identity | same-name, contradicting birth date/age/draft year, team changes, fuzzy, ID change between syncs; real-data rebuild old vs new | ID1 (Critical), ID2 fixed; no false positives on real data |
+| Trade builder & engine invariants | 800 random trades × 2 modes (order, swap, determinism, finiteness, package); duplicates; one-sided/empty | T1 fixed; engine invariants hold |
+| Sync: success/partial/timeout/HTTP error/malformed/empty/duplicates/ID change/invalid values, retries, idempotency ×5 | fake-adapter chaos runs; real sync | SY1–SY3, C1 fixed; isolation & idempotency OK |
+| Concurrency | parallel rebuilds; 10 parallel syncs; rapid UI switching | B1 fixed; single sync |
+| Manual import CSV/JSON | 300-file fuzz × 7 templates; malformed → fix → retry; overwrite decline/accept; remove | I1, I2, I4 fixed |
+| Export | trade CSV/JSON, players CSV; escaping; formula injection | I3, I5 fixed |
+| Dates & season transitions | phase table; simulated 2026 → 2027 cycle; calendar fallback | D1 fixed |
+| State & persistence | 13 corrupt localStorage values × 5 routes; rapid profile/mode switching vs engine | UI1 fixed; no stale state |
+| Responsive | 14 routes × 7 sizes (375×812 … 1920×1080) × 2 modes | UI2 fixed (+ earlier #6/#7/#13) |
+| Accessibility | keyboard dialogs, focus | U2 fixed |
+| Injection | HTML/script/Unicode player name through the UI | safe (S1) |
+| Performance & leaks | 1×–6× dataset; repeated navigation/modals/mode switches | linear; no leaks (PF1) |
+| Degraded/offline | static hosting; server killed mid-session | O1 fixed |
+
+## 6. Severity summary
+
+32 bugs fixed (31 pre-existing + 1 regression introduced and caught during the audit, I5):
+
+| Severity | Count | IDs |
+|---|---|---|
+| Critical | 1 | ID1 |
+| High | 13 | A1, A2, A3, B1, C1, C2, I1, I2, ID2, L1, D1, UI1, SY1 |
+| Medium | 8 | A4, I3, P1, P2, T1, U1, UI2, SY2 |
+| Low | 10 | A5, A6, I4, I5, U2, SY3, SR1, SR2, SR3, O1 |
+
+Most important root causes: **validation in one layer only** (form vs engine, verdict vs storage, preview vs commit),
+**trusting decoded/parsed input** (paths, JSON bodies, stored state), **missing ordering/locking** (rebuilds, temp
+files, progress publication), and **identity matching that ignored contradicting evidence**.
+
+## 7. Regression tests added
+
+`tests/server.test.js` (6), `tests/search.test.js` (3), and new cases in `tests/sync.test.js` (+7),
+`tests/identity.test.js` (+3), `tests/ingestion.test.js` (+5, incl. a 300-file import fuzz), `tests/valuation.test.js`
+(+5, incl. the pick-grid monotonicity property and 13 hostile leagues); E2E smoke (+ injection, duplicate picks,
+modals, corrupt storage, per-route overflow at 3 widths). Unit tests: 78 → 103. Every targeted test was checked to fail
+on the pre-fix code.
+
+## 8. Remaining / known issues (not fixed)
+
+| Issue | Severity | Status |
+|---|---|---|
+| An open player modal is not refreshed if a background sync finishes while it is open (values as of opening) | Low | Known — close/reopen; not reproduced as a user-visible problem |
+| `data_version` is unchanged by `npm run rebuild` after a code-only change (same inputs) | Low | Known — the UI clears its cache on every dataset load |
+| Absurd-but-valid scoring (e.g. 1,000,000 per reception via stored overrides) gives absurd values | Low | Won't fix — the form limits scoring to ±50; the engine stays finite |
+| Server 500 messages can include local file paths | Low | Won't fix — local app; no secrets/headers/credentials are ever included |
+| Typing a team code ranks that team's players before name-prefix matches (by value) | Low | Won't fix — both are shown |
+
+## 9. External limitations / not tested
+
+* **Browsers:** only Chromium (Playwright 1.56) is available here. Firefox and Safari were **not** tested; no
+  cross-browser support is claimed beyond Chromium.
+* **Live offseason data:** D1 is verified against Sleeper's documented offseason state shape and a simulated season
+  cycle; a real offseason response cannot be observed in October.
+* **Sleeper league import** with a real league ID, and the release ZIPs on Windows/macOS, were not exercised.
+* **Historical backtests** (`audit-model` E1–E4) were not re-run (no model formula affecting players changed).
+* Screen-reader behaviour was only checked structurally (roles, focus), not with an actual screen reader.
+
+## 10. Final results
+
+| Check | Result |
+|---|---|
+| `npm test` | 103/103 pass |
+| `npm run lint` | clean |
+| `npm run test:e2e` | all checks pass at 1360/721/390 px |
+| Clean clone (no data, no node_modules) | tests, lint, E2E pass; first launch syncs 10/10 and renders |
+| Model change | 2.1.1 → 2.1.2 (picks only); full-value diffs documented in P2 |
+
+This audit does not make the application bug-free. High-risk areas that passed current testing: identity resolution
+against real data (old vs new identical), sync isolation/idempotency, trade-engine invariants, valuation explanations.
+Areas with thinner coverage: real-world source format changes (only simulated), multi-tab editing of the same profile,
+the release ZIP launchers, and non-Chromium browsers.

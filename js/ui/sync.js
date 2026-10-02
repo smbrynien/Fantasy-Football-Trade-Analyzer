@@ -31,7 +31,9 @@ export async function startSync(opts = {}) {
     const r = await api.post('/api/sync', { ...opts, formats: formatsForSync() });
     if (r.already_running) toast('A sync is already running.', 'warn');
   } catch (e) {
-    toast(`Could not start sync: ${e.message}`, 'bad');
+    // A raw "Failed to fetch" meant nothing to users: the local server window was closed or crashed.
+    const offline = e instanceof TypeError || /failed to fetch|networkerror/i.test(e.message);
+    toast(offline ? 'The app\'s local server is not responding — if you closed its window, start the app again. Values already loaded stay available.' : `Could not start sync: ${e.message}`, 'bad', 8000);
     return;
   }
   app.syncing = true;

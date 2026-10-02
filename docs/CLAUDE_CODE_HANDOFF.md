@@ -55,9 +55,8 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 ```text
 Overall Status:  Working, tested. Model 2.1.2 (2.0.0 audit model + ADP corroboration rule + market list
                  format rules + monotone pick curves). ALL known bugs (§19 #1–#13) FIXED. Lint runs in CI.
-Bug audit:       Adversarial reliability audit IN PROGRESS — findings, root causes and tests in docs/BUG_AUDIT.md
-                 (server path traversal, crash vectors, CSRF, rebuild races, corrupt-file recovery, import validation,
-                 identity conflicts, impossible/inverted picks fixed so far).
+Bug audit:       Adversarial reliability audit DONE (2026-10-02): 32 bugs fixed (1 Critical, 13 High, 8 Medium,
+                 10 Low) — docs/BUG_AUDIT.md (matrix, root causes, remaining issues) and docs/BUG_FIX_HISTORY.md.
 
 Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
                  corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
@@ -72,7 +71,7 @@ Player Database: Implemented. 17 external ID systems, never merges ambiguous pla
 Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool works on fresh clones: `--freeze`,
                  `--out=DIR`, before/after skipped with instructions on data mismatch (bug #2 fixed).
 UX Audit:        Not done. Known UX issues in §16.
-Testing:         78/78 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
+Testing:         103/103 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
                  (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions: lint → tests → build → publish ZIPs on every push to main (lint step added in
@@ -93,7 +92,7 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --failed` | Retry only failed/partial/quarantined sources | inferred |
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
-| `npm test` | `node --test tests/*.test.js` — 78 tests, offline | **yes, 78/78** |
+| `npm test` | `node --test tests/*.test.js` — 103 tests, offline | **yes, 103/103** |
 | `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`). **CI runs it before the tests; a lint error blocks the release** | **yes, clean** |
 | `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360, 721 and 390 px: layout (no sideways page scroll, Sync and all tabs on screen), trade 1-for-1 with verdict, every main route, player Trends with a seeded two-model history (marker, broken line, within-model change), no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
 | `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--freeze`, `--snapshot-before`, `--out=DIR`). `--freeze`/`--snapshot-before` without `--only` do only that (no backtests) | yes (fresh clone, mismatch and full before/after workflow; §17 item 10) |
@@ -673,20 +672,22 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **78 tests, 78 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **103 tests, 103 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
 |---|---|---|
 | `history-series.test.js` | 3 | Trends model-version boundaries, markers, within-model change vs raw-series change |
+| `server.test.js` | 6 | HTTP hardening: path traversal, malformed requests, CSRF/DNS rebinding, saved-trade ids, JSON body validation (BUG_AUDIT A1–A6) |
+| `search.test.js` | 3 | asset search de-dup, suffixes, team-code prefixes (SR1–SR3) |
 | `audit-tool.test.js` | 3 | `audit-model` CLI on the synthetic fixture in temp dirs: fresh clone skips, freeze needs data, baseline/data mismatch skips, freeze → baseline → re-sync → compare uses frozen data |
 | `adapters.test.js` | 1 | ESPN ADP undrafted-default collapse (stubbed HTTP; first adapter-level test) |
-| `identity.test.js` | 9 | normalizers, ID/name matching, suffixes/nicknames, team change, ambiguous never merged, conflicts, overrides, DEF, PlayerStore |
-| `ingestion.test.js` | 8 | CSV parsing (quotes, BOM, CRLF, malformed), delimiter detection, auto column mapping, required fields, duplicates, JSON uploads, pick labels |
+| `identity.test.js` | 12 | normalizers, ID/name matching, suffixes/nicknames, team change, ambiguous never merged, conflicts, overrides, DEF, PlayerStore |
+| `ingestion.test.js` | 12 | CSV parsing (quotes, BOM, CRLF, malformed), delimiter detection, auto column mapping, required fields, duplicates, JSON uploads, pick labels |
 | `scoring.test.js` | 6 | PPR/half/std, QB scoring, TE premium, first downs, bonuses, K/DEF |
-| `sync.test.js` | 7 | partial failures, exclusive failover, retry failed, freshness skip, quarantine keeps previous, stale flag, snapshots/history |
+| `sync.test.js` | 13 | partial failures, exclusive failover, retry failed, freshness skip, quarantine keeps previous, stale flag, snapshots/history |
 | `trade.test.js` | 9 | 1-for-1, 2-for-1, 3-for-2 package math, disable package, player vs picks, z-score verdict, missing ids, dynasty age notes |
-| `valuation.test.js` | 17 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection, market list QB-format exclusion, TEP list preference |
+| `valuation.test.js` | 20 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection, market list QB-format exclusion, TEP list preference |
 | `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
 Optional browser E2E: `npm run test:e2e` (`tests/e2e/smoke.mjs`, not matched by the `npm test` glob; §3). It covers
@@ -843,22 +844,23 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 # PICK UP HERE
 
-> **Audit in progress:** read `docs/BUG_AUDIT.md` first — it lists what has been tested and fixed, and what is still
-> open in the audit. Server changes: static paths are resolved after decoding; state-changing API calls must be
-> same-origin `application/json`; non-loopback `Host` headers are refused unless `HOST` exposes the app.
+> **Bug audit completed** — read `docs/BUG_AUDIT.md` §8–§9 for remaining known issues and untested areas. Server
+> rules to keep: static paths are resolved after decoding; state-changing API calls must be same-origin
+> `application/json` with a JSON object body; non-loopback `Host` headers are refused unless `HOST` exposes the app.
+> Sync stores only `cleanBatch`-validated records; the engine sanitizes league settings; stored UI state is
+> shape-checked on load.
 
 ```text
-Current state:            Model 2.1.1 (bug #1 fixed: ADP corroborates only; #4/#5 market list format rules); ESPN undrafted ADP collapsed to a tie
-                          (bug #10); dev-only `npm run lint` (also in CI) + optional `npm run test:e2e`; audit-model
-                          reproducible (bug #2); Trends marks model changes (bug #3). All 10 sources sync; 78/78
-                          tests, lint clean, E2E pass.
-Most important unfinished: No known bugs. Next by value: §35 item 3 (audit scorecard on the Model page), item 4
+Current state:            Model 2.1.2. All known bugs (§19 #1–#13) and the 32 bugs from the adversarial audit
+                          (docs/BUG_AUDIT.md) fixed. 103/103 tests, lint clean (also in CI), E2E pass at 3 widths.
+                          All 10 sources sync.
+Most important unfinished: No known bugs (see docs/BUG_AUDIT.md §8 for low-severity known issues). Next by value: §35 item 3 (audit scorecard on the Model page), item 4
                           (prune ADP-only players from dataset.json — ≈45% of rows carry no redraft value), a first
                           usability audit (none exists, §21), and the research items in §34 (σ calibration, 3+-player
                           packages, roster-specific valuation).
 Known blockers:           None.
 Files to inspect first:   js/ui/views/model.js, server/index.js (STATIC_ALLOW), server/dataset-builder.js
-Tests to run first:       npm test (expect 78/78); npm run lint (clean); npm run test:e2e (pass or SKIP)
+Tests to run first:       npm test (expect 103/103); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
                           assigned branch and main (CLAUDE.md).
@@ -916,7 +918,7 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   overflow on Model/Data pages (UI1, UI2) → batch 6: sync stores only valid, de-duplicated records; API body
   validation (SY1–SY3, A6) → batch 7: search de-dupe/suffixes/team prefixes; performance and leak checks (SR1–SR3,
   PF1) → batch 8: import overwrite confirmation, CSV signed-number regression; import/export workflows verified
-  (I4, I5, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  (I4, I5) → batch 9: offline message; audit documents completed (O1, this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
