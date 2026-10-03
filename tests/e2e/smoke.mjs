@@ -230,6 +230,33 @@ try {
         for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.trade') || k.startsWith('ffta.team') || k.startsWith('ffta.finder')) localStorage.removeItem(k);
         await fetch('/api/teams', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teams: [] }) });
       });
+
+      // Desktop: Sleeper import (mocked public API) brings each team's rookie picks, traded picks included.
+      const L = '123456789';
+      const mock = { '': { league_id: L, season: '2026', settings: { type: 2, draft_rounds: 2 } },
+        '/users': [1, 2].map((r) => ({ user_id: `u${r}`, display_name: `Owner ${r}`, metadata: { team_name: `Sleeper ${r}` } })),
+        '/rosters': [1, 2].map((r) => ({ roster_id: r, owner_id: `u${r}`, players: [0, 1, 2].map((k) => String(9000 + r * 10 + k)) })),
+        '/traded_picks': [{ season: String(UPCOMING), round: 1, roster_id: 2, owner_id: 1 }], '/drafts': [] };
+      await page.route('https://api.sleeper.app/**', (route) => { const k = new URL(route.request().url()).pathname.replace(`/v1/league/${L}`, ''); route.fulfill({ status: k in mock ? 200 : 404, contentType: 'application/json', body: JSON.stringify(mock[k] ?? {}) }); });
+      await page.evaluate(() => localStorage.setItem('ffta.mode', '"dynasty"'));
+      await page.goto(`${base}/#/team`); await page.reload();
+      await page.locator('button', { hasText: 'Import from Sleeper' }).click();
+      await page.locator('input[aria-label="Sleeper league ID"]').fill(L);
+      await page.locator('button', { hasText: 'Load teams' }).click();
+      await page.locator('.modal .stack button').first().waitFor({ timeout: 5000 }).catch(() => {});
+      await page.locator('.modal .stack button').first().click().catch(() => {});
+      await page.waitForTimeout(500);
+      const imported = await page.evaluate(() => (JSON.parse(localStorage.getItem('ffta.teams') || '[]')).map((t) => ({ opp: Boolean(t.opponent), picks: t.ids.filter((i) => i.startsWith('pick:')) })));
+      const mine = imported.find((t) => !t.opp), opp = imported.find((t) => t.opp);
+      check(mine && opp && mine.picks.filter((i) => i === `pick:${UPCOMING}:1`).length === 2 && opp.picks.length === mine.picks.length - 2 && /Draft picks/.test(await page.locator('#view').innerText()),
+        `my team: Sleeper import brings rookie picks, traded 1st included (mine ${mine?.picks.length}, theirs ${opp?.picks.length})`);
+      await page.unroute('https://api.sleeper.app/**');
+      await page.evaluate(async () => {
+        for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.team')) localStorage.removeItem(k);
+        localStorage.setItem('ffta.mode', '"redraft"');
+        await fetch('/api/teams', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teams: [] }) });
+      });
+      await page.reload();
     }
 
     // Keyboard: a Players row opens the player with Enter.
@@ -239,6 +266,19 @@ try {
     await row.focus(); await page.keyboard.press('Enter');
     check(await page.locator('.modal').waitFor({ timeout: 3000 }).then(() => true, () => false), 'players: Enter on a focused row opens the player');
     await page.keyboard.press('Escape');
+    if (viewport.width === 1360) {
+      // F48 (desktop): positional rank next to the overall rank; the default columns fit without sideways scrolling.
+      const pt = await page.evaluate(() => { const w = document.querySelector('.desktop-table'); return { rank: w.querySelector('tbody td').textContent.trim(), fits: w.scrollWidth <= w.clientWidth }; });
+      check(/^\d+ · [A-Z]+\d+$/.test(pt.rank) && pt.fits, `players: "5 · WR3" rank and default columns fit (${pt.rank}, fits ${pt.fits})`);
+      // F47: one source table on the dashboard; a source name opens its details; the old Sources route lands there.
+      await page.goto(`${base}/#/data/sources`);
+      const srcBtn = page.locator('table.source-table button.linklike').first();
+      const hasSrc = await srcBtn.waitFor({ timeout: 5000 }).then(() => true, () => false);
+      if (hasSrc) await srcBtn.click();
+      const detail = hasSrc && await page.locator('.modal dl.kv').waitFor({ timeout: 3000 }).then(() => true, () => false);
+      check(detail && (await page.locator('.subtabs button').count()) === 4, 'data: the dashboard lists the sources and a name opens its details (old Sources route)');
+      await page.keyboard.press('Escape');
+    }
 
     for (const route of ['#/team', '#/players', '#/compare', '#/data', '#/data/import', '#/data/quality', '#/data/snapshots', '#/settings', '#/settings/roster', '#/settings/redraft', '#/model', '#/help']) {
       await page.goto(`${base}/${route}`);

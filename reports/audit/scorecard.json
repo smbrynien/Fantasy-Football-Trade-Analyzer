@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T17:05:33.777Z",
+  "generated_at": "2026-10-03T22:01:03.993Z",
   "model_version": "2.3.0",
   "note": "One row per experiment, candidate and metric (scorecard.csv). Full reports: reports/audit/*.json; method and conclusions: docs/MODEL_AUDIT.md.",
   "experiments": [
@@ -1372,6 +1372,7 @@
         "lineupValue": "Δ summed generic value of the best starting lineup (My Team \"lineup value\")",
         "lineupPoints": "Δ starters' projected points per game (My Team)",
         "expected": "Δ expected season lineup points with availability, bench cover and waiver fill-ins",
+        "expectedBye": "expected, averaged over the season's weeks with each player out in his bye week (app form since 2.4.0)",
         "blend_expected_x": "standardised generic and expected, weight x on expected"
       },
       "rows": [
@@ -1394,6 +1395,11 @@
           "model": "expected",
           "metric": "corr(predicted margin, realised outcome)",
           "value": 0.576
+        },
+        {
+          "model": "expectedBye",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.577
         },
         {
           "model": "blend_expected_0.25",
@@ -1429,6 +1435,11 @@
           "model": "expected",
           "metric": "corr(predicted own change, own realised gain)",
           "value": 0.547
+        },
+        {
+          "model": "expectedBye",
+          "metric": "corr(predicted own change, own realised gain)",
+          "value": 0.549
         }
       ]
     },
@@ -1817,6 +1828,183 @@
           "model": "finder − pen05",
           "metric": "their gain difference, same requests",
           "value": 0.438
+        }
+      ]
+    },
+    {
+      "name": "E15 dynasty verdict calibration",
+      "id": "E15",
+      "data_label": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",
+      "description": "E15 dynasty verdict calibration (12-team 1QB PPR dynasty league, 20-man rosters, 3 seasons discounted 0.82)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "margin 0-5%",
+          "metric": "share won by favoured side (3 seasons)",
+          "value": 0.524
+        },
+        {
+          "model": "margin 5-10%",
+          "metric": "share won by favoured side (3 seasons)",
+          "value": 0.491
+        },
+        {
+          "model": "margin 10-20%",
+          "metric": "share won by favoured side (3 seasons)",
+          "value": 0.516
+        },
+        {
+          "model": "margin 20-30%",
+          "metric": "share won by favoured side (3 seasons)",
+          "value": 0.617
+        },
+        {
+          "model": "margin 30-50%",
+          "metric": "share won by favoured side (3 seasons)",
+          "value": 0.669
+        },
+        {
+          "model": "margin 50-75%",
+          "metric": "share won by favoured side (3 seasons)",
+          "value": 0.745
+        },
+        {
+          "model": "margin 75-100%",
+          "metric": "share won by favoured side (3 seasons)",
+          "value": 0.809
+        },
+        {
+          "model": "logistic fit",
+          "metric": "slope on |margin|",
+          "value": 1.75
+        },
+        {
+          "model": "adjusted",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.618
+        },
+        {
+          "model": "plainSums",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.616
+        }
+      ]
+    },
+    {
+      "name": "E16 dynasty trade finder",
+      "id": "E16",
+      "data_label": "REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks)",
+      "description": "E16 trade finder in dynasty (E15 leagues; realised 3-season lineup points, discount 0.82)",
+      "candidates": {
+        "finder": "Finder (app, dynasty): top option by starting-lineup value (minimal, maxEdge 5%)",
+        "most_even": "Value only: the most evenly valued fair package",
+        "random_fair": "A random fair minimal package",
+        "mutual_sum": "Their roster known: rank by my + their lineup-value gain"
+      },
+      "rows": [
+        {
+          "model": "finder",
+          "metric": "my realised 3-season gain",
+          "value": -0.627
+        },
+        {
+          "model": "finder",
+          "metric": "their realised 3-season gain",
+          "value": -40.893
+        },
+        {
+          "model": "finder",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.286
+        },
+        {
+          "model": "most_even",
+          "metric": "my realised 3-season gain",
+          "value": -24.994
+        },
+        {
+          "model": "most_even",
+          "metric": "their realised 3-season gain",
+          "value": -41.397
+        },
+        {
+          "model": "most_even",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.909
+        },
+        {
+          "model": "random_fair",
+          "metric": "my realised 3-season gain",
+          "value": -27.201
+        },
+        {
+          "model": "random_fair",
+          "metric": "their realised 3-season gain",
+          "value": -37.423
+        },
+        {
+          "model": "random_fair",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.909
+        },
+        {
+          "model": "mutual_sum",
+          "metric": "my realised 3-season gain",
+          "value": 0.021
+        },
+        {
+          "model": "mutual_sum",
+          "metric": "their realised 3-season gain",
+          "value": -23.413
+        },
+        {
+          "model": "mutual_sum",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.286
+        }
+      ]
+    },
+    {
+      "name": "E16 dynasty trade finder (paired)",
+      "id": "E16",
+      "data_label": "REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks)",
+      "description": "E16 trade finder in dynasty (E15 leagues; realised 3-season lineup points, discount 0.82)",
+      "candidates": {
+        "finder": "Finder (app, dynasty): top option by starting-lineup value (minimal, maxEdge 5%)",
+        "most_even": "Value only: the most evenly valued fair package",
+        "random_fair": "A random fair minimal package",
+        "mutual_sum": "Their roster known: rank by my + their lineup-value gain"
+      },
+      "rows": [
+        {
+          "model": "finder − random_fair",
+          "metric": "my gain difference, same requests",
+          "value": 30.514
+        },
+        {
+          "model": "finder − random_fair",
+          "metric": "their gain difference, same requests",
+          "value": -3.279
+        },
+        {
+          "model": "finder − most_even",
+          "metric": "my gain difference, same requests",
+          "value": 28.63
+        },
+        {
+          "model": "finder − most_even",
+          "metric": "their gain difference, same requests",
+          "value": 6.029
+        },
+        {
+          "model": "mutual_sum − finder",
+          "metric": "my gain difference, same requests",
+          "value": 0.647
+        },
+        {
+          "model": "mutual_sum − finder",
+          "metric": "their gain difference, same requests",
+          "value": 17.479
         }
       ]
     },

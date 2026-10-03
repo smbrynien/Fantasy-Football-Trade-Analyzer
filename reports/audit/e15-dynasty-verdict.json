@@ -1,0 +1,237 @@
+{
+  "experiment": "E15 dynasty verdict calibration (12-team 1QB PPR dynasty league, 20-man rosters, 3 seasons discounted 0.82)",
+  "labels": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",
+  "leagues": [
+    {
+      "season": 2020,
+      "snapshot": "2020-09-03",
+      "players": 407
+    },
+    {
+      "season": 2021,
+      "snapshot": "2021-09-03",
+      "players": 452
+    },
+    {
+      "season": 2022,
+      "snapshot": "2022-09-02",
+      "players": 446
+    },
+    {
+      "season": 2023,
+      "snapshot": "2023-09-01",
+      "players": 393
+    }
+  ],
+  "trades": 5000,
+  "outcomeSd": 428.647,
+  "calibration": {
+    "experiment": "E7 trade verdict calibration (share of simulated trades won by the side receiving more value)",
+    "trades": 5000,
+    "byMargin": [
+      {
+        "margin": "0-5%",
+        "n": 166,
+        "hitRate": 0.524
+      },
+      {
+        "margin": "5-10%",
+        "n": 169,
+        "hitRate": 0.491
+      },
+      {
+        "margin": "10-20%",
+        "n": 345,
+        "hitRate": 0.516
+      },
+      {
+        "margin": "20-30%",
+        "n": 412,
+        "hitRate": 0.617
+      },
+      {
+        "margin": "30-50%",
+        "n": 930,
+        "hitRate": 0.669
+      },
+      {
+        "margin": "50-75%",
+        "n": 1307,
+        "hitRate": 0.745
+      },
+      {
+        "margin": "75-100%",
+        "n": 1671,
+        "hitRate": 0.809
+      }
+    ],
+    "verdictLevels": [
+      {
+        "sigmaPctOfValue": 0.05,
+        "levels": {
+          "close": {
+            "n": 199,
+            "hitRate": 0.533
+          },
+          "lean": {
+            "n": 180,
+            "hitRate": 0.494
+          },
+          "clear": {
+            "n": 4621,
+            "hitRate": 0.726
+          }
+        }
+      },
+      {
+        "sigmaPctOfValue": 0.1,
+        "levels": {
+          "close": {
+            "n": 379,
+            "hitRate": 0.515
+          },
+          "lean": {
+            "n": 369,
+            "hitRate": 0.534
+          },
+          "clear": {
+            "n": 4252,
+            "hitRate": 0.743
+          }
+        }
+      },
+      {
+        "sigmaPctOfValue": 0.15,
+        "levels": {
+          "close": {
+            "n": 557,
+            "hitRate": 0.501
+          },
+          "lean": {
+            "n": 583,
+            "hitRate": 0.607
+          },
+          "clear": {
+            "n": 3860,
+            "hitRate": 0.756
+          }
+        }
+      }
+    ],
+    "logistic": {
+      "slope": 1.75,
+      "logLik": -2893.208,
+      "at10pct": 0.544,
+      "at20pct": 0.587,
+      "at30pct": 0.628,
+      "at50pct": 0.706
+    },
+    "meanHitRate": 0.71
+  },
+  "slopeBySeason": {
+    "2020": 1.75,
+    "2021": 2,
+    "2022": 1.5,
+    "2023": 1.5
+  },
+  "packageCheck": {
+    "adjusted": 0.618,
+    "plainSums": 0.616
+  },
+  "appLevels": {
+    "slope": 1.75,
+    "leanMargin": 0.173,
+    "clearMargin": 0.418,
+    "levels": {
+      "close": {
+        "share": 0.116,
+        "hitRate": 0.512
+      },
+      "lean": {
+        "share": 0.21,
+        "hitRate": 0.637
+      },
+      "clear": {
+        "share": 0.673,
+        "hitRate": 0.767
+      }
+    }
+  },
+  "replication": {
+    "seed": 99,
+    "logistic": {
+      "slope": 1.75,
+      "logLik": -2860.737,
+      "at10pct": 0.544,
+      "at20pct": 0.587,
+      "at30pct": 0.628,
+      "at50pct": 0.706
+    },
+    "slopeBySeason": {
+      "2020": 1.75,
+      "2021": 1.75,
+      "2022": 1.5,
+      "2023": 2
+    },
+    "byMargin": [
+      {
+        "margin": "0-5%",
+        "n": 163,
+        "hitRate": 0.46
+      },
+      {
+        "margin": "5-10%",
+        "n": 159,
+        "hitRate": 0.528
+      },
+      {
+        "margin": "10-20%",
+        "n": 393,
+        "hitRate": 0.562
+      },
+      {
+        "margin": "20-30%",
+        "n": 374,
+        "hitRate": 0.599
+      },
+      {
+        "margin": "30-50%",
+        "n": 956,
+        "hitRate": 0.691
+      },
+      {
+        "margin": "50-75%",
+        "n": 1354,
+        "hitRate": 0.748
+      },
+      {
+        "margin": "75-100%",
+        "n": 1601,
+        "hitRate": 0.814
+      }
+    ],
+    "appLevels": {
+      "slope": 1.75,
+      "leanMargin": 0.173,
+      "clearMargin": 0.418,
+      "levels": {
+        "close": {
+          "share": 0.12,
+          "hitRate": 0.513
+        },
+        "lean": {
+          "share": 0.205,
+          "hitRate": 0.639
+        },
+        "clear": {
+          "share": 0.676,
+          "hitRate": 0.776
+        }
+      }
+    },
+    "packageCheck": {
+      "adjusted": 0.616,
+      "plainSums": 0.617
+    }
+  }
+}

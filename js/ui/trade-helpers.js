@@ -45,7 +45,7 @@ export function verdictHeadline(ana, N = NEUTRAL) {
   const unc = `±${fmtValue(ana.sigmaDiff)}`;
   if (ana.assessment.basis === 'outcome') {
     switch (ana.assessment.level) {
-      case 'even': return { label: 'Close — roughly fair', sub: ana.diff === 0 ? 'Both sides receive the same value.' : `${team} receives ${gap} more (${pct}) — over a season, a margin this small goes either way.` };
+      case 'even': return { label: 'Close — roughly fair', sub: ana.diff === 0 ? 'Both sides receive the same value.' : `${team} receives ${gap} more (${pct}) — over ${ana.outcome?.horizon === 'three seasons' ? 'three seasons' : 'a season'}, a margin this small goes either way.` };
       case 'lean': return { label: `Leans ${mid(team)}`, sub: `${team} receives ${gap} more (${pct}).` };
       default: return { label: `${team} clearly ahead`, sub: `${team} receives ${gap} more (${pct}).` };
     }
@@ -67,6 +67,7 @@ export function outcomeText(ana, N = NEUTRAL) {
   if (!o || !(o.probability > 0)) return null;
   const pct = Math.round((o.probability * 100) / 5) * 5;
   const team = o.favoured === 'A' ? N.A : N.B;
+  if (o.horizon === 'three seasons') return `In dynasty leagues replayed on real 2020–2025 seasons, trades with this margin left ${mid(team)} ahead over the next three seasons about ${pct}% of the time — injuries, breakouts and aging decide a lot.`;
   return `In historical league simulations (2020–2025 seasons), trades with this margin went ${mid(team)}'s way about ${pct}% of the time — a full season leaves a lot to luck.`;
 }
 

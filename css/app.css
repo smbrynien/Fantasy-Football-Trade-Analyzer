@@ -319,6 +319,12 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
 .pcard + .pcard { margin-top: .4rem; }
 
 /* ---------- responsive ---------- */
+/* Players table in narrower desktop windows: headers wrap onto two lines so the default columns still fit
+   (usability G-25; at 1024 px the table used to scroll sideways inside its box). */
+@media (max-width: 1300px) {
+  table.players-table th { white-space: normal; vertical-align: bottom; }
+  table.players-table th, table.players-table td { padding-left: .45rem; padding-right: .45rem; }
+}
 /* Header between phone and wide desktop: compact the right-hand controls so they never push the page sideways
    (it overflowed by up to 370 px between 721 and ~1090 px). The full text stays available as tooltips. */
 @media (max-width: 1120px) {
@@ -475,3 +481,5 @@ details.panel > summary { cursor: pointer; }
 .finder-gain.good, .finder-option .good { color: var(--good); }
 .finder-gain.bad, .finder-option .bad { color: var(--bad); }
 .finder label, .finder select { max-width: 100%; } /* long fairness labels never widen the page */
+/* Data → Sync dashboard & sources (F47): source names open the details. */
+table.source-table .linklike { font-weight: 600; color: var(--accent); }

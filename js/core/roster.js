@@ -42,7 +42,9 @@ export function bestLineup(assets, league, { score = (a) => a.value } = {}) {
 // In historical league simulations, the change in a team's EXPECTED weekly lineup points — every player available
 // with his availability, the best available lineup starting, empty slots filled from waivers — predicted what a trade
 // did to that team better than generic values (0.576 vs 0.549) or the starters' projected points (0.538): depth that
-// covers injuries and byes counts, a second star who would sit on the bench doesn't.
+// covers injuries and byes counts, a second star who would sit on the bench doesn't. Since 2.4.0 the expectation is an
+// average over the remaining weeks with each player out in his team's bye week (E12: .576 → .577 margin, own gain
+// .547 → .549, never worse in a season): two starters with the same bye cost more than a bench that covers it.
 
 function hash32(str) {
   let h = 2166136261;
@@ -78,10 +80,15 @@ function lineupSlots(league) {
  * @param rate   asset → projected points per game (null = no projection: never starts)
  * @param avail  asset → probability of being available in a given week (0..1)
  * @param waiver position → points per week of the best free agent (fills a slot nobody can)
+ * @param bye    optional asset → bye week (null = none left / unknown)
+ * @param weeks  optional remaining weeks of the season: draws are spread evenly over them and a player is out in his
+ *               bye week (the result is the average week, byes included)
  */
-export function expectedLineupPoints(assets, league, { rate, avail, waiver = {}, draws = 400 } = {}) {
+export function expectedLineupPoints(assets, league, { rate, avail, waiver = {}, draws = 400, bye = null, weeks = null } = {}) {
+  const byWeek = Boolean(bye && Array.isArray(weeks) && weeks.length);
+  if (byWeek) draws = Math.ceil(draws / weeks.length) * weeks.length; // every week the same number of draws
   const ps = assets.filter((a) => a && a.kind === 'player')
-    .map((a) => ({ a, r: rate(a), p: Math.min(1, Math.max(0, avail(a) ?? 1)) }))
+    .map((a) => ({ a, r: rate(a), p: Math.min(1, Math.max(0, avail(a) ?? 1)), b: byWeek ? bye(a) ?? null : null }))
     .filter((x) => Number.isFinite(x.r) && x.r > 0)
     .sort((x, y) => y.r - x.r || String(x.a.id).localeCompare(String(y.a.id)));
   const u = ps.map((x) => drawsFor(x.a.id, draws));
@@ -91,9 +98,10 @@ export function expectedLineupPoints(assets, league, { rate, avail, waiver = {},
   const used = new Uint8Array(ps.length);
   for (let d = 0; d < draws; d++) {
     used.fill(0);
+    const week = byWeek ? weeks[d % weeks.length] : null;
     slots.forEach((ok, k) => {
       for (let i = 0; i < ps.length; i++) {
-        if (!used[i] && u[i][d] < ps[i].p && ok.includes(ps[i].a.position)) { used[i] = 1; total += ps[i].r; return; }
+        if (!used[i] && u[i][d] < ps[i].p && (week === null || ps[i].b !== week) && ok.includes(ps[i].a.position)) { used[i] = 1; total += ps[i].r; return; }
       }
       total += fill[k];
     });
@@ -104,7 +112,9 @@ export function expectedLineupPoints(assets, league, { rate, avail, waiver = {},
 /**
  * Inputs for expectedLineupPoints from the REDRAFT valuations: projected points per game (production rate if there is
  * no projection), availability = the position's historical share of games × the availability shape at the player's
- * rank × the share of remaining games not lost to a current injury, and the league's waiver level per position.
+ * rank × the share of remaining games not lost to a current injury, the league's waiver level per position, and
+ * (2.4.0) the remaining weeks with each player's bye week — in season and preseason; after the season the byes of the
+ * next schedule aren't known, so none are used.
  */
 export function expectationInputs(red) {
   const share = red.model?.redraft?.production?.availability || {};
@@ -131,7 +141,12 @@ export function expectationInputs(red) {
     const i = red.structure?.rostered?.[pos] ?? rs.length;
     waiver[pos] = (rs[Math.min(i, rs.length - 1)] ?? 0) * (share[pos] ?? 0.85);
   }
-  return { rate, avail, waiver };
+  const ph = red.phase || {};
+  const last = red.model?.phase?.regular_season_weeks || 18;
+  const weeks = ph.phase === 'in_season' || ph.phase === 'preseason'
+    ? Array.from({ length: Math.max(0, last - (ph.week || 1) + 1) }, (_, i) => (ph.week || 1) + i) : null;
+  const bye = (a) => { const b = get(a)?.details?.bye; return Number.isFinite(b) ? b : null; };
+  return weeks && weeks.length ? { rate, avail, waiver, bye, weeks } : { rate, avail, waiver };
 }
 
 /** Remove one occurrence per id (two identical generic picks are two assets). */

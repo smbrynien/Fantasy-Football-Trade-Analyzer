@@ -42,6 +42,7 @@
     "lineupValue": "Δ summed generic value of the best starting lineup (My Team \"lineup value\")",
     "lineupPoints": "Δ starters' projected points per game (My Team)",
     "expected": "Δ expected season lineup points with availability, bench cover and waiver fill-ins",
+    "expectedBye": "expected, averaged over the season's weeks with each player out in his bye week (app form since 2.4.0)",
     "blend_expected_x": "standardised generic and expected, weight x on expected"
   },
   "margin": {
@@ -93,6 +94,18 @@
       "even": 0.584,
       "uneven": 0.575
     },
+    "expectedBye": {
+      "corr": 0.577,
+      "bySeason": {
+        "2021": 0.468,
+        "2022": 0.711,
+        "2023": 0.52,
+        "2024": 0.543,
+        "2025": 0.631
+      },
+      "even": 0.583,
+      "uneven": 0.576
+    },
     "blend_expected_0.25": {
       "corr": 0.56,
       "bySeason": {
@@ -134,7 +147,8 @@
     "generic": 0.5,
     "lineupValue": 0.526,
     "lineupPoints": 0.49,
-    "expected": 0.547
+    "expected": 0.547,
+    "expectedBye": 0.549
   },
   "disagreement": {
     "n": 414,

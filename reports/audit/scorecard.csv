@@ -237,6 +237,7 @@ E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineupValue,"corr(predicted margin, realised outcome)",0.562
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineupPoints,"corr(predicted margin, realised outcome)",0.538
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,expected,"corr(predicted margin, realised outcome)",0.576
+E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,expectedBye,"corr(predicted margin, realised outcome)",0.577
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,blend_expected_0.25,"corr(predicted margin, realised outcome)",0.56
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,blend_expected_0.5,"corr(predicted margin, realised outcome)",0.569
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,blend_expected_0.75,"corr(predicted margin, realised outcome)",0.574
@@ -244,6 +245,7 @@ E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineupValue,"corr(predicted own change, own realised gain)",0.526
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineupPoints,"corr(predicted own change, own realised gain)",0.49
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,expected,"corr(predicted own change, own realised gain)",0.547
+E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,expectedBye,"corr(predicted own change, own realised gain)",0.549
 E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder,my realised season gain,6.353
 E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder,their realised season gain,-18.685
 E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder,coverage (share of requests with a package),0.212
@@ -312,6 +314,34 @@ E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020�
 E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_min,"their gain difference, same requests",-5.135
 E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − pen05,"my gain difference, same requests",-0.039
 E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − pen05,"their gain difference, same requests",0.438
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 0-5%,share won by favoured side (3 seasons),0.524
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 5-10%,share won by favoured side (3 seasons),0.491
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 10-20%,share won by favoured side (3 seasons),0.516
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 20-30%,share won by favoured side (3 seasons),0.617
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 30-50%,share won by favoured side (3 seasons),0.669
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 50-75%,share won by favoured side (3 seasons),0.745
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 75-100%,share won by favoured side (3 seasons),0.809
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",logistic fit,slope on |margin|,1.75
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",adjusted,"corr(predicted margin, realised outcome)",0.618
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",plainSums,"corr(predicted margin, realised outcome)",0.616
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,my realised 3-season gain,-0.627
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,their realised 3-season gain,-40.893
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,coverage (share of requests with a package),0.286
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,my realised 3-season gain,-24.994
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,their realised 3-season gain,-41.397
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,coverage (share of requests with a package),0.909
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,my realised 3-season gain,-27.201
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,their realised 3-season gain,-37.423
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,coverage (share of requests with a package),0.909
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,my realised 3-season gain,0.021
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,their realised 3-season gain,-23.413
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,coverage (share of requests with a package),0.286
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − random_fair,"my gain difference, same requests",30.514
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − random_fair,"their gain difference, same requests",-3.279
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − most_even,"my gain difference, same requests",28.63
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − most_even,"their gain difference, same requests",6.029
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum − finder,"my gain difference, same requests",0.647
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum − finder,"their gain difference, same requests",17.479
 Monotonicity,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",current,failures,1
 Package simulation,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",raw,"corr(model diff, simulated lineup gain)",0.596
 Package simulation,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",packageAdjusted,"corr(model diff, simulated lineup gain)",0.602

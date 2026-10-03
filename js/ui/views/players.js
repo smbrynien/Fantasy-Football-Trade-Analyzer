@@ -8,7 +8,7 @@ import { TEAMS } from '../../core/util/teams.js';
 import { nameKey } from '../../core/util/names.js';
 
 const COLUMNS = [
-  { key: 'rank', label: 'Rank', num: true, get: (r) => r.cur?.rank, always: true },
+  { key: 'rank', label: 'Rank', num: true, get: (r) => r.cur?.rank, always: true, title: 'Overall rank · positional rank (e.g. "5 · WR3") in this mode and league' },
   { key: 'player', label: 'Player', get: (r) => r.name, always: true },
   { key: 'pos', label: 'Pos', get: (r) => r.position },
   { key: 'team', label: 'Team', get: (r) => r.team },
@@ -28,7 +28,12 @@ const COLUMNS = [
   { key: 'updated', label: 'Last Updated', get: (r) => r.updated },
 ];
 
-const DEFAULT_VISIBLE = { redraft: ['rank', 'player', 'pos', 'team', 'age', 'red', 'red_rank', 'proj', 'ppg', 'market', 'edge', 'adp', 'trend', 'conf'], dynasty: ['rank', 'player', 'pos', 'team', 'age', 'dyn', 'dyn_rank', 'future', 'market', 'edge', 'red', 'trend', 'conf'] };
+/** "5 · WR3": overall rank · positional rank (usability G-26). */
+export const rankText = (a) => (a?.rank ? `${a.rank}${a.posRank ? ` · ${a.position}${a.posRank}` : ''}` : '—');
+
+// Defaults fit a 1360 px window without sideways scrolling (usability G-25). The mode's own rank column is left out:
+// "Rank" already shows it, with the positional rank. Everything else stays one click away under "Columns".
+const DEFAULT_VISIBLE = { redraft: ['rank', 'player', 'pos', 'team', 'age', 'red', 'proj', 'ppg', 'market', 'edge', 'adp', 'conf'], dynasty: ['rank', 'player', 'pos', 'team', 'age', 'dyn', 'future', 'market', 'edge', 'red', 'conf'] };
 
 export function renderPlayers(root) {
   const red = getValuations('redraft');
@@ -122,7 +127,8 @@ export function renderPlayers(root) {
     if (c.key === 'pos') return h('td', {}, posBadge(r.position));
     if (c.key === 'conf') return h('td', {}, confBadge(r.cur.confidence));
     if (c.key === 'updated') return h('td.small.muted.nowrap', {}, r.updated ? timeAgo(new Date(r.updated).toISOString()) : '—');
-    if (c.key === 'rank') return h('td.num.muted', {}, r.cur.rank ?? '—');
+    if (c.key === 'rank') return h('td.num.muted.nowrap', {}, rankText(r.cur));
+    if (c.key === 'red_rank' || c.key === 'dyn_rank') return h('td.num.nowrap', {}, rankText(c.key === 'red_rank' ? r.red : r.dyn));
     const v = c.get(r);
     return h('td', { class: `${c.num ? 'num' : ''} ${c.cls || ''}`.trim() }, c.fmt ? c.fmt(v) : v ?? '—');
   }
@@ -144,7 +150,7 @@ export function renderPlayers(root) {
     const tbody = h('tbody', {}, shown.map((r) => h('tr.clickable', { tabindex: 0, title: 'Open details (Enter)', onclick: () => openPlayer(r.id), onkeydown: activate(() => openPlayer(r.id)) }, cols.map((c) => cell(c, r)))));
     tableHost.append(
       h('div.flex-between.small.muted.mb', {}, h('span', {}, `${list.length} players · showing ${shown.length} · values in ${cur.league.name}`), h('span', {}, 'Click a player for details and "Why this value?"')),
-      h('div.table-wrap.desktop-table', {}, h('table.data', {}, thead, tbody)),
+      h('div.table-wrap.desktop-table', {}, h('table.data.players-table', {}, thead, tbody)),
       h('div.mobile-cards', {}, shown.map((r) => h('div.pcard', { role: 'button', tabindex: 0, onclick: () => openPlayer(r.id), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPlayer(r.id); } } }, posBadge(r.position),
         h('div', {}, h('div.player-name', {}, r.name, ' ', injuryBadge(r.injury ? { status: r.injury } : null)), h('div.player-sub', {}, `${r.team || 'FA'} · ${fmtAge(r.age)} · market ${fmtValue(r.cur.groupValues?.market)}`)),
         h('div.num', {}, h('div.bold', {}, fmtValue(r.cur.value)), confBadge(r.cur.confidence))))),
@@ -154,8 +160,8 @@ export function renderPlayers(root) {
   function exportCSV(kind) {
     const src = kind === 'filtered' ? filtered() : rows;
     const base = [{ key: 'name', label: 'player' }, { key: 'position', label: 'pos' }, { key: 'team', label: 'team' }, { key: 'age', label: 'age', get: (r) => (r.age ? r.age.toFixed(1) : '') }];
-    const redCols = [{ key: 'rv', label: 'redraft_value', get: (r) => r.red ? Math.round(r.red.value) : '' }, { key: 'rr', label: 'redraft_rank', get: (r) => r.red?.rank ?? '' }, { key: 'rlo', label: 'redraft_range_low', get: (r) => r.red ? Math.round(r.red.range[0]) : '' }, { key: 'rhi', label: 'redraft_range_high', get: (r) => r.red ? Math.round(r.red.range[1]) : '' }, { key: 'proj', label: 'ros_projected_points', get: (r) => r.red?.details?.projection?.points?.toFixed(1) ?? '' }, { key: 'rmk', label: 'redraft_market_value', get: (r) => r.red?.groupValues?.market ? Math.round(r.red.groupValues.market) : '' }, { key: 'rc', label: 'redraft_confidence', get: (r) => r.red?.confidence?.label ?? '' }];
-    const dynCols = [{ key: 'dv', label: 'dynasty_value', get: (r) => r.dyn ? Math.round(r.dyn.value) : '' }, { key: 'dr', label: 'dynasty_rank', get: (r) => r.dyn?.rank ?? '' }, { key: 'dlo', label: 'dynasty_range_low', get: (r) => r.dyn ? Math.round(r.dyn.range[0]) : '' }, { key: 'dhi', label: 'dynasty_range_high', get: (r) => r.dyn ? Math.round(r.dyn.range[1]) : '' }, { key: 'dmk', label: 'dynasty_market_value', get: (r) => r.dyn?.groupValues?.market ? Math.round(r.dyn.groupValues.market) : '' }, { key: 'dc', label: 'dynasty_confidence', get: (r) => r.dyn?.confidence?.label ?? '' }];
+    const redCols = [{ key: 'rv', label: 'redraft_value', get: (r) => r.red ? Math.round(r.red.value) : '' }, { key: 'rr', label: 'redraft_rank', get: (r) => r.red?.rank ?? '' }, { key: 'rpr', label: 'redraft_pos_rank', get: (r) => (r.red?.posRank ? `${r.position}${r.red.posRank}` : '') }, { key: 'rlo', label: 'redraft_range_low', get: (r) => r.red ? Math.round(r.red.range[0]) : '' }, { key: 'rhi', label: 'redraft_range_high', get: (r) => r.red ? Math.round(r.red.range[1]) : '' }, { key: 'proj', label: 'ros_projected_points', get: (r) => r.red?.details?.projection?.points?.toFixed(1) ?? '' }, { key: 'rmk', label: 'redraft_market_value', get: (r) => r.red?.groupValues?.market ? Math.round(r.red.groupValues.market) : '' }, { key: 'rc', label: 'redraft_confidence', get: (r) => r.red?.confidence?.label ?? '' }];
+    const dynCols = [{ key: 'dv', label: 'dynasty_value', get: (r) => r.dyn ? Math.round(r.dyn.value) : '' }, { key: 'dr', label: 'dynasty_rank', get: (r) => r.dyn?.rank ?? '' }, { key: 'dpr', label: 'dynasty_pos_rank', get: (r) => (r.dyn?.posRank ? `${r.position}${r.dyn.posRank}` : '') }, { key: 'dlo', label: 'dynasty_range_low', get: (r) => r.dyn ? Math.round(r.dyn.range[0]) : '' }, { key: 'dhi', label: 'dynasty_range_high', get: (r) => r.dyn ? Math.round(r.dyn.range[1]) : '' }, { key: 'dmk', label: 'dynasty_market_value', get: (r) => r.dyn?.groupValues?.market ? Math.round(r.dyn.groupValues.market) : '' }, { key: 'dc', label: 'dynasty_confidence', get: (r) => r.dyn?.confidence?.label ?? '' }];
     const cols = kind === 'redraft' ? [...base, ...redCols] : kind === 'dynasty' ? [...base, ...dynCols] : [...base, ...redCols, ...dynCols];
     cols.push({ key: 'mv', label: 'model_version', get: () => cur.meta.model_version }, { key: 'dv2', label: 'data_version', get: () => cur.meta.data_version }, { key: 'lg', label: 'league', get: () => cur.league.name });
     download(`player-values-${kind}-${new Date().toISOString().slice(0, 10)}.csv`, toCSV(src, cols), 'text/csv');

@@ -106,7 +106,7 @@ test('redraft option value: below-replacement players keep a small, monotone val
   for (let i = 1; i < ps.length; i++) assert.ok(ps[i].value <= ps[i - 1].value);
 });
 
-test('trade outcome frequency: redraft only, > 50% for the favoured side, rising with the margin', () => {
+test('trade outcome frequency: > 50% for the favoured side, rising with the margin (dynasty: three seasons, 2.4.0)', () => {
   const red = run(ds, 'preset_12_1qb_ppr', 'redraft');
   const ps = players(red);
   const small = analyzeTrade(red, [ps[10].id], [ps[11].id]);
@@ -117,7 +117,10 @@ test('trade outcome frequency: redraft only, > 50% for the favoured side, rising
   assert.equal(analyzeTrade(red, [ps[2].id], []).outcome, null, 'incomplete trade');
   const dyn = run(ds, 'preset_dyn_12_1qb', 'dynasty');
   const dp = players(dyn);
-  assert.equal(analyzeTrade(dyn, [dp[2].id], [dp[40].id]).outcome, null, 'dynasty: not validated, not shown');
+  const dt = analyzeTrade(dyn, [dp[2].id], [dp[40].id]);
+  assert.ok(dt.outcome.probability > 0.5 && dt.outcome.horizon === 'three seasons', 'dynasty: calibrated over three seasons (audit E15)');
+  assert.match(outcomeText(dt), /next three seasons about \d+% of the time/);
+  assert.equal(big.outcome.horizon, 'season');
   assert.match(outcomeText(big), /about \d+% of the time/);
   assert.equal(outcomeText({ outcome: null }), null);
 });

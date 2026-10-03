@@ -10,6 +10,7 @@ import { bestLineup, expectationInputs, expectedLineupPoints, rosterTargets } fr
 import { assetSearchBox, buildSearchIndex, searchAssets } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
 import { parsePickAssetId, pickDisplayName } from '../../core/pick-labels.js';
+import { sleeperPickIds, sleeperHasPicks } from '../sleeper-import.js';
 
 const SLOT_LABEL = { FLEX: 'FLEX', SUPERFLEX: 'SF' };
 
@@ -274,6 +275,26 @@ export function renderTeam(root) {
     });
   }
 
+  /** Rookie picks each Sleeper team owns (dynasty/keeper leagues), as this app's pick ids. Never blocks the player import. */
+  async function sleeperPicks(id, rosters) {
+    const none = (note = null) => ({ ids: new Map(), note });
+    const dyn = getValuations('dynasty');
+    const valued = dyn ? [...dyn.assets.values()].filter((a) => a.kind === 'pick').map((a) => parsePickAssetId(a.id)).filter(Boolean) : [];
+    if (!valued.length) return none();
+    try {
+      const get = async (u) => { const r = await fetch(`https://api.sleeper.app/v1/league/${id}${u}`); if (!r.ok) throw new Error(`Sleeper returned ${r.status}`); return r.json(); };
+      const league = await get('');
+      if (!sleeperHasPicks(league)) return none();
+      const [tradedPicks, drafts] = await Promise.all([get('/traded_picks'), get('/drafts')]);
+      const seasons = [...new Set(valued.map((d) => d.season))].sort();
+      const appRounds = Math.max(...valued.map((d) => d.round));
+      const rounds = Math.min(appRounds, Number(league.settings?.draft_rounds) || appRounds);
+      return { ids: sleeperPickIds({ rosters, tradedPicks, drafts, seasons, rounds }), note: null };
+    } catch (e) {
+      return none(`Draft picks could not be read (${e.message}) — add them with the search box.`);
+    }
+  }
+
   function sleeperDialog() {
     openModal((close) => {
       const lid = h('input', { type: 'text', inputmode: 'numeric', 'aria-label': 'Sleeper league ID', placeholder: 'League ID (the number in your Sleeper league URL)', value: profile.source?.platform === 'sleeper' ? profile.source.league_id : '', style: { width: '100%' } });
@@ -293,15 +314,17 @@ export function renderTeam(root) {
             return r.json();
           }));
           if (!Array.isArray(rosters) || !rosters.length) throw new Error('no teams found for that league ID');
+          const picksBy = await sleeperPicks(id, rosters);
           const byUser = new Map((Array.isArray(users) ? users : []).map((u) => [u.user_id, u]));
           const bySleeper = new Map((app.dataset.players || []).filter((p) => p.ids?.sleeper).map((p) => [String(p.ids.sleeper), p.cid]));
           const teamsOf = rosters.map((r) => {
             const u = byUser.get(r.owner_id);
             const label = u?.metadata?.team_name || u?.display_name || `Team ${r.roster_id}`;
             const ids = [...new Set([...(r.players || []), ...(r.reserve || []), ...(r.taxi || [])].map(String))];
-            return { r, label, ids, cids: ids.map((x) => bySleeper.get(x)).filter(Boolean) };
+            const picks = picksBy.ids.get(Number(r.roster_id)) || [];
+            return { r, label, ids, picks, cids: [...ids.map((x) => bySleeper.get(x)).filter(Boolean), ...picks] };
           });
-          clear(out).append(h('p.small', {}, 'Which team is yours?'), h('div.stack', {}, teamsOf.map(({ r, label, ids, cids }) => h('button.btn', { style: { justifyContent: 'space-between', width: '100%' }, onclick: () => {
+          clear(out).append(h('p.small', {}, 'Which team is yours?'), h('div.stack', {}, teamsOf.map(({ r, label, ids, picks, cids }) => h('button.btn', { style: { justifyContent: 'space-between', width: '100%' }, onclick: () => {
             const meta = { source: 'sleeper', sleeper_league: id, sleeper_roster_id: r.roster_id, team_name: label };
             // The other teams first (no re-render yet): saved as opponents for the trade finder, updated if saved before.
             const others = withOthers.checked ? upsertOpponents(teamsOf.filter((x) => x.r.roster_id !== r.roster_id).map((x) => ({ name: x.label, ids: x.cids, source: 'sleeper', sleeper_league: id, sleeper_roster_id: x.r.roster_id, team_name: x.label })), profile) : null;
@@ -312,15 +335,16 @@ export function renderTeam(root) {
             else setIds(cids, meta);
             roster = myRoster(profile);
             close();
-            toast(`${same ? 'Refreshed' : 'Imported'} ${cids.length} of ${ids.length} players from "${label}".${others ? ` Other teams: ${others.added} saved, ${others.updated} refreshed.` : ''}${cids.length < ids.length ? ' Unmatched players are not in the current player database.' : ''} Draft picks aren't imported — add them with the search box.`, cids.length < ids.length ? 'warn' : 'ok', 9000);
-          } }, h('span.bold', {}, label), h('span.small.muted', {}, `${ids.length} players`)))));
+            const nPlayers = cids.length - picks.length;
+            toast(`${same ? 'Refreshed' : 'Imported'} ${nPlayers} of ${ids.length} players${picks.length ? ` and ${picks.length} draft pick${picks.length === 1 ? '' : 's'}` : ''} from "${label}".${others ? ` Other teams: ${others.added} saved, ${others.updated} refreshed.` : ''}${nPlayers < ids.length ? ' Unmatched players are not in the current player database.' : ''}${picksBy.note ? ` ${picksBy.note}` : ''}`, nPlayers < ids.length || picksBy.note ? 'warn' : 'ok', 9000);
+          } }, h('span.bold', {}, label), h('span.small.muted', {}, `${ids.length} players${picks.length ? ` · ${picks.length} picks` : ''}`)))));
         } catch (e) {
           clear(out).append(h('p.small', {}, `Could not load the league: ${e.message}. Check the ID and your internet connection.`));
         }
       };
       return h('div.modal-body', {},
         h('div.flex-between', {}, h('h3', { style: { margin: 0 } }, 'Import your roster from Sleeper'), h('button.btn.btn-sm', { onclick: close, 'aria-label': 'Close' }, '×')),
-        h('p.small.muted', {}, 'Reads the league\'s public team list from Sleeper (no login).'),
+        h('p.small.muted', {}, 'Reads the league\'s public team list from Sleeper (no login). Dynasty and keeper leagues: each team\'s rookie draft picks come along (traded picks included; exact slots once Sleeper has the draft order).'),
         h('div.flex', { style: { flexWrap: 'nowrap' } }, lid, h('button.btn.btn-primary', { onclick: loadTeams }, 'Load teams')),
         cur ? h('label.small.mt-s', { style: { display: 'block' } }, asNew, ` Save as a new team (otherwise "${cur.name}" is replaced; a team imported from the same Sleeper team before is always refreshed)`) : null,
         h('label.small.mt-s', { style: { display: 'block' } }, withOthers, ' Also save the other teams of this league (the trade finder then checks what an offer does to their lineup)'), out);

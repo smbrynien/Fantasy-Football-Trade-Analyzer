@@ -1,5 +1,5 @@
 {
-  "model_version": "2.3.0",
+  "model_version": "2.4.0",
   "_comment": "Valuation model parameters. Bump model_version whenever a formula or default changes so stored trades/values remain comparable. Every parameter is documented in docs/VALUATION_MODEL.md, docs/DYNASTY_MODEL.md and docs/ROOKIE_PICK_MODEL.md.",
   "scale": {
     "top_value": 10000,
@@ -378,11 +378,13 @@
   },
   "trade_outcome": {
     "redraft_logit_slope": 1.5,
+    "dynasty_logit_slope": 1.75,
+    "_dynasty_comment": "Model 2.4.0 (audit E15): P(the side receiving more dynasty value ends the next three seasons with more lineup points, discounted 0.82 a year) = 1 / (1 + exp(-slope x |margin|)). Fitted on 2 x 5,000 random player trades in 12-team dynasty leagues replayed on real 2020-2025 weekly points (preseason dynasty ECR + fundamental values, 20-man rosters): slope 1.75 on both seeds, 1.5-2.0 in every start season; margins under 20% came out ahead 46-56% of the time, 30-50% 67-69%, 75%+ 81%. Draft picks are not in the simulation (no historical pick values): pick trades use the same curve. Remove it to return dynasty to the z-score levels.",
     "levels": { "lean": 0.6, "clear": 0.7 },
     "roster_logit_slope_per_week": 0.2,
     "_roster_comment": "Model 2.3.0 (audit E12), display only (My Team): P(a team's season points rose) = 1 / (1 + exp(-k x |change in expected lineup points per week|)). From 10,000 team-trades in the historical league simulations: +1 / +3 points per week -> 55% / 65%; 4+ -> 81% observed. Realised gain = 0.80 x predicted.",
-    "_levels_comment": "Model 2.3.0 (audit E10): redraft verdict levels come from the same historical frequency: close < 60% (margin under ~27%), lean 60-70%, clear >= 70% (margin >= ~56%). Historically margins under 30% won 53-57% whatever their size, 30-50% won 64%, 50-75% 72%, 75%+ 80%. The z-score levels (|diff| / the +/- range) disagreed with the frequency shown under the verdict in 23% of trades. Dynasty keeps the z-score levels (no outcome data). Remove 'levels' to use z in redraft too.",
-    "_comment": "P(the side receiving more value ends the season with more lineup points) = 1 / (1 + exp(-slope x |margin|)), margin = difference / larger side. Fitted on 5,000 random trades in historical league simulations (audit E7: 12-team PPR, full seasons 2020-2025, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68% of the time. Redraft only (dynasty outcomes cannot be validated). Shown next to the verdict; it does not change any value."
+    "_levels_comment": "Model 2.3.0 (audit E10): redraft verdict levels come from the same historical frequency: close < 60% (margin under ~27%), lean 60-70%, clear >= 70% (margin >= ~56%). Historically margins under 30% won 53-57% whatever their size, 30-50% won 64%, 50-75% 72%, 75%+ 80%. The z-score levels (|diff| / the +/- range) disagreed with the frequency shown under the verdict in 23% of trades. Since 2.4.0 dynasty uses the same levels on its own calibrated frequency (dynasty_logit_slope, audit E15: close < 60% = margin under ~17%, lean 17-42%, clear >= ~42%; favoured side won 51% / 64% / 77%). Remove 'levels' to use z in both modes.",
+    "_comment": "P(the side receiving more value ends the season with more lineup points) = 1 / (1 + exp(-slope x |margin|)), margin = difference / larger side. Fitted on 5,000 random trades in historical league simulations (audit E7: 12-team PPR, full seasons 2020-2025, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68% of the time. Shown next to the verdict; it does not change any value. Dynasty: dynasty_logit_slope (2.4.0, audit E15)."
   },
   "package": {
     "enabled": true,

@@ -171,6 +171,24 @@ test('ADP-only players (free agent or rostered) get no redraft value, in season 
   }
 });
 
+test('model 2.4.0: an IR player\'s imputed zero projection does not corroborate ADP (valued 0, like without ADP)', () => {
+  const d2 = deepClone(ds);
+  const ir = adpOnlyPlayer('ADP_IR', 'DAL', 30.5);
+  ir.injury = { status: 'IR' };
+  const irNoAdp = { ...deepClone(ir), cid: 'IR_NO_ADP', adp: [] };
+  d2.players.push(ir, irNoAdp);
+  const r = run(d2, 'preset_12_1qb_ppr', 'redraft');
+  const a = r.assets.get('ADP_IR'), b = r.assets.get('IR_NO_ADP');
+  assert.ok(a && b, 'both IR players get an asset from the zero projection');
+  assert.equal(a.value, 0);
+  assert.equal(a.value, b.value);
+  assert.equal(a.contributions.adp ?? 0, 0);
+  // A real signal next to the zero projection still lets ADP count (the rule only ignores the imputed zero).
+  const d3 = deepClone(d2);
+  d3.players.find((p) => p.cid === 'ADP_IR').market = [{ src: 'fantasycalc', dynasty: false, qb: '1qb', ppr: 1, teams: 12, value: 3000 }];
+  assert.ok(run(d3, 'preset_12_1qb_ppr', 'redraft').assets.get('ADP_IR').contributions.adp > 0);
+});
+
 test('ADP corroboration rule is configurable (off restores ADP-only values)', () => {
   const league = { ...preset('preset_12_1qb_ppr'), overrides: { redraft: { adp_requires_corroboration: false } } };
   const r = computeValuations({ dataset: withAdpOnly(ds), league, mode: 'redraft', config });

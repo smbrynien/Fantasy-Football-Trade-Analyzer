@@ -643,3 +643,83 @@ to drop as bench cover. Each has a regression test (`tests/trade-finder.test.js`
 
 **Limits.** E14 is redraft, 12-team 1QB PPR, trades right after the draft, simple simulated managers; it cannot test
 whether a real manager accepts. The finder never sees the other team's roster unless it is saved.
+
+## 23. Dynasty outcomes, byes and the ADP-only question → model 2.4.0 (2026-10-03, fourth session)
+
+Three items left open by §20–22 and the handoff backlog: dynasty verdicts were z-score levels with no outcome check
+(usability G-28: 3 in 4 random dynasty trades "clear"), the trade finder had no dynasty test (§22 "dynasty caveat"),
+and expected lineup points ignored byes (§21 E12 caveat). Plus the decision on ADP-only players (handoff §35 item 4).
+
+**E15 / E16 harness** (`scripts/audit/dynasty-league.js`, `npm run audit-model -- --only=e15,e16`; REAL HISTORICAL
+outcomes, SIMULATED leagues). Start seasons 2020–2023 (outcomes through 2025). Values = the app's dynasty blend without
+the market (no market history exists): the preseason FantasyPros dynasty ECR (archive snapshot before week 1) mapped by
+positional rank onto the reduced fundamental curve, blended with the player's own fundamental at the app's weights
+(consensus .40, fundamental .25, renormalised) — calibration refitted on seasons before the start (as E3/E8). 12 teams
+snake-draft 20-man rosters (QB ≤ 3, RB ≤ 7, WR ≤ 8, TE ≤ 3; 393–452 ranked players per start season). Seasons Y, Y+1,
+Y+2 are each replayed with E6's `simulate` (weekly best active lineup from preseason ranks + points so far, one waiver
+pickup a week, real weekly points); later rookies reach rosters only via waivers, for every team alike. Outcome for a
+team = Σ_k 0.82^k × (season k lineup points with the trade − without), 0.82 = the balanced dynasty discount. Not
+covered: draft picks (no historical pick values or rookie drafts), Superflex, TE premium.
+
+**E15 — dynasty verdict calibration.** 5,000 random trades (1-for-1 … 4-for-2) per seed, seeds 15 and 99; app margin
+(difference / larger side) incl. the dynasty package adjustment.
+
+| Margin | favoured side ahead after 3 seasons (seed 15 / 99) |
+|---|---|
+| 0–5% | 52% / 46% |
+| 5–10% | 49% / 53% |
+| 10–20% | 52% / 56% |
+| 20–30% | 62% / 60% |
+| 30–50% | 67% / 69% |
+| 50–75% | 75% / 75% |
+| 75–100% | 81% / 81% |
+
+Logistic fit P = 1 / (1 + e^(−k·|margin|)): **k = 1.75 on both seeds** (per start season 1.5–2.0; redraft E7: 1.5).
+With the app's levels (shown frequency < 60% close, 60–70% leans, ≥ 70% clear) that is close < ~17% margin, leans
+17–42%, clear ≥ ~42%; in the simulation the favoured side came out ahead 51% / 64% / 77% (seed 15) and 51% / 64% / 78%
+(seed 99) in those levels — each level means what it says. The dynasty package adjustment neither helped nor hurt
+(corr with the outcome .618 vs plain sums .616; replication .616 vs .617) — kept as is (the backlog's "package
+adjustment in dynasty" question: no evidence to change it).
+**Implemented (2.4.0):** `trade_outcome.dynasty_logit_slope` 1.75; dynasty verdicts use the same outcome levels as
+redraft (`assessment.basis = 'outcome'`), and the trade view shows "trades with this margin left Team X ahead over the
+next three seasons about N% of the time". Removing the slope restores the z levels. On current data (frozen
+`2026-10-03-27fa2592`, 3,000 random trades among the top 240 players): dynasty "clear" 73.6% → 66.3% (12-team 1QB),
+70.4% → 61.9% (12-team SF); about one trade in five changes level, mostly clear → leans. Asset values are unchanged.
+
+**E16 — the trade finder in dynasty.** Same leagues; 2,000 (my team, a target on another roster) requests per seed,
+seeds 16 and 99; the app's finder (dynasty: ranked by starting-lineup value, Strict 5%, minimal, verdict = the new
+dynasty levels) vs a random fair minimal package and the most evenly valued one; owner-aware ranking (my + their gain).
+
+| Strategy | found a package | my 3-season gain (seed 16 / 99) | their 3-season gain |
+|---|---|---|---|
+| **Finder (app): top option** | 29% / 31% | −0.6 / **+14.2** | −40.9 / −41.0 |
+| Most evenly valued fair package | 91% | −25.0 / −14.4 | −41.4 / −30.2 |
+| Random fair package | 91% | −27.2 / −12.0 | −37.4 / −34.3 |
+| Owner known: my + their gain | 29% / 31% | 0.0 / +9.7 | **−23.4 / −17.8** |
+
+Paired on the same requests (finder top − alternative): vs random fair **+30.5 (16.9, 44.1) / +23.3 (11.6, 34.9)** for
+me, their team −3.3 / −2.1 (n.s.); vs most even **+28.6 / +27.5** for me, theirs +6.0 / −7.7 (n.s.); owner-aware vs
+finder: me +0.6 / −4.6 (n.s.), them **+17.5 (8.8, 26.1) / +23.2 (15.7, 30.6)**. As in E14, any trade costs both teams
+on average in the simulator (roster churn), so the other team's number is judged against the baselines: the finder's
+consolidation tilt (§22 caveat) costs the other team no more than a random fair trade, and the owner-aware ranking
+removes about half of it. **Decision:** no code change — the dynasty finder's ranking and the owner-aware default are
+confirmed; the UI caveat is replaced by these numbers. Picks remain untested.
+
+**Byes in expected lineup points (E12 re-run).** `expectedBye` = the E12 predictor averaged over the season's weeks with
+each player out in his team's bye week (same availability draws, so it differs by the byes only). Corr with the realised
+margin .576 → **.577** (equal or better in all 5 seasons), own gain .547 → **.549**; `expected` reproduced exactly.
+**Implemented (2.4.0):** `roster.js expectedLineupPoints({bye, weeks})`, `expectationInputs` passes the remaining weeks
+(in season: current week → `phase.regular_season_weeks`; preseason: all; after the season none — next year's byes are
+unknown) and each player's bye (`details.bye` on redraft assets). Two starters sharing a bye now cost more than a bench
+that covers it.
+
+**ADP-only players (handoff §35 item 4) — kept, decided on evidence.** 1,225 of 2,206 players (current data) have only
+ADP. Pruning them shrinks `dataset.json` 4.85 → 3.77 MB (gzip as served 654 → 482 KB) and valuation time ~10–20%, but it
+is **not value-neutral**: ADP is mapped by overall rank among the dataset's players, so removing them moved 1,706 other
+redraft ranks and values by up to 12% (dynasty unchanged), and it would drop deep rookies/UDFAs from Sleeper roster
+imports (1,224 of them carry a Sleeper id). No change to the dataset. The measurement exposed one real issue, fixed:
+**an IR player's imputed zero projection counted as corroboration for ADP** (`redraft.adp_requires_corroboration`), so a
+player out for the season kept about a third of his draft-position value (e.g. Jayden Higgins 94, Hayden Large 24 in
+12-team SF). Since 2.4.0 the imputed zero does not corroborate; such a player is valued from the zero projection alone,
+as without an ADP (0). Frozen-data diff (`2026-10-03-27fa2592`, all 7 presets × both modes): 40 of 12,425 asset values
+change, all redraft, all to 0; nothing else moves.

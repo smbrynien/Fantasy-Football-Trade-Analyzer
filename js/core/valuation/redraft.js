@@ -93,8 +93,14 @@ export function runRedraft(dataset, league, model, env) {
     };
     // ADP only corroborates: long ADP lists rank undrafted and out-of-league players (placeholder or stale draft
     // positions), so a player whose ONLY usable signal is ADP has no value (N/A) rather than a deep-curve value.
+    // A zero projection imputed for a long-term-list player (absent from projections) is not evidence for the ADP
+    // (2.4.0): such a player is valued from the zero projection alone, as without an ADP — the ADP no longer lifts a
+    // player on IR for the rest of the season to a third of his draft-position value.
     if (cfg.adp_requires_corroboration && groups.adp !== null
-      && !Object.entries(groups).some(([g, v]) => g !== 'adp' && weights[g] > 0 && typeof v === 'number' && Number.isFinite(v))) continue;
+      && !Object.entries(groups).some(([g, v]) => g !== 'adp' && !(g === 'projection' && x.zeroProjection) && weights[g] > 0 && typeof v === 'number' && Number.isFinite(v))) {
+      if (!x.zeroProjection) continue;
+      groups.adp = null;
+    }
     const b = blendGroups(groups, weights);
     if (b.score === null) continue;
 
@@ -144,6 +150,7 @@ export function runRedraft(dataset, league, model, env) {
         production: { gp: x.prod.gp, ppg: x.prod.ppg, xppg: x.prod.xppg, blend: x.prod.blend, rate: x.prod.rate, prior: x.prod.prior, priorKind: x.prod.priorKind, recentPPG: x.prod.recentPPG, rosPoints: x.prodROS, rosPointsNoInjury: x.prodROSNoInj, gamesLost: x.gamesLost, remGames: x.remGames, sos: x.sos, sosDetail: x.sosDetail, weekly: x.prod.weeks },
         weeklyRange: weeklyPts.length >= 4 ? { floor: quantile(weeklyPts, 0.1), median: quantile(weeklyPts, 0.5), ceiling: quantile(weeklyPts, 0.9), n: weeklyPts.length } : null,
         lastSeason: x.last,
+        bye: Number.isFinite(x.p.bye_week) ? x.p.bye_week : null, // team's bye week this season (My Team expected lineup points)
         usage: x.usage,
         injury: x.injury,
         basePoints: x.basePoints,

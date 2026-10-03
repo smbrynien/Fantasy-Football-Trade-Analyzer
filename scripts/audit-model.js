@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Automated model audit: `npm run audit-model` → reports/audit/*.json (+ CSV)
-//   --only=e1,…,e13,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
+//   --only=e1,…,e16,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
 //   --only=scorecard    only rewrite scorecard.csv/.json from the reports already in the output dir (no experiments)
 //   E1–E4 (2.0.0 audit): preseason/in-season/dynasty backtests, rookie curve. E5–E8 (2.2.0 audit): hindsight-free
 //   lineup value (σ), historical league simulation (trades, package), verdict calibration, dynasty value spacing.
 //   E9–E13 (2.3.0 research): signal weights from projection/ADP archives, ± calibration, availability by rank,
 //   roster-specific values, backtest from the app's own daily signal archive (skips until a season is archived).
+//   E14 trade finder (redraft). E15/E16 (2.4.0): dynasty leagues replayed over three seasons — dynasty verdict
+//   calibration and the trade finder in dynasty (scripts/audit/dynasty-league.js).
 //   --freeze            copy the synced dataset to data/benchmark/dataset-frozen.json (the data before/after runs use)
 //   --snapshot-before   save current-model values on the frozen dataset as the 'before' baseline (values-v1.json);
 //                       freezes first if no frozen dataset exists
@@ -39,7 +41,7 @@ if (args.includes('--freeze') || (args.includes('--snapshot-before') && !fs.exis
     console.log(`Froze dataset ${current} → ${rel(FROZEN)}${previous && previous !== current ? ` (replaced ${previous})` : ''}`);
   } catch (e) { console.error(`  ${e.message}`); process.exit(1); }
 }
-const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12', 'e14'].some(want);
+const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12', 'e14', 'e15', 'e16'].some(want);
 const bench = needBench ? await loadBenchmark({ rebuild: args.includes('--rebuild') }) : null;
 if (want('e1')) { console.log('E1 preseason redraft…'); write('e1-preseason-redraft', { label: 'REAL HISTORICAL DATA', oppRates: measureOppRates(bench), ...preseasonRedraft(bench) }); }
 if (want('e2')) { console.log('E2 in-season ROS…'); write('e2-inseason-ros', { label: 'REAL HISTORICAL DATA', ...inSeasonROS(bench) }); }
@@ -76,6 +78,25 @@ if (want('e14')) {
   const live = loadFrozenDataset();
   res.currentData = live ? tradeFinderCurrent(live.ds, loadConfig()) : { skipped: true, reason: 'No dataset — run `npm run sync` first.' };
   write('e14-trade-finder', res);
+}
+if (want('e15') || want('e16')) {
+  const { loadConfig } = await import('../server/lib/config.js');
+  const { dynastyVerdictCalibration, dynastyFinderBacktest } = await import('./audit/dynasty-league.js');
+  const model = loadConfig().model;
+  if (want('e15')) {
+    console.log('E15 dynasty verdict calibration (3-season dynasty leagues, ~1 min)…');
+    const res = await dynastyVerdictCalibration(bench, model, { tradesPerSeason: 1250, seed: 15 });
+    const rep = await dynastyVerdictCalibration(bench, model, { tradesPerSeason: 1250, seed: 99 });
+    res.replication = { seed: 99, logistic: rep.calibration.logistic, slopeBySeason: rep.slopeBySeason, byMargin: rep.calibration.byMargin, appLevels: rep.appLevels, packageCheck: rep.packageCheck };
+    write('e15-dynasty-verdict', res);
+  }
+  if (want('e16')) {
+    console.log('E16 trade finder in dynasty (3-season dynasty leagues, ~3 min)…');
+    const res = await dynastyFinderBacktest(bench, model, { targetsPerSeason: 500, seed: 16 });
+    const rep = await dynastyFinderBacktest(bench, model, { targetsPerSeason: 500, seed: 99 });
+    res.replication = { seed: 99, summary: rep.summary, paired: rep.paired };
+    write('e16-dynasty-finder', res);
+  }
 }
 if (want('e13')) {
   const { listArchive, loadArchiveDay } = await import('../server/archive.js');
@@ -170,6 +191,16 @@ if (!setupOnly) {
     for (const [m, v] of Object.entries(e14.summary || {})) { rows.push(['E14 trade finder', e14.labels, m, 'my realised season gain', v.myGain.mean]); rows.push(['E14 trade finder', e14.labels, m, 'their realised season gain', v.theirGain.mean]); rows.push(['E14 trade finder', e14.labels, m, 'coverage (share of requests with a package)', v.coverage]); }
     for (const [m, v] of Object.entries(e14.paired || {})) { rows.push(['E14 trade finder (paired)', e14.labels, `finder − ${m}`, 'my gain difference, same requests', v.myGain.mean]); rows.push(['E14 trade finder (paired)', e14.labels, `finder − ${m}`, 'their gain difference, same requests', v.theirGain.mean]); }
   }
+  const e15 = rd('e15-dynasty-verdict'), e16 = rd('e16-dynasty-finder');
+  if (e15) {
+    for (const b of e15.calibration?.byMargin || []) rows.push(['E15 dynasty verdict calibration', e15.labels, `margin ${b.margin}`, 'share won by favoured side (3 seasons)', b.hitRate]);
+    rows.push(['E15 dynasty verdict calibration', e15.labels, 'logistic fit', 'slope on |margin|', e15.calibration?.logistic?.slope]);
+    for (const [m, v] of Object.entries(e15.packageCheck || {})) rows.push(['E15 dynasty verdict calibration', e15.labels, m, 'corr(predicted margin, realised outcome)', v]);
+  }
+  if (e16) {
+    for (const [m, v] of Object.entries(e16.summary || {})) { rows.push(['E16 dynasty trade finder', e16.labels, m, 'my realised 3-season gain', v.myGain.mean]); rows.push(['E16 dynasty trade finder', e16.labels, m, 'their realised 3-season gain', v.theirGain.mean]); rows.push(['E16 dynasty trade finder', e16.labels, m, 'coverage (share of requests with a package)', v.coverage]); }
+    for (const [m, v] of Object.entries(e16.paired || {})) { rows.push(['E16 dynasty trade finder (paired)', e16.labels, m.replace(/_vs_/, ' − '), 'my gain difference, same requests', v.myGain.mean]); rows.push(['E16 dynasty trade finder (paired)', e16.labels, m.replace(/_vs_/, ' − '), 'their gain difference, same requests', v.theirGain.mean]); }
+  }
   const mono = rd('cur-monotonicity'), pk = rd('cur-package-simulation');
   if (mono) rows.push(['Monotonicity', mono.label, 'current', 'failures', mono.failures]);
   if (pk) for (const [m, v] of Object.entries(pk.overall || {})) rows.push(['Package simulation', pk.label, m, 'corr(model diff, simulated lineup gain)', v]);
@@ -178,7 +209,7 @@ if (!setupOnly) {
   // the Model page (reports/audit/scorecard.json is served; the other audit files are not).
   if (rows.length > 1) {
     const { loadConfig } = await import('../server/lib/config.js');
-    const reportOf = { E14: 'e14-trade-finder', E1: 'e1-preseason-redraft', E1b: 'e1-preseason-redraft', E2: 'e2-inseason-ros', E3: 'e3-dynasty', E4: 'e4-rookie-curve', E5: 'e5-lineup-value', E6: 'e6-league-simulation', E7: 'e7-verdict-calibration', E8: 'e8-dynasty-spacing', E9: 'e9-signal-weights', E10: 'e10-uncertainty', E12: 'e12-roster-values', Monotonicity: 'cur-monotonicity', Package: 'cur-package-simulation' };
+    const reportOf = { E15: 'e15-dynasty-verdict', E16: 'e16-dynasty-finder', E14: 'e14-trade-finder', E1: 'e1-preseason-redraft', E1b: 'e1-preseason-redraft', E2: 'e2-inseason-ros', E3: 'e3-dynasty', E4: 'e4-rookie-curve', E5: 'e5-lineup-value', E6: 'e6-league-simulation', E7: 'e7-verdict-calibration', E8: 'e8-dynasty-spacing', E9: 'e9-signal-weights', E10: 'e10-uncertainty', E12: 'e12-roster-values', Monotonicity: 'cur-monotonicity', Package: 'cur-package-simulation' };
     const fallback = { Monotonicity: 'Monotonicity checks on current data (e.g. more projected points or a younger age never lowers a value)', Package: 'Package-adjustment simulation on current data (does the adjustment track the simulated lineup gain of uneven trades?)' };
     const candidateLabels = (rep) => {
       const out = {};

@@ -1,6 +1,6 @@
 # Valuation Model (common framework + redraft)
 
-Model version: see `model_version` in [`config/model.json`](../config/model.json) — **2.3.0** after the research batch
+Model version: see `model_version` in [`config/model.json`](../config/model.json) — **2.4.0** after the fourth 2026-10-03 session (MODEL_AUDIT §23); 2.3.0 came from the research batch
 in [MODEL_AUDIT.md §21](MODEL_AUDIT.md) (2.2.0 was the second model audit, 2026-10-03; the first, 2.0.0, is
 [MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md)). Every
 parameter mentioned here is configurable there or in **Settings** (per league profile, stored as `overrides`).
@@ -197,14 +197,18 @@ scored, 2021–2025 — e.g. at 8–12 points per game half finished within 0.70
 * Uncertainty: `σ_diff = √(Σσ_A² + Σσ_B²)` (independence assumed). **Verdict levels** — never "good/bad trade":
   redraft (2.3.0) from the historical outcome frequency below, rounded as shown: < 60% "close", 60–70% "leans", ≥ 70%
   "clearly ahead" (`trade_outcome.levels`; ≈ margins < 27%, 27–56%, ≥ 56%). Before 2.3.0 redraft used z, and 23% of
-  random trades showed a level that contradicted the frequency printed under it (E10). Dynasty: `z = |diff|/σ_diff`,
-  < 1 "close", 1–2 "modest edge", > 2 "clear" (no outcome data to calibrate against).
+  random trades showed a level that contradicted the frequency printed under it (E10). **Dynasty (2.4.0, E15)**: the
+  same levels on the dynasty frequency (`trade_outcome.dynasty_logit_slope` 1.75; ≈ margins < 17% close, 17–42% leans,
+  ≥ 42% clearly ahead). Before 2.4.0 dynasty used z (`|diff|/σ_diff` < 1 close, 1–2 modest edge, > 2 clear), which called
+  ~3 in 4 random dynasty trades "clear"; removing the slope restores it.
 * **How often it works out** (2.2.0, redraft only, display only): `P = 1 / (1 + e^(−1.5·|margin|))`, margin =
   difference / larger side (`trade_outcome.redraft_logit_slope`). Fitted on 5,000 random trades in historical league
   simulations (E7, 2020–2025 seasons, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68%
   of the time; the verdict levels (with typical ±10% asset ranges) won 53% ("close"), 58% ("modest edge") and 71%
-  ("clear"). It describes season-long luck; it does not change any value. Dynasty outcomes cannot be validated, so
-  dynasty trades don't show it.
+  ("clear"). It describes season-long luck; it does not change any value. **Dynasty (2.4.0, E15)**: `P = 1 / (1 +
+  e^(−1.75·|margin|))` over the next three seasons (lineup points, later seasons × 0.82), fitted on 2 × 5,000 random
+  player trades in 12-team dynasty leagues replayed on real 2020–2025 weekly points (start seasons 2020–2023): margins
+  under 20% came out ahead 46–56% of the time, 30–50% 67–69%, 75%+ 81%. Draft picks were not part of the test.
 * **Package adjustment** for the side receiving more players: each extra (lowest-valued) player is charged
   `strength × min(its value, value of the average team's worst starter at that position) + cost × value of the last
   rostered player`, keeping at least `min_retained_fraction` of its value. Picks are exempt. Redraft strength 1.0;
@@ -217,13 +221,16 @@ scored, 2021–2025 — e.g. at 8–12 points per game half finished within 0.70
   every rostered player available with his availability (position share × availability shape × current injury), the
   best available lineup starts, empty slots at the league's waiver level (Monte Carlo, deterministic). In historical
   league simulations it predicted what a trade did to a team better than generic values (E12: .576 vs .549, 5/5
-  seasons) and replaced the starters' points per game (.538). Shown with how often teams with that change gained
+  seasons) and replaced the starters' points per game (.538). **Byes (2.4.0)**: averaged over the remaining weeks with
+  each player out in his team's bye week (E12 re-run: .576 → .577, own gain .547 → .549); none after the season. Shown with how often teams with that change gained
   (`trade_outcome.roster_logit_slope_per_week` 0.2: +1 / +3 points per week → 55% / 65%). It is roster context, not a
   value change; the verdict stays league-generic.
 * **Trade finder** (My Team / Trade page, `js/core/trade-finder.js`, audit E14 in docs/MODEL_AUDIT.md §22): for a
   wanted player or pick, packages of 1–3 assets from your team that `analyzeTrade` calls close with your value edge in
   [−15%, +5%] (presets 10% / verdict band), without throw-ins, ranked by your expected lineup points per week (dynasty:
-  starting-lineup value); with the owner's roster saved, by both teams' gains. Uses existing values only.
+  starting-lineup value); with the owner's roster saved, by both teams' gains. Uses existing values only. Dynasty
+  tested over three seasons in 2.4.0 (E16): top option +23–31 discounted lineup points for the proposer vs a random fair
+  package on the same requests, no measurable cost to the other team; owner-aware ranking +17–23 for them.
 * Every calculation carries model version, data version, settings hash, league and source timestamps; saved trades
   can be re-checked later ("Why changed?").
 
@@ -253,6 +260,7 @@ is in [MODEL_AUDIT.md](MODEL_AUDIT.md); candidate models are compared in [MODEL_
 | 2.1.0 | redraft: ADP is corroborating only (`redraft.adp_requires_corroboration`); ADP-only players are N/A instead of being valued from deep ADP ranks. No other value changes (verified on the frozen 2026-10-02 dataset: all 7 presets × both modes × in-season/preseason, only ADP-only assets removed) |
 | 2.1.2 | picks: each season's slot curve made non-increasing (isotonic) — future classes inverted at round boundaries; impossible picks (drafted class, > 5 years out, round > league rounds, slot outside 1..teams) are unavailable. 0 player values changed; only future-class picks next to former inversions moved (frozen 2026-10-02 dataset, all presets). Identity: contradicting birth date/age/draft year blocks a name match (no real-data change) |
 | 2.2.0 | second audit (docs/MODEL_AUDIT.md): redraft option-value σ × 0.4 (E5/E6); schedule strength 0 (E2); dynasty counts only the remaining games of the current season (later seasons discounted from now, partial final season keeps a 5-season horizon) and injuries as expected games lost (shared redraft table; out for the season = rest of the season), replacing the flat 35%-of-a-season IR rule; calibration shape constraints (aging curves unimodal and still declining past the data, exit hazard monotone in age) fixed two age-monotonicity failures; trade view shows the historical outcome frequency (redraft). Frozen 2026-10-03 data: redraft top-10 within ±1%, median change 0.7%, deep/bench players down (e.g. 12-team 1QB #150 972 → 447); dynasty Spearman 0.999, median change 2.9% |
+| 2.4.0 | fourth 2026-10-03 session (docs/MODEL_AUDIT.md §23): dynasty verdict levels and "how often it works out" from a 3-season outcome frequency (E15, `trade_outcome.dynasty_logit_slope` 1.75; dynasty "clear" 74% → 66% of random trades on current data); expected lineup points count bye weeks (E12 re-run); an IR player's imputed zero projection no longer corroborates ADP (40 of 12,425 frozen-data asset values change, all redraft, all to 0); dynasty trade finder tested over three seasons (E16, no change). ADP-only players kept in the dataset (pruning moved other ADP-mapped values up to 12%) |
 | 2.3.0 | research batch (docs/MODEL_AUDIT.md §21): redraft availability shape by positional rank (E11; per-game form, within-position, flat beyond 2× starters); redraft verdict levels from the calibrated outcome frequency (E10) and a range-of-outcomes line in the player view; My Team expected lineup points with bench cover (E12); signal weights confirmed on leak-free projection/ADP archives (E9, unchanged) and a daily signal archive + E13 backtest for the market weight. Frozen 2026-10-03 data (`2026-10-03-f2898efc`): redraft Spearman 1.0, median change 6.3% (1QB) / 8.8% (SF), top-10 unchanged, depth down up to 18%; dynasty unchanged |
 | 2.1.1 | market list selection: lists in the wrong QB format are excluded (were used silently when a source had nothing else) and reported in `meta.excluded_market_lists`; TE-premium lists matched to the league's `bonus_rec_te` (always preferred `tep: 0` before). No value change on current data (no source lacks a format; no TEP lists): verified 0 changes across all presets/modes/phases |
 

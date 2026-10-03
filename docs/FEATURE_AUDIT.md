@@ -70,8 +70,8 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
 | F44 | Nickname search by capital letters ("cmc", "jsn", "arsb") | Low–Medium | frequent | Low | Low | Low (generic rule, no list) | none | Low | Positive | **Medium** | **Implemented** (second audit) |
 | F45 | **Safe phone mode** — opt-in read-only LAN serving with a pairing code from the start window (no sync/import/settings writes) | High (the phone is where offers arrive) | frequent | Medium | Medium (server mode + pairing token + read-only routes) | Medium | none | Medium (security must be obvious) | Positive | **High** | Tier 2 — Help explains the manual `HOST=0.0.0.0` route and its risk meanwhile |
 | F46 | Roster-need targeting — from My Team: positions where an upgrade raises expected lineup points most, with Players filtered to that position and value band — **Implemented** 2026-10-03 (`roster.js rosterTargets`; My Team "Trade targets for your roster": value band, positions by gain, targets table, "Trade for") | Medium–High | weekly | Medium | Medium (E12 expected-lineup function exists) | Low | F1 | Medium (must not read as "you should trade for X") | Neutral | **Medium–High** | Tier 2 |
-| F47 | Merge Data → Sources into the Sync dashboard (expandable rows) | Low–Medium | rare | Low | Medium | Low (one table) | none | Low | Neutral | **Medium** | Tier 2 |
-| F48 | Players: positional rank column ("5 · WR3"), fewer default columns ≤1360 px | Low–Medium | weekly | Low | Low | Low | none | Low | Neutral | **Medium** | Tier 2 |
+| F47 | Merge Data → Sources into the Sync dashboard (expandable rows) | Low–Medium | rare | Low | Medium | Low (one table) | none | Low | Neutral | **Medium** | Tier 2 — **done** 2026-10-03 (fourth session) |
+| F48 | Players: positional rank column ("5 · WR3"), fewer default columns ≤1360 px | Low–Medium | weekly | Low | Low | Low | none | Low | Neutral | **Medium** | Tier 2 — **done** 2026-10-03 (fourth session) |
 | F49 | Duplicate-safe search (assets already in the trade/roster/comparison shown as unavailable) | High (correctness) | every trade | — | Low | Low | none | Low | Positive | **High** | **Implemented** (second audit) |
 | F51 | Trade finder — "I want X, what could I offer?": fair packages from My Team that improve my lineup, owner-aware with saved league rosters | High | weekly | Medium | Medium (exact `analyzeTrade` per package; E12 expected points) | Low | F1, F46 | Medium (must not read as "they will accept") | Positive | **High** | **Implemented** 2026-10-03 (`js/core/trade-finder.js`; audit E14, MODEL_AUDIT §22) |
 | F50 | Data-quality summary first; batch table collapsed | Medium | rare | Low | Low | Low | none | Low | Neutral | **Medium** | **Implemented** (second audit) |
@@ -172,7 +172,7 @@ measurements: `USABILITY_AUDIT.md` §15.
 1. **Safe phone mode** (F45): opt-in, read-only LAN serving with a pairing code; share links that use the LAN address.
 2. **Roster-need targeting** (F46) from My Team using the expected-lineup function.
 3. **My Team: Sleeper draft picks + "Refresh from Sleeper"** (carried over).
-4. **Merge Data → Sources into the dashboard** (F47); **Players columns** (F48).
+4. ~~**Merge Data → Sources into the dashboard** (F47); **Players columns** (F48).~~ Done 2026-10-03 (fourth session).
 
 ### Tier 3 — future
 Biggest movers (F13), team age profile (F17), watchlist (F12), recent players (F26), chart text alternatives,

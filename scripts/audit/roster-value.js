@@ -8,7 +8,9 @@
 //   lineupPoints change in the starters' projected points per game (the My Team "points/game" line)
 //   expected     change in EXPECTED season lineup points: each week every rostered player is active with his
 //                availability (share of team games played, fitted on earlier seasons), the best active lineup starts,
-//                an empty slot is filled from waivers at replacement level — so depth and bye/injury cover count
+//                an empty slot is filled from waivers at replacement level — so depth and injury cover count
+//   expectedBye  (2.4.0) the same, averaged over the season's weeks with each player out in his team's bye week —
+//                the form the app ships since 2.4.0 (same draws as `expected`, so the difference is the byes only)
 // Outcomes: realised change of each team's season points (E6). Reported: correlation of each predictor with the
 // realised margin (A − B) and, separately, with each team's OWN realised gain (what a roster-specific view claims).
 
@@ -23,20 +25,27 @@ const r3 = (x) => (Number.isFinite(x) ? Math.round(x * 1000) / 1000 : null);
 
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
-/** Expected weekly lineup points of a roster: Monte Carlo over who is active; empty slots get the waiver rate. */
-function expectedWeek(roster, priors, waiverRate, rand) {
-  const ps = roster.map((p) => ({ pos: p.pos, rate: priors.rateAt(p.pos, p.rank), avail: priors.availSmooth(p.pos, p.rank ?? 999) })).sort((x, y) => y.rate - x.rate);
-  let total = 0;
+/**
+ * Expected weekly lineup points of a roster: Monte Carlo over who is active; empty slots get the waiver rate.
+ * Returns [without byes, with byes]: the bye-aware form assigns draw d to week weeks[d % n] and sits each player in his
+ * team's bye week (same availability draws, so the two differ by the byes only).
+ */
+function expectedWeek(roster, priors, waiverRate, rand, weeks) {
+  const ps = roster.map((p) => ({ pos: p.pos, bye: p.bye ?? null, rate: priors.rateAt(p.pos, p.rank), avail: priors.availSmooth(p.pos, p.rank ?? 999) })).sort((x, y) => y.rate - x.rate);
+  const totals = [0, 0];
   for (let d = 0; d < DRAWS; d++) {
-    const used = new Array(ps.length).fill(false);
-    const active = ps.map((p) => rand() < p.avail);
-    for (const [slot, ok] of SLOTS) {
-      let got = -1;
-      for (let i = 0; i < ps.length; i++) if (!used[i] && active[i] && ok.includes(ps[i].pos)) { got = i; break; }
-      if (got >= 0) { used[got] = true; total += ps[got].rate; } else total += slot === 'FLEX' ? Math.max(waiverRate.RB, waiverRate.WR) : waiverRate[slot];
-    }
+    const week = weeks[d % weeks.length];
+    const draw = ps.map((p) => rand() < p.avail);
+    [draw, draw.map((on, i) => on && ps[i].bye !== week)].forEach((active, k) => {
+      const used = new Array(ps.length).fill(false);
+      for (const [slot, ok] of SLOTS) {
+        let got = -1;
+        for (let i = 0; i < ps.length; i++) if (!used[i] && active[i] && ok.includes(ps[i].pos)) { got = i; break; }
+        if (got >= 0) { used[got] = true; totals[k] += ps[got].rate; } else totals[k] += slot === 'FLEX' ? Math.max(waiverRate.RB, waiverRate.WR) : waiverRate[slot];
+      }
+    });
   }
-  return total / DRAWS;
+  return totals.map((t) => t / DRAWS);
 }
 
 /** Generic-value lineup (the app's My Team computation) and starter points per game. */
@@ -66,8 +75,10 @@ export function rosterSpecific(bench, { tradesPerSeason = 1000 } = {}) {
       }
       const waiver = waiverCache.get(y);
       const key = (t) => `${y}:${t}`;
+      const weeks = Array.from({ length: y >= 2021 ? 18 : 17 }, (_, i) => i + 1);
+      const ew = (r) => expectedWeek(r, priors, waiver, rand, weeks).map((x) => x * WEEKS);
       const before = (t) => {
-        if (!cache.has(key(t))) cache.set(key(t), { exp: expectedWeek(rosters[t], priors, waiver, rand) * WEEKS, ...lineupStats(rosters[t], cand, priors) });
+        if (!cache.has(key(t))) { const [exp, expBye] = ew(rosters[t]); cache.set(key(t), { exp, expBye, ...lineupStats(rosters[t], cand, priors) }); }
         return cache.get(key(t));
       };
       // The app sees the traded rosters (no automatic drops/signings); the expected-points view uses the legal
@@ -75,12 +86,13 @@ export function rosterSpecific(bench, { tradesPerSeason = 1000 } = {}) {
       const traded = (t, out, inn) => rosters[t].filter((p) => !out.some((o) => o.g === p.g)).concat(inn);
       const tA = traded(a, outA, outB), tB = traded(b, outB, outA);
       const lA = lineupStats(tA, cand, priors), lB = lineupStats(tB, cand, priors);
-      const eA = expectedWeek(next[a], priors, waiver, rand) * WEEKS, eB = expectedWeek(next[b], priors, waiver, rand) * WEEKS;
+      const [eA, ebA] = ew(next[a]), [eB, ebB] = ew(next[b]);
       const A0 = before(a), B0 = before(b);
       return {
         dLineupValueA: lA.value - A0.value, dLineupValueB: lB.value - B0.value,
         dPointsA: lA.points - A0.points, dPointsB: lB.points - B0.points,
         dExpA: eA - A0.exp, dExpB: eB - B0.exp,
+        dExpByeA: ebA - A0.expBye, dExpByeB: ebB - B0.expBye,
         genericA: predictTrade(cand, outB.map((p) => p.g), outA.map((p) => p.g)),
       };
     },
@@ -92,6 +104,7 @@ export function rosterSpecific(bench, { tradesPerSeason = 1000 } = {}) {
     lineupValue: T.map((t) => t.extra.dLineupValueA - t.extra.dLineupValueB),
     lineupPoints: T.map((t) => t.extra.dPointsA - t.extra.dPointsB),
     expected: T.map((t) => t.extra.dExpA - t.extra.dExpB),
+    expectedBye: T.map((t) => t.extra.dExpByeA - t.extra.dExpByeB),
   };
   const zG = standardize(preds.generic), zE = standardize(preds.expected);
   for (const lam of [0.25, 0.5, 0.75]) preds[`blend_expected_${lam}`] = zG.map((g, i) => (1 - lam) * g + lam * zE[i]);
@@ -110,6 +123,7 @@ export function rosterSpecific(bench, { tradesPerSeason = 1000 } = {}) {
     lineupValue: own((t, s) => t.extra[`dLineupValue${s}`], gain),
     lineupPoints: own((t, s) => t.extra[`dPoints${s}`], gain),
     expected: own((t, s) => t.extra[`dExp${s}`], gain),
+    expectedBye: own((t, s) => t.extra[`dExpBye${s}`], gain),
   };
   // Where the roster view disagrees with the generic verdict on the direction, which one was right more often?
   const dis = T.map((t, i) => ({ g: preds.generic[i], e: preds.expected[i], o: out[i] })).filter((x) => Math.sign(x.g) !== Math.sign(x.e) && x.o !== 0);
@@ -135,6 +149,7 @@ export function rosterSpecific(bench, { tradesPerSeason = 1000 } = {}) {
       lineupValue: 'Δ summed generic value of the best starting lineup (My Team "lineup value")',
       lineupPoints: 'Δ starters\' projected points per game (My Team)',
       expected: 'Δ expected season lineup points with availability, bench cover and waiver fill-ins',
+      expectedBye: 'expected, averaged over the season\'s weeks with each player out in his bye week (app form since 2.4.0)',
       blend_expected_x: 'standardised generic and expected, weight x on expected',
     },
     margin, ownGain, disagreement,

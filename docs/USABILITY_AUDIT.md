@@ -308,11 +308,11 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 | G-21 | Data quality: a 21-row "ok" table first; the 2 ambiguous players at 1,495 px | Data → Quality | Actionable item below the fold | Medium | Summary first; collapse the table | Low | Medium | **Fixed** (742 px, and in the summary) |
 | G-22 | 21 Tab presses to the first search; no shortcut (F-43) | Trade | Power users, keyboard users | Low | "/" shortcut | Low | Low | **Fixed** |
 | G-23 | Phone use needs `HOST=0.0.0.0` (one README line); copied links say `localhost` | Whole app | Scenario A in real life | Medium | Help now; safe read-only phone mode later | Medium | High | **Partly** (Help) |
-| G-24 | Data → Sources repeats the dashboard's source table with technical columns | Data | Two places, same job | Low | Expandable rows in the dashboard | Medium | Low | Open (Tier 2) |
-| G-25 | Players: 12 default columns; the last is cut at 1360 px | Players | Scanning effort | Low | Fewer defaults | Low | Low | Open |
-| G-26 | Players: overall rank only; no positional rank column | Players | Fantasy users think "WR12" | Low | "5 · WR3" | Low | Low | Open |
+| G-24 | Data → Sources repeats the dashboard's source table with technical columns | Data | Two places, same job | Low | Expandable rows in the dashboard | Medium | Low | **Done** (2026-10-03, fourth session: one source table on the dashboard, names open the details; `#/data/sources` lands there) |
+| G-25 | Players: 12 default columns; the last is cut at 1360 px | Players | Scanning effort | Low | Fewer defaults | Low | Low | **Done** (fourth session: 12/11 defaults fit 1360 px; headers wrap below 1300 px so 1024 px fits too) |
+| G-26 | Players: overall rank only; no positional rank column | Players | Fantasy users think "WR12" | Low | "5 · WR3" | Low | Low | **Done** (fourth session: Rank column and CSV) |
 | G-27 | Dynasty header: 3 rows of tabs on phones (≈210 px) | Header, 390 px | Space | Low | Shorter tab labels on phones | Low | Low | Open |
-| G-28 | Dynasty verdict is z-based, redraft outcome-based | Trade | Different meaning of "clearly" across modes | Low | Calibrate dynasty (needs outcome data) | High | Medium | Open (model audit) |
+| G-28 | Dynasty verdict is z-based, redraft outcome-based | Trade | Different meaning of "clearly" across modes | Low | Calibrate dynasty (needs outcome data) | High | Medium | **Done** (model 2.4.0, audit E15: dynasty levels from a 3-season outcome frequency) |
 | G-29 | Data-page sync buttons stay enabled while a sync runs | Data | A second click only gets "already running" | Low | Re-render on progress | Low | Low | Open |
 | G-30 | Column-chooser checkboxes 13 px | Players | Target size | Low | Larger hit area | Low | Low | Open |
 | G-31 | KTC-style import: a "no recognised position" warning per row | Import | Noise hides real warnings | Low | One summary line | Low | Low | Open |

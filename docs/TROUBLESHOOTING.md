@@ -13,7 +13,7 @@
 | "PORT … is not a valid port" warning | PORT must be a whole number 1–65535; the app falls back to 5177. Invalid `FFTA_AUTO_REFRESH_HOURS` falls back to 12 and `FFTA_FETCH_TIMEOUT_MS` below 1000 is ignored. |
 | "config/<file> is missing or empty" / "is not valid JSON" | A config file was deleted or mistyped. Restore it from the app download (or `git checkout config/<file>`). |
 | A model setting was cleared | An empty model field goes back to its default value (shown after the change). Out-of-range values are clamped to the field's limits. |
-| A source shows ✕ error | Open Data → Sources → click it for the error. The rest of the app keeps working with that source's last good data. Click **Retry**. |
+| A source shows ✕ error | Open Data → Sync dashboard & sources → click its name for the error. The rest of the app keeps working with that source's last good data. Click **Retry**. |
 | Source shows ⛔ quarantined | The batch failed validation (schema change, too few records, mass value change). Previous data is kept. Check Data → Data quality for "Expected / Received" fields; update the adapter's field mapping. |
 | ⚠ stale | Last success older than 2× the freshness target. Sync again; if it keeps failing, see the source's fallback. |
 | `HTTP 404` from nflverse in the offseason | Current-season files don't exist yet (e.g. `stats_player_week_2027.csv` in August). Expected; statistics fall back to previous-season totals. |

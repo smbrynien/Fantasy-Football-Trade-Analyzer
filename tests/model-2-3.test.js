@@ -57,7 +57,7 @@ test('availability shape in the engine: redraft depth falls relative to stars, d
   for (const a of dyn.assets.values()) assert.equal(a.value, dyn0.getAsset(a.id)?.value, 'dynasty values unchanged');
 });
 
-test('redraft verdict levels follow the calibrated outcome frequency; dynasty keeps the z-score levels', () => {
+test('verdict levels follow the calibrated outcome frequency (redraft 2.3.0, dynasty 2.4.0); z without a slope', () => {
   const rb = byPos(red, 'RB');
   // find pairs of single players at chosen margins
   const pairAt = (lo, hi) => { for (const a of rb) for (const b of rb) { const p = (a.value - b.value) / a.value; if (p >= lo && p < hi) return [a, b]; } return null; };
@@ -77,10 +77,21 @@ test('redraft verdict levels follow the calibrated outcome frequency; dynasty ke
   const zOnly = computeValuations({ dataset: ds, league: preset('preset_12_1qb_ppr'), mode: 'redraft', config: withConfig((m) => { delete m.trade_outcome.levels; }) });
   const tz = analyzeTrade(zOnly, [a.id], [b.id]);
   assert.equal(tz.assessment.basis, undefined, 'without levels the z-score decides (2.2.0 behaviour)');
+  // Dynasty (2.4.0, audit E15): the same levels on the dynasty frequency; removing its slope restores the z levels.
   const d = byPos(dyn, 'WR');
-  const td = analyzeTrade(dyn, [d[0].id], [d[5].id]);
-  assert.equal(td.assessment.basis, undefined, 'dynasty: z-score levels');
-  assert.equal(td.outcome, null);
+  const dpair = (lo, hi) => { for (const x of d) for (const y of d) { const q = (x.value - y.value) / x.value; if (q >= lo && q < hi) return [x, y]; } return null; };
+  for (const [lo, hi, want] of [[0.03, 0.12, 'even'], [0.22, 0.35, 'lean'], [0.5, 0.9, 'clear']]) {
+    const [x, y] = dpair(lo, hi);
+    const td = analyzeTrade(dyn, [x.id], [y.id]);
+    assert.equal(td.assessment.basis, 'outcome');
+    assert.equal(td.assessment.level, want, `dynasty margin ${(td.pct * 100).toFixed(0)}% (outcome ${(td.outcome.probability * 100).toFixed(0)}%)`);
+    const shown = Math.round(td.outcome.probability * 20) / 20;
+    assert.equal(td.assessment.level, shown < 0.6 ? 'even' : shown < 0.7 ? 'lean' : 'clear');
+  }
+  const dynZ = computeValuations({ dataset: ds, league: preset('preset_dyn_12_1qb'), mode: 'dynasty', config: withConfig((m) => { delete m.trade_outcome.dynasty_logit_slope; }) });
+  const dz = analyzeTrade(dynZ, [d[0].id], [d[5].id]);
+  assert.equal(dz.assessment.basis, undefined, 'dynasty without its slope: z-score levels');
+  assert.equal(dz.outcome, null);
 });
 
 test('outcome range: by projected points per game, wider for low projections; attached to redraft players', () => {
@@ -106,6 +117,30 @@ test('expected lineup points: deterministic, bench cover counts, waiver fills em
   assert.ok(withBench > e(base, () => 0.8), 'a bench RB covers missed games');
   assert.ok(Math.abs(e([], () => 1) - 20) < 1e-9, 'empty roster: waiver level in every slot');
   assert.ok(e(base, (a) => (a.id === 'r1' ? 0.5 : 1)) < e(base, () => 1));
+});
+
+test('2.4.0: expected lineup points count bye weeks — shared byes cost more, a bench with another bye covers', () => {
+  const league = { roster: { QB: 1, RB: 2, WR: 0, TE: 0, FLEX: 0, SUPERFLEX: 0, K: 0, DEF: 0 } };
+  const P = (id, position, r, b) => ({ id, kind: 'player', position, r, b });
+  const opt = { rate: (a) => a.r, avail: () => 1, waiver: { QB: 10, RB: 5 }, bye: (a) => a.b, weeks: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14] };
+  const e = (xs, o = opt) => expectedLineupPoints(xs, league, o);
+  const q = P('q', 'QB', 20, 7);
+  // All available: each starter misses 1 of 10 weeks → his week goes to the waiver level.
+  assert.ok(Math.abs(e([q, P('a', 'RB', 15, 8), P('b', 'RB', 12, 9)]) - (47 - (20 - 10) / 10 - (15 - 5) / 10 - (12 - 5) / 10)) < 1e-9);
+  // Same bye for both RBs = the same expected loss here (both slots fall to the waiver in one week) …
+  const sameBye = e([q, P('a', 'RB', 15, 8), P('b', 'RB', 12, 8)]);
+  // … but a bench RB covers only a week that is not his own bye.
+  const cover = e([q, P('a', 'RB', 15, 8), P('b', 'RB', 12, 9), P('c', 'RB', 9, 10)]);
+  const coverSame = e([q, P('a', 'RB', 15, 8), P('b', 'RB', 12, 9), P('c', 'RB', 9, 8)]);
+  assert.ok(cover > coverSame, `a bench RB with a different bye covers more (${cover} vs ${coverSame})`);
+  assert.ok(Math.abs(sameBye - (47 - 1 - 1 - 0.7)) < 1e-9);
+  // A bye already played (not among the remaining weeks) costs nothing; without weeks byes are ignored (2.3.0 form).
+  assert.equal(e([q, P('a', 'RB', 15, 2), P('b', 'RB', 12, 3)], { ...opt, bye: (a) => (a.id === 'q' ? null : a.b) }), 47);
+  assert.equal(e([q, P('a', 'RB', 15, 8), P('b', 'RB', 12, 9)], { ...opt, weeks: null }), 47);
+  // From the valuations: in-season weeks run from the current week to the last regular-season week, byes from the data.
+  const ex = expectationInputs(red);
+  assert.deepEqual(ex.weeks, Array.from({ length: 18 - red.phase.week + 1 }, (_, i) => red.phase.week + i));
+  assert.ok([...red.assets.values()].some((a) => a.kind === 'player' && Number.isFinite(ex.bye(a))) || ds.players.every((p) => !Number.isFinite(p.bye_week)));
 });
 
 test('rosterImpact reports the change in expected lineup points with its historical frequency', () => {

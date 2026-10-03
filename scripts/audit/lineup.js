@@ -72,7 +72,10 @@ export function windowPlayers(bench, y, startWeek) {
     const teamGames = team ? Object.keys(bench.schedule[y].opp[team] || {}).map(Number).filter((w) => w >= startWeek).length : lastWeek(y) - startWeek;
     const gp = pts.filter((p) => p !== null).length;
     if (!wr.rank.has(g) && !gp) continue;
-    players.push({ g, pos, rank: wr.rank.get(g) ?? null, pts, gp, teamGames: teamGames || 1, total: pts.reduce((a, p) => a + (p || 0), 0) });
+    // Bye week of the player's (main) team this season — used by E12's bye-aware expected lineup points.
+    let bye = null;
+    if (team) for (let w = 1; w <= lastWeek(y); w++) if (!(bench.schedule[y].opp[team] || {})[w]) { bye = w; break; }
+    players.push({ g, pos, rank: wr.rank.get(g) ?? null, pts, gp, teamGames: teamGames || 1, total: pts.reduce((a, p) => a + (p || 0), 0), bye });
   }
   return { y, startWeek, date: wr.date, players };
 }

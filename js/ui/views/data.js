@@ -6,18 +6,20 @@ import { api, hasServer, loadDataset } from '../api.js';
 import { startSync, refreshStatus } from '../sync.js';
 import { toCSV, decodeImportBytes } from '../../core/util/csv.js';
 
-const SUBVIEWS = { sync: 'Sync dashboard', sources: 'Data sources / health', import: 'Manual import', quality: 'Data quality', snapshots: 'Snapshots' };
+// "Data sources / health" was merged into the sync dashboard (feature audit F47): one source table whose names open
+// the details. Old #/data/sources links land on the dashboard.
+const SUBVIEWS = { sync: 'Sync dashboard & sources', import: 'Manual import', quality: 'Data quality', snapshots: 'Snapshots' };
 
 export function renderData(root, args) {
   const sub = SUBVIEWS[args[0]] ? args[0] : 'sync';
   root.append(h('div.subtabs', {}, Object.entries(SUBVIEWS).map(([k, l]) => h('button', { class: k === sub ? 'active' : '', onclick: () => { location.hash = `#/data/${k}`; } }, l))));
   const body = h('div');
   root.append(body);
-  if (!hasServer() && sub !== 'sources') {
+  if (!hasServer()) {
     body.append(h('div.panel', {}, h('h2', {}, 'Sync server not running'), h('p', {}, 'Data refresh, manual import and quality reports need the local server. Start it with ', h('code', {}, 'npm start'), ' and reload. The trade calculator keeps working from the cached dataset.')));
     if (sub !== 'sync') return null;
   }
-  const fn = { sync: syncView, sources: sourcesView, import: importView, quality: qualityView, snapshots: snapshotsView }[sub];
+  const fn = { sync: syncView, import: importView, quality: qualityView, snapshots: snapshotsView }[sub];
   return fn(body);
 }
 
@@ -29,7 +31,11 @@ function syncView(body) {
   const draw = (progress) => {
     clear(tableHost);
     const s = app.status;
-    if (!s) { tableHost.append(h('p.muted', {}, 'No status available.')); return; }
+    if (!s) {
+      // No server: the sources are still listed from the configuration (what the old Sources page did offline).
+      tableHost.append(h('p.small.muted', {}, 'No sync status available. The sources this app uses:'), sourceTable(app.config.sources.sources.map((x) => ({ ...x, state: 'unknown' })), null));
+      return;
+    }
     const auto = s.sources.filter((x) => x.adapter !== 'manual' && x.enabled);
     const ok = auto.filter((x) => ['ok', 'warning'].includes(x.state)).length;
     const failed = auto.filter((x) => ['error', 'quarantined'].includes(x.state)).length;
@@ -45,21 +51,7 @@ function syncView(body) {
       kpi('Last full sync', ls ? timeAgo(ls.finished_at) : 'never', ls ? fmtTime(ls.finished_at) : ''),
       kpi('Dataset', s.dataset ? `${fmtInt(s.dataset.players)} players` : '—', s.dataset ? `${s.dataset.data_version} · built ${timeAgo(s.dataset.built_at)}` : 'not built'),
       kpi('NFL state', s.nfl_state ? `${s.nfl_state.season} wk ${s.nfl_state.week}` : '—', s.nfl_state ? `${s.nfl_state.season_type} (${s.nfl_state.source || '?'})` : '')));
-    const rows = s.sources.map((x) => {
-      const pr = progress && progress.sources && progress.sources[x.id];
-      const recs = x.records ? Object.entries(x.records).map(([t, n]) => `${t} ${fmtInt(n)}`).join(' · ') : '—';
-      const live = pr && pr.phase === 'fetching' ? h('span.badge.info', {}, 'fetching…') : pr && pr.phase === 'queued' ? h('span.badge', {}, 'queued') : null;
-      return h('tr', {},
-        h('td', {}, h('div.bold', {}, x.name), h('div.tiny.muted', {}, `${x.priority} · ${x.method}`)),
-        h('td', {}, live || h('span', {}, statusIcon(x.state), ' ', x.state), x.stale ? h('span.badge.warn', { style: { marginLeft: '.3rem' } }, 'stale') : null),
-        h('td.nowrap', {}, x.last_success ? h('span', { title: x.last_success }, fmtTime(x.last_success)) : h('span.faint', {}, '—'), h('div.tiny.muted', {}, x.age_hours !== null ? `${timeAgo(x.last_success)} · target ≤${x.freshness_hours}h` : '')),
-        h('td.small', {}, recs),
-        h('td.small', {}, x.error ? h('span.err', {}, x.error) : pr && pr.message ? h('span.muted', {}, pr.message) : ''),
-        h('td.nowrap', {}, x.adapter === 'manual'
-          ? h('a.btn.btn-xs', { href: `#/data/import?spec=${x.manual_spec}` }, 'Import')
-          : h('button.btn.btn-xs', { disabled: app.syncing ? true : null, onclick: () => startSync({ sources: [x.id], force: true }) }, x.state === 'error' || x.state === 'partial' || x.state === 'quarantined' ? 'Retry' : 'Refresh')));
-    });
-    tableHost.append(h('div.table-wrap', {}, h('table.data', {}, h('thead', {}, h('tr', {}, ['Source', 'Status', 'Last updated', 'Records', 'Message', ''].map((c) => h('th', {}, c)))), h('tbody', {}, rows))));
+    tableHost.append(sourceTable(s.sources, progress));
     if (s.dataset?.substitutions?.length) tableHost.append(h('div.banner.mt', {}, 'Failover in use: ', s.dataset.substitutions.map((x) => `${x.type}: using ${x.used}${x.preferred ? ` instead of ${x.preferred}` : ''}${x.reason ? ` (${x.reason})` : ''}${x.note ? ` — ${x.note}` : ''}`).join('; ')));
     if (ls && ls.results) {
       tableHost.append(h('details.mt', {}, h('summary', {}, `Last sync details (${fmtTime(ls.finished_at)}, ${(ls.duration_ms / 1000).toFixed(1)}s, ${(ls.http?.bytes / 1e6 || 0).toFixed(1)} MB)`),
@@ -80,8 +72,9 @@ function syncView(body) {
       h('div.flex', {},
         h('button.btn.btn-primary', { disabled: !hasServer() || app.syncing ? true : null, onclick: () => startSync({}) }, '⟳ Sync All'),
         h('button.btn', { disabled: !hasServer() || app.syncing ? true : null, onclick: () => startSync({ failedOnly: true }) }, 'Sync failed sources'),
-        h('button.btn', { disabled: !hasServer() || app.syncing ? true : null, onclick: () => startSync({ force: true }) }, 'Force full refresh'))),
-    h('p.small.muted', {}, '"Sync All" fetches every enabled source (sources fetched in the last 30 minutes are skipped). "Force full refresh" re-downloads everything. A failing source never blocks the others; its last good data stays in use and is marked stale.'),
+        h('button.btn', { disabled: !hasServer() || app.syncing ? true : null, onclick: () => startSync({ force: true }) }, 'Force full refresh'),
+        hasServer() ? h('a.btn.btn-sm', { href: '/api/export/health.csv' }, '⤓ Health report CSV') : null)),
+    h('p.small.muted', {}, '"Sync All" fetches every enabled source (sources fetched in the last 30 minutes are skipped). "Force full refresh" re-downloads everything. A failing source never blocks the others; its last good data stays in use and is marked stale. Click a source name for its details: URLs, data types, refresh frequency, manual fallback and terms (enable/disable and priorities live in config/sources.json).'),
     progressBox, tableHost));
   draw(null);
   if (!st) refreshStatus();
@@ -90,22 +83,24 @@ function syncView(body) {
 
 function kpi(k, v, s, cls = '') { return h('div.kpi', {}, h('div.k', {}, k), h('div.v', { class: cls }, v), h('div.s', {}, s)); }
 
-// ------------------------------------------------------------------ sources / health
-function sourcesView(body) {
-  const sources = app.status ? app.status.sources : app.config.sources.sources.map((s) => ({ ...s, state: 'unknown' }));
-  body.append(h('div.panel', {},
-    h('div.panel-head', {}, h('h2', {}, 'Data sources / system health'), hasServer() ? h('a.btn.btn-sm', { href: '/api/export/health.csv' }, '⤓ Health report CSV') : null),
-    h('p.small.muted', {}, 'Click a source for details: URLs, adapter, schema, refresh frequency, manual fallback and terms. Enable/disable and priorities live in config/sources.json.'),
-    h('div.table-wrap', {}, h('table.data', {},
-      h('thead', {}, h('tr', {}, ['Source', 'Data', 'Status', 'Last update', 'Method', 'Priority', 'Fallback'].map((c) => h('th', {}, c)))),
-      h('tbody', {}, sources.map((s) => h('tr.clickable', { onclick: () => sourceDetail(s) },
-        h('td.bold', {}, s.name, s.enabled ? null : h('span.badge', { style: { marginLeft: '.3rem' } }, 'disabled')),
-        h('td.small', {}, s.data_types.join(', ')),
-        h('td.nowrap', {}, statusIcon(s.state), ' ', s.state, s.stale ? h('span.badge.warn', { style: { marginLeft: '.3rem' } }, 'stale') : null),
-        h('td.small.nowrap', {}, s.last_success ? timeAgo(s.last_success) : '—'),
-        h('td.small', {}, s.method), h('td.small', {}, s.priority),
-        h('td.small.muted', {}, s.fallback || '—'))))))));
-  return null;
+// ------------------------------------------------------------------ source table (dashboard)
+function sourceTable(sources, progress) {
+  const rows = sources.map((x) => {
+    const pr = progress && progress.sources && progress.sources[x.id];
+    const recs = x.records ? Object.entries(x.records).map(([t, n]) => `${t} ${fmtInt(n)}`).join(' · ') : '—';
+    const live = pr && pr.phase === 'fetching' ? h('span.badge.info', {}, 'fetching…') : pr && pr.phase === 'queued' ? h('span.badge', {}, 'queued') : null;
+    return h('tr', {},
+      h('td', {}, h('button.linklike', { title: 'Show details', onclick: () => sourceDetail(x) }, x.name), x.enabled ? null : h('span.badge', { style: { marginLeft: '.3rem' } }, 'disabled'),
+        h('div.tiny.muted', {}, `${x.priority} · ${x.method} · ${(x.data_types || []).join(', ')}`)),
+      h('td', {}, live || h('span', {}, statusIcon(x.state), ' ', x.state), x.stale ? h('span.badge.warn', { style: { marginLeft: '.3rem' } }, 'stale') : null),
+      h('td.nowrap', {}, x.last_success ? h('span', { title: x.last_success }, fmtTime(x.last_success)) : h('span.faint', {}, '—'), h('div.tiny.muted', {}, x.age_hours !== null && x.age_hours !== undefined ? `${timeAgo(x.last_success)} · target ≤${x.freshness_hours}h` : '')),
+      h('td.small', {}, recs),
+      h('td.small', {}, x.error ? h('span.err', {}, x.error) : pr && pr.message ? h('span.muted', {}, pr.message) : ''),
+      h('td.nowrap', {}, !hasServer() ? '' : x.adapter === 'manual'
+        ? h('a.btn.btn-xs', { href: `#/data/import?spec=${x.manual_spec}` }, 'Import')
+        : h('button.btn.btn-xs', { disabled: app.syncing ? true : null, onclick: () => startSync({ sources: [x.id], force: true }) }, x.state === 'error' || x.state === 'partial' || x.state === 'quarantined' ? 'Retry' : 'Refresh')));
+  });
+  return h('div.table-wrap', {}, h('table.data.source-table', {}, h('thead', {}, h('tr', {}, ['Source', 'Status', 'Last updated', 'Records', 'Message', ''].map((c) => h('th', {}, c)))), h('tbody', {}, rows)));
 }
 
 function sourceDetail(s) {
