@@ -54,9 +54,10 @@ export const variantLabel = (v, i) => (v.label ? v.label : i === 0 ? 'Original' 
  * @param me        "which side is you" ('a'|'b'; anything else = neutral) — one negotiation, so the same for every row
  * @param rosterIds My Team roster (optional); with `me` it adds the lineup impact of each variant
  * @param points    points-per-game function for rosterImpact (optional)
+ * @param expected  expectationInputs(redraft valuations) for rosterImpact (optional)
  * @param names     id → name for analyzeTrade notes (optional)
  */
-export function compareCounteroffers(result, variants, { me, rosterIds = [], points, names } = {}) {
+export function compareCounteroffers(result, variants, { me, rosterIds = [], points, expected, names } = {}) {
   const base = variants[0];
   return variants.map((v, i) => {
     const ana = analyzeTrade(result, v.a, v.b, { names });
@@ -64,10 +65,11 @@ export function compareCounteroffers(result, variants, { me, rosterIds = [], poi
     let lineup = null;
     if (side && rosterIds.length && v.a.length && v.b.length) {
       const get = v[side], give = v[side === 'a' ? 'b' : 'a'];
-      const r = rosterImpact(result, rosterIds, give, get, { points });
+      const r = rosterImpact(result, rosterIds, give, get, { points, expected });
       lineup = {
         valueDelta: r.after.starterValue - r.before.starterValue,
         pointsDelta: r.before.points && r.after.points ? r.after.points.total - r.before.points.total : null,
+        expectedDelta: r.expectedDelta,
         startersIn: r.startersIn.map((a) => a.name),
         startersOut: r.startersOut.map((a) => a.name),
       };

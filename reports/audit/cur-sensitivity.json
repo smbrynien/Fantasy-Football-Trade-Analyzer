@@ -1,10 +1,10 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "rows": [
     {
       "name": "Josh Allen",
       "pos": "QB",
-      "redraftRank": 16,
+      "redraftRank": 15,
       "redraft_proj_plus10pct": 0.207,
       "redraft_market_plus10pct": 0,
       "dynasty_age_plus1yr": -0.059,
@@ -22,8 +22,8 @@
     {
       "name": "Bo Nix",
       "pos": "QB",
-      "redraftRank": 113,
-      "redraft_proj_plus10pct": 0.314,
+      "redraftRank": 117,
+      "redraft_proj_plus10pct": 0.343,
       "redraft_market_plus10pct": 0,
       "dynasty_age_plus1yr": -0.007,
       "dynasty_market_plus10pct": 0.011
@@ -31,8 +31,8 @@
     {
       "name": "Aaron Rodgers",
       "pos": "QB",
-      "redraftRank": 261,
-      "redraft_proj_plus10pct": 0.925,
+      "redraftRank": 264,
+      "redraft_proj_plus10pct": 0.928,
       "redraft_market_plus10pct": 0,
       "dynasty_age_plus1yr": 0,
       "dynasty_market_plus10pct": 0
@@ -51,27 +51,27 @@
       "pos": "RB",
       "redraftRank": 12,
       "redraft_proj_plus10pct": 0.123,
-      "redraft_market_plus10pct": 0,
+      "redraft_market_plus10pct": 0.013,
       "dynasty_age_plus1yr": -0.016,
       "dynasty_market_plus10pct": 0
     },
     {
-      "name": "Bucky Irving",
+      "name": "Breece Hall",
       "pos": "RB",
-      "redraftRank": 41,
-      "redraft_proj_plus10pct": 0.104,
-      "redraft_market_plus10pct": 0.049,
-      "dynasty_age_plus1yr": -0.038,
-      "dynasty_market_plus10pct": 0.05
+      "redraftRank": 40,
+      "redraft_proj_plus10pct": 0.123,
+      "redraft_market_plus10pct": 0.004,
+      "dynasty_age_plus1yr": -0.044,
+      "dynasty_market_plus10pct": 0.023
     },
     {
-      "name": "Jacory Croskey-Merritt",
+      "name": "RJ Harvey",
       "pos": "RB",
       "redraftRank": 104,
-      "redraft_proj_plus10pct": 0.296,
-      "redraft_market_plus10pct": 0.032,
-      "dynasty_age_plus1yr": -0.017,
-      "dynasty_market_plus10pct": 0.139
+      "redraft_proj_plus10pct": 0.377,
+      "redraft_market_plus10pct": 0,
+      "dynasty_age_plus1yr": -0.034,
+      "dynasty_market_plus10pct": 0.048
     },
     {
       "name": "Jaxon Smith-Njigba",
@@ -89,31 +89,31 @@
       "redraft_proj_plus10pct": 0.052,
       "redraft_market_plus10pct": 0,
       "dynasty_age_plus1yr": -0.017,
-      "dynasty_market_plus10pct": 0.002
+      "dynasty_market_plus10pct": 0
     },
     {
       "name": "Davante Adams",
       "pos": "WR",
-      "redraftRank": 30,
-      "redraft_proj_plus10pct": 0.088,
-      "redraft_market_plus10pct": 0.011,
+      "redraftRank": 31,
+      "redraft_proj_plus10pct": 0.095,
+      "redraft_market_plus10pct": 0,
       "dynasty_age_plus1yr": -0.057,
-      "dynasty_market_plus10pct": 0.016
+      "dynasty_market_plus10pct": 0.006
     },
     {
       "name": "Matthew Golden",
       "pos": "WR",
       "redraftRank": 63,
-      "redraft_proj_plus10pct": 0.137,
-      "redraft_market_plus10pct": 0,
-      "dynasty_age_plus1yr": -0.079,
-      "dynasty_market_plus10pct": 0.021
+      "redraft_proj_plus10pct": 0.14,
+      "redraft_market_plus10pct": 0.009,
+      "dynasty_age_plus1yr": -0.063,
+      "dynasty_market_plus10pct": 0.007
     },
     {
       "name": "Brock Bowers",
       "pos": "TE",
-      "redraftRank": 15,
-      "redraft_proj_plus10pct": 0.059,
+      "redraftRank": 18,
+      "redraft_proj_plus10pct": 0.061,
       "redraft_market_plus10pct": 0,
       "dynasty_age_plus1yr": -0.098,
       "dynasty_market_plus10pct": 0
@@ -121,29 +121,29 @@
     {
       "name": "Travis Kelce",
       "pos": "TE",
-      "redraftRank": 66,
+      "redraftRank": 65,
       "redraft_proj_plus10pct": 0.14,
-      "redraft_market_plus10pct": 0,
-      "dynasty_age_plus1yr": -0.006,
-      "dynasty_market_plus10pct": 0
+      "redraft_market_plus10pct": 0.02,
+      "dynasty_age_plus1yr": -0.007,
+      "dynasty_market_plus10pct": 0.011
     },
     {
       "name": "Jake Ferguson",
       "pos": "TE",
-      "redraftRank": 140,
-      "redraft_proj_plus10pct": 0.209,
-      "redraft_market_plus10pct": 0.007,
+      "redraftRank": 136,
+      "redraft_proj_plus10pct": 0.207,
+      "redraft_market_plus10pct": 0.003,
       "dynasty_age_plus1yr": -0.024,
       "dynasty_market_plus10pct": 0.016
     },
     {
       "name": "Gunnar Helm",
       "pos": "TE",
-      "redraftRank": 263,
+      "redraftRank": 259,
       "redraft_proj_plus10pct": 0.754,
       "redraft_market_plus10pct": 0,
-      "dynasty_age_plus1yr": -0.075,
-      "dynasty_market_plus10pct": 0.048
+      "dynasty_age_plus1yr": -0.071,
+      "dynasty_market_plus10pct": 0.107
     }
   ]
 }

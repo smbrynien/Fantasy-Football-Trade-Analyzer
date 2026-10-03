@@ -1,21 +1,21 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, frozen) — model 2.1.2 → 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, frozen) — model 2.2.0 → 2.3.0",
   "rows": [
     {
       "set": "redraft|preset_12_1qb_ppr",
       "category": "elite",
       "pos": "QB",
       "name": "Josh Allen",
-      "before": 5256,
-      "after": 5168,
-      "diff": -88,
-      "rankBefore": 15,
-      "rankAfter": 16,
+      "before": 5168,
+      "after": 5119,
+      "diff": -49,
+      "rankBefore": 16,
+      "rankAfter": 15,
       "componentDeltas": {
-        "projection": -33,
-        "consensus": -33,
-        "market": -12,
-        "adp": -6
+        "availability": 197,
+        "consensus": -101,
+        "projection": -81,
+        "market": -36
       }
     },
     {
@@ -23,16 +23,16 @@
       "category": "mediocre starter",
       "pos": "QB",
       "name": "Geno Smith",
-      "before": 972,
-      "after": 251,
-      "diff": -721,
-      "rankBefore": 150,
-      "rankAfter": 184,
+      "before": 245,
+      "after": 201,
+      "diff": -44,
+      "rankBefore": 186,
+      "rankAfter": 194,
       "componentDeltas": {
-        "consensus": -323,
-        "projection": -234,
-        "market": -104,
-        "adp": -39
+        "availability": -33,
+        "consensus": -6,
+        "projection": -4,
+        "market": -1
       }
     },
     {
@@ -40,16 +40,16 @@
       "category": "elite young",
       "pos": "RB",
       "name": "Jahmyr Gibbs",
-      "before": 9896,
-      "after": 9886,
-      "diff": -10,
+      "before": 9884,
+      "after": 9884,
+      "diff": 0,
       "rankBefore": 1,
       "rankAfter": 1,
       "componentDeltas": {
-        "consensus": -6,
-        "production": -3,
-        "market": -2,
-        "projection": 1
+        "availability": 471,
+        "consensus": -195,
+        "projection": -150,
+        "market": -69
       }
     },
     {
@@ -57,16 +57,16 @@
       "category": "aging elite",
       "pos": "RB",
       "name": "Christian McCaffrey",
-      "before": 6490,
-      "after": 6491,
-      "diff": 1,
-      "rankBefore": 7,
-      "rankAfter": 8,
+      "before": 6485,
+      "after": 6485,
+      "diff": 0,
+      "rankBefore": 9,
+      "rankAfter": 9,
       "componentDeltas": {
-        "production": 7,
-        "consensus": -5,
-        "projection": -2,
-        "adp": 2
+        "availability": 309,
+        "consensus": -122,
+        "projection": -107,
+        "market": -44
       }
     },
     {
@@ -74,16 +74,16 @@
       "category": "mediocre veteran",
       "pos": "RB",
       "name": "D'Andre Swift",
-      "before": 3622,
-      "after": 3377,
-      "diff": -245,
+      "before": 3377,
+      "after": 3286,
+      "diff": -91,
       "rankBefore": 32,
       "rankAfter": 32,
       "componentDeltas": {
-        "consensus": -114,
-        "projection": -45,
-        "market": -42,
-        "adp": -25
+        "availability": 70,
+        "consensus": -63,
+        "projection": -58,
+        "market": -21
       }
     },
     {
@@ -91,16 +91,16 @@
       "category": "elite",
       "pos": "WR",
       "name": "Jaxon Smith-Njigba",
-      "before": 8595,
+      "before": 8665,
       "after": 8665,
-      "diff": 70,
+      "diff": 0,
       "rankBefore": 2,
       "rankAfter": 2,
       "componentDeltas": {
-        "consensus": 37,
-        "market": 13,
-        "production": 11,
-        "projection": 6
+        "availability": 413,
+        "consensus": -178,
+        "projection": -123,
+        "market": -63
       }
     },
     {
@@ -108,16 +108,16 @@
       "category": "aging",
       "pos": "WR",
       "name": "Davante Adams",
-      "before": 3789,
-      "after": 3600,
-      "diff": -189,
+      "before": 3599,
+      "after": 3416,
+      "diff": -183,
       "rankBefore": 30,
-      "rankAfter": 30,
+      "rankAfter": 31,
       "componentDeltas": {
-        "consensus": -110,
-        "adp": -31,
-        "market": -26,
-        "projection": -21
+        "projection": -67,
+        "consensus": -61,
+        "market": -24,
+        "availability": -11
       }
     },
     {
@@ -125,16 +125,16 @@
       "category": "mediocre",
       "pos": "WR",
       "name": "Tre Tucker",
-      "before": 1072,
-      "after": 523,
-      "diff": -549,
+      "before": 523,
+      "after": 466,
+      "diff": -57,
       "rankBefore": 137,
-      "rankAfter": 137,
+      "rankAfter": 142,
       "componentDeltas": {
-        "consensus": -232,
-        "projection": -173,
-        "market": -78,
-        "adp": -43
+        "availability": -32,
+        "projection": -10,
+        "consensus": -10,
+        "market": -3
       }
     },
     {
@@ -142,16 +142,16 @@
       "category": "elite",
       "pos": "TE",
       "name": "Brock Bowers",
-      "before": 5211,
-      "after": 5177,
-      "diff": -34,
-      "rankBefore": 16,
-      "rankAfter": 15,
+      "before": 5177,
+      "after": 4930,
+      "diff": -247,
+      "rankBefore": 15,
+      "rankAfter": 18,
       "componentDeltas": {
-        "consensus": -19,
-        "adp": -9,
-        "production": 9,
-        "projection": -8
+        "consensus": -113,
+        "projection": -67,
+        "market": -40,
+        "adp": -17
       }
     },
     {
@@ -159,16 +159,16 @@
       "category": "young prospect",
       "pos": "TE",
       "name": "Colston Loveland",
-      "before": 1774,
-      "after": 1352,
-      "diff": -422,
-      "rankBefore": 81,
-      "rankAfter": 76,
+      "before": 1353,
+      "after": 1288,
+      "diff": -65,
+      "rankBefore": 76,
+      "rankAfter": 75,
       "componentDeltas": {
-        "consensus": -168,
-        "projection": -161,
-        "market": -57,
-        "adp": -26
+        "consensus": -31,
+        "projection": -12,
+        "adp": -12,
+        "market": -11
       }
     },
     {
@@ -176,16 +176,16 @@
       "category": "aging",
       "pos": "TE",
       "name": "Travis Kelce",
-      "before": 2008,
-      "after": 1624,
-      "diff": -384,
-      "rankBefore": 74,
-      "rankAfter": 66,
+      "before": 1623,
+      "after": 1545,
+      "diff": -78,
+      "rankBefore": 66,
+      "rankAfter": 65,
       "componentDeltas": {
-        "consensus": -168,
-        "projection": -101,
-        "market": -55,
-        "adp": -46
+        "consensus": -31,
+        "projection": -27,
+        "market": -11,
+        "adp": -6
       }
     },
     {
@@ -193,16 +193,16 @@
       "category": "injured (IR)",
       "pos": "WR",
       "name": "A.J. Brown",
-      "before": 2391,
-      "after": 1975,
-      "diff": -416,
+      "before": 1978,
+      "after": 1865,
+      "diff": -113,
       "rankBefore": 59,
       "rankAfter": 59,
       "componentDeltas": {
-        "consensus": -189,
-        "projection": -157,
-        "market": -37,
-        "production": -22
+        "consensus": -37,
+        "projection": -20,
+        "market": -20,
+        "availability": -19
       }
     },
     {
@@ -210,16 +210,16 @@
       "category": "rookie (top)",
       "pos": "RB",
       "name": "Jeremiyah Love",
-      "before": 3716,
-      "after": 3497,
-      "diff": -219,
+      "before": 3498,
+      "after": 3431,
+      "diff": -67,
       "rankBefore": 31,
-      "rankAfter": 31,
+      "rankAfter": 30,
       "componentDeltas": {
-        "consensus": -114,
-        "projection": -52,
-        "production": -23,
-        "market": -17
+        "availability": 100,
+        "consensus": -63,
+        "projection": -55,
+        "market": -29
       }
     },
     {
@@ -227,16 +227,16 @@
       "category": "rookie",
       "pos": "WR",
       "name": "Carnell Tate",
-      "before": 1802,
-      "after": 1277,
-      "diff": -525,
-      "rankBefore": 80,
+      "before": 1277,
+      "after": 1193,
+      "diff": -84,
+      "rankBefore": 79,
       "rankAfter": 79,
       "componentDeltas": {
-        "consensus": -242,
-        "projection": -127,
-        "market": -85,
-        "adp": -48
+        "projection": -29,
+        "availability": -22,
+        "consensus": -19,
+        "market": -8
       }
     },
     {
@@ -244,16 +244,16 @@
       "category": "rookie",
       "pos": "WR",
       "name": "Jordyn Tyson",
-      "before": 1143,
-      "after": 588,
-      "diff": -555,
-      "rankBefore": 128,
-      "rankAfter": 129,
+      "before": 568,
+      "after": 507,
+      "diff": -61,
+      "rankBefore": 132,
+      "rankAfter": 133,
       "componentDeltas": {
-        "consensus": -245,
-        "projection": -174,
-        "market": -90,
-        "adp": -46
+        "availability": -34,
+        "consensus": -10,
+        "market": -8,
+        "projection": -7
       }
     },
     {
@@ -261,16 +261,16 @@
       "category": "elite",
       "pos": "QB",
       "name": "Josh Allen",
-      "before": 9742,
-      "after": 9790,
-      "diff": 48,
+      "before": 9805,
+      "after": 9712,
+      "diff": -93,
       "rankBefore": 2,
       "rankAfter": 2,
       "componentDeltas": {
-        "consensus": 27,
-        "market": 9,
-        "production": 9,
-        "adp": 5
+        "availability": 374,
+        "consensus": -195,
+        "projection": -148,
+        "market": -69
       }
     },
     {
@@ -278,16 +278,16 @@
       "category": "mediocre starter",
       "pos": "QB",
       "name": "Geno Smith",
-      "before": 4100,
-      "after": 3543,
-      "diff": -557,
-      "rankBefore": 55,
-      "rankAfter": 58,
+      "before": 3522,
+      "after": 2885,
+      "diff": -637,
+      "rankBefore": 59,
+      "rankAfter": 67,
       "componentDeltas": {
-        "consensus": -236,
-        "projection": -166,
-        "market": -91,
-        "adp": -43
+        "availability": -470,
+        "consensus": -78,
+        "projection": -57,
+        "market": -24
       }
     },
     {
@@ -295,16 +295,16 @@
       "category": "elite young",
       "pos": "RB",
       "name": "Jahmyr Gibbs",
-      "before": 10700,
-      "after": 10682,
-      "diff": -18,
+      "before": 10665,
+      "after": 10665,
+      "diff": 0,
       "rankBefore": 1,
       "rankAfter": 1,
       "componentDeltas": {
-        "consensus": -9,
-        "market": -3,
-        "adp": -2,
-        "production": -2
+        "availability": 508,
+        "consensus": -211,
+        "projection": -161,
+        "market": -76
       }
     },
     {
@@ -313,15 +313,15 @@
       "pos": "RB",
       "name": "Christian McCaffrey",
       "before": 7261,
-      "after": 7260,
-      "diff": -1,
-      "rankBefore": 10,
-      "rankAfter": 10,
+      "after": 7261,
+      "diff": 0,
+      "rankBefore": 9,
+      "rankAfter": 9,
       "componentDeltas": {
-        "production": 8,
-        "adp": -5,
-        "projection": -3,
-        "consensus": -1
+        "availability": 346,
+        "consensus": -138,
+        "projection": -118,
+        "market": -49
       }
     },
     {
@@ -329,16 +329,16 @@
       "category": "mediocre veteran",
       "pos": "RB",
       "name": "D'Andre Swift",
-      "before": 4303,
-      "after": 4128,
-      "diff": -175,
-      "rankBefore": 51,
-      "rankAfter": 48,
+      "before": 4129,
+      "after": 4017,
+      "diff": -112,
+      "rankBefore": 48,
+      "rankAfter": 45,
       "componentDeltas": {
-        "consensus": -78,
-        "projection": -29,
-        "market": -29,
-        "adp": -23
+        "availability": 85,
+        "consensus": -79,
+        "projection": -70,
+        "market": -27
       }
     },
     {
@@ -346,16 +346,16 @@
       "category": "elite",
       "pos": "WR",
       "name": "Jaxon Smith-Njigba",
-      "before": 8945,
-      "after": 8979,
-      "diff": 34,
+      "before": 8978,
+      "after": 8978,
+      "diff": 0,
       "rankBefore": 3,
       "rankAfter": 3,
       "componentDeltas": {
-        "consensus": 26,
-        "market": 9,
-        "production": 9,
-        "adp": -7
+        "availability": 428,
+        "consensus": -184,
+        "projection": -128,
+        "market": -65
       }
     },
     {
@@ -363,16 +363,16 @@
       "category": "aging",
       "pos": "WR",
       "name": "Davante Adams",
-      "before": 4176,
-      "after": 4001,
-      "diff": -175,
-      "rankBefore": 54,
-      "rankAfter": 52,
+      "before": 3999,
+      "after": 3796,
+      "diff": -203,
+      "rankBefore": 52,
+      "rankAfter": 51,
       "componentDeltas": {
-        "consensus": -100,
-        "adp": -27,
-        "market": -24,
-        "projection": -22
+        "projection": -71,
+        "consensus": -67,
+        "market": -27,
+        "adp": -15
       }
     },
     {
@@ -380,16 +380,16 @@
       "category": "mediocre",
       "pos": "WR",
       "name": "Tre Tucker",
-      "before": 1246,
-      "after": 679,
-      "diff": -567,
-      "rankBefore": 148,
+      "before": 678,
+      "after": 601,
+      "diff": -77,
+      "rankBefore": 158,
       "rankAfter": 158,
       "componentDeltas": {
-        "consensus": -243,
-        "projection": -175,
-        "market": -83,
-        "adp": -41
+        "availability": -44,
+        "projection": -14,
+        "consensus": -13,
+        "market": -4
       }
     },
     {
@@ -397,16 +397,16 @@
       "category": "elite",
       "pos": "TE",
       "name": "Brock Bowers",
-      "before": 5612,
-      "after": 5546,
-      "diff": -66,
-      "rankBefore": 28,
-      "rankAfter": 25,
+      "before": 5546,
+      "after": 5282,
+      "diff": -264,
+      "rankBefore": 25,
+      "rankAfter": 28,
       "componentDeltas": {
-        "consensus": -29,
-        "adp": -22,
-        "projection": -13,
-        "market": -10
+        "consensus": -121,
+        "projection": -71,
+        "market": -43,
+        "adp": -19
       }
     },
     {
@@ -414,16 +414,16 @@
       "category": "young prospect",
       "pos": "TE",
       "name": "Colston Loveland",
-      "before": 2101,
-      "after": 1717,
-      "diff": -384,
-      "rankBefore": 103,
-      "rankAfter": 100,
+      "before": 1718,
+      "after": 1636,
+      "diff": -82,
+      "rankBefore": 101,
+      "rankAfter": 98,
       "componentDeltas": {
-        "projection": -150,
-        "consensus": -149,
-        "market": -51,
-        "adp": -20
+        "consensus": -37,
+        "projection": -17,
+        "adp": -15,
+        "market": -13
       }
     },
     {
@@ -431,16 +431,16 @@
       "category": "aging",
       "pos": "TE",
       "name": "Travis Kelce",
-      "before": 2285,
-      "after": 1947,
-      "diff": -338,
-      "rankBefore": 96,
-      "rankAfter": 96,
+      "before": 1948,
+      "after": 1856,
+      "diff": -92,
+      "rankBefore": 95,
+      "rankAfter": 92,
       "componentDeltas": {
-        "consensus": -149,
-        "projection": -89,
-        "market": -48,
-        "adp": -36
+        "consensus": -37,
+        "projection": -32,
+        "market": -14,
+        "adp": -5
       }
     },
     {
@@ -448,16 +448,16 @@
       "category": "injured (IR)",
       "pos": "WR",
       "name": "A.J. Brown",
-      "before": 2755,
-      "after": 2360,
-      "diff": -395,
-      "rankBefore": 85,
+      "before": 2366,
+      "after": 2231,
+      "diff": -135,
+      "rankBefore": 84,
       "rankAfter": 85,
       "componentDeltas": {
-        "consensus": -173,
-        "projection": -149,
-        "market": -33,
-        "production": -22
+        "consensus": -43,
+        "projection": -24,
+        "market": -23,
+        "availability": -23
       }
     },
     {
@@ -465,16 +465,16 @@
       "category": "rookie (top)",
       "pos": "RB",
       "name": "Jeremiyah Love",
-      "before": 4376,
-      "after": 4214,
-      "diff": -162,
-      "rankBefore": 49,
-      "rankAfter": 46,
+      "before": 4212,
+      "after": 4131,
+      "diff": -81,
+      "rankBefore": 46,
+      "rankAfter": 43,
       "componentDeltas": {
+        "availability": 120,
         "consensus": -79,
-        "projection": -35,
-        "production": -23,
-        "adp": -17
+        "projection": -66,
+        "market": -34
       }
     },
     {
@@ -482,16 +482,16 @@
       "category": "rookie",
       "pos": "WR",
       "name": "Carnell Tate",
-      "before": 2072,
-      "after": 1580,
-      "diff": -492,
-      "rankBefore": 104,
-      "rankAfter": 106,
+      "before": 1582,
+      "after": 1479,
+      "diff": -103,
+      "rankBefore": 105,
+      "rankAfter": 104,
       "componentDeltas": {
-        "consensus": -240,
-        "projection": -116,
-        "market": -84,
-        "adp": -28
+        "projection": -33,
+        "availability": -28,
+        "consensus": -24,
+        "market": -9
       }
     },
     {
@@ -499,16 +499,16 @@
       "category": "rookie",
       "pos": "WR",
       "name": "Jordyn Tyson",
-      "before": 1372,
-      "after": 795,
-      "diff": -577,
-      "rankBefore": 137,
-      "rankAfter": 144,
+      "before": 773,
+      "after": 692,
+      "diff": -81,
+      "rankBefore": 147,
+      "rankAfter": 150,
       "componentDeltas": {
-        "consensus": -258,
-        "projection": -182,
-        "market": -87,
-        "adp": -50
+        "availability": -44,
+        "consensus": -13,
+        "projection": -10,
+        "market": -9
       }
     },
     {
@@ -516,685 +516,492 @@
       "category": "elite",
       "pos": "QB",
       "name": "Josh Allen",
-      "before": 5940,
+      "before": 6042,
       "after": 6042,
-      "diff": 102,
-      "rankBefore": 19,
+      "diff": 0,
+      "rankBefore": 18,
       "rankAfter": 18,
-      "componentDeltas": {
-        "longevity": 114,
-        "production": -45,
-        "consensus": 41,
-        "projection": -38
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "mediocre starter",
       "pos": "QB",
       "name": "Geno Smith",
-      "before": 579,
+      "before": 566,
       "after": 566,
-      "diff": -13,
+      "diff": 0,
       "rankBefore": 223,
-      "rankAfter": 225,
-      "componentDeltas": {
-        "market": -7,
-        "projection": -3,
-        "production": -3,
-        "consensus": -1
-      }
+      "rankAfter": 223,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "elite young",
       "pos": "RB",
       "name": "Jahmyr Gibbs",
-      "before": 11875,
-      "after": 11812,
-      "diff": -63,
+      "before": 11811,
+      "after": 11811,
+      "diff": 0,
       "rankBefore": 1,
       "rankAfter": 1,
-      "componentDeltas": {
-        "longevity": 154,
-        "production": -82,
-        "projection": -69,
-        "consensus": -25
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "aging elite",
       "pos": "RB",
       "name": "Christian McCaffrey",
-      "before": 5148,
+      "before": 4967,
       "after": 4967,
-      "diff": -181,
-      "rankBefore": 25,
+      "diff": 0,
+      "rankBefore": 27,
       "rankAfter": 27,
-      "componentDeltas": {
-        "production": -74,
-        "market": -70,
-        "longevity": 68,
-        "projection": -63
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "mediocre veteran",
       "pos": "RB",
       "name": "D'Andre Swift",
-      "before": 3477,
-      "after": 3338,
-      "diff": -139,
-      "rankBefore": 61,
+      "before": 3214,
+      "after": 3214,
+      "diff": 0,
+      "rankBefore": 63,
       "rankAfter": 63,
-      "componentDeltas": {
-        "consensus": -56,
-        "production": -40,
-        "market": -38,
-        "longevity": 35
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "elite",
       "pos": "WR",
       "name": "Jaxon Smith-Njigba",
-      "before": 11022,
+      "before": 11118,
       "after": 11118,
-      "diff": 96,
+      "diff": 0,
       "rankBefore": 2,
       "rankAfter": 2,
-      "componentDeltas": {
-        "longevity": 205,
-        "production": -77,
-        "projection": -65,
-        "market": 61
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "aging",
       "pos": "WR",
       "name": "Davante Adams",
-      "before": 3713,
-      "after": 3686,
-      "diff": -27,
-      "rankBefore": 52,
+      "before": 3676,
+      "after": 3676,
+      "diff": 0,
+      "rankBefore": 54,
       "rankAfter": 54,
-      "componentDeltas": {
-        "consensus": 65,
-        "production": -51,
-        "projection": -44,
-        "longevity": 23
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "mediocre",
       "pos": "WR",
       "name": "Tre Tucker",
-      "before": 1200,
-      "after": 1214,
-      "diff": 14,
-      "rankBefore": 142,
-      "rankAfter": 142,
-      "componentDeltas": {
-        "longevity": 26,
-        "production": -14,
-        "projection": -11,
-        "market": 10
-      }
+      "before": 1219,
+      "after": 1219,
+      "diff": 0,
+      "rankBefore": 141,
+      "rankAfter": 141,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "elite",
       "pos": "TE",
       "name": "Brock Bowers",
-      "before": 8094,
+      "before": 8188,
       "after": 8188,
-      "diff": 94,
+      "diff": 0,
       "rankBefore": 8,
       "rankAfter": 8,
-      "componentDeltas": {
-        "longevity": 100,
-        "consensus": 38,
-        "market": 33,
-        "projection": -32
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "young prospect",
       "pos": "TE",
       "name": "Colston Loveland",
-      "before": 4063,
+      "before": 4311,
       "after": 4311,
-      "diff": 248,
-      "rankBefore": 43,
+      "diff": 0,
+      "rankBefore": 40,
       "rankAfter": 40,
-      "componentDeltas": {
-        "longevity": 115,
-        "consensus": 81,
-        "market": 71,
-        "production": -9
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "aging",
       "pos": "TE",
       "name": "Travis Kelce",
-      "before": 1447,
-      "after": 1159,
-      "diff": -288,
-      "rankBefore": 127,
-      "rankAfter": 146,
-      "componentDeltas": {
-        "longevity": -193,
-        "market": -49,
-        "production": -22,
-        "projection": -19
-      }
+      "before": 1146,
+      "after": 1146,
+      "diff": 0,
+      "rankBefore": 147,
+      "rankAfter": 147,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "injured (IR)",
       "pos": "WR",
       "name": "A.J. Brown",
-      "before": 4051,
-      "after": 4060,
-      "diff": 9,
+      "before": 4005,
+      "after": 4005,
+      "diff": 0,
       "rankBefore": 44,
-      "rankAfter": 43,
-      "componentDeltas": {
-        "longevity": 40,
-        "market": 36,
-        "projection": -35,
-        "production": -31
-      }
+      "rankAfter": 44,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "rookie (top)",
       "pos": "RB",
       "name": "Jeremiyah Love",
-      "before": 8226,
+      "before": 8434,
       "after": 8434,
-      "diff": 208,
-      "rankBefore": 6,
+      "diff": 0,
+      "rankBefore": 5,
       "rankAfter": 5,
-      "componentDeltas": {
-        "longevity": 146,
-        "consensus": 86,
-        "market": 53,
-        "projection": -35
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "rookie",
       "pos": "WR",
       "name": "Carnell Tate",
-      "before": 5126,
+      "before": 5155,
       "after": 5155,
-      "diff": 29,
-      "rankBefore": 26,
+      "diff": 0,
+      "rankBefore": 25,
       "rankAfter": 25,
-      "componentDeltas": {
-        "longevity": 128,
-        "consensus": -73,
-        "projection": -21,
-        "market": 20
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "rookie",
       "pos": "WR",
       "name": "Jordyn Tyson",
-      "before": 4609,
-      "after": 4761,
-      "diff": 152,
+      "before": 4756,
+      "after": 4756,
+      "diff": 0,
       "rankBefore": 32,
-      "rankAfter": 31,
-      "componentDeltas": {
-        "longevity": 119,
-        "consensus": 42,
-        "projection": -22,
-        "prospect": -22
-      }
+      "rankAfter": 32,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 1.01",
-      "before": 5433,
-      "after": 5494,
-      "diff": 61,
+      "before": 5483,
+      "after": 5483,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "current_class": 42,
-        "historical": 24,
-        "market": -3
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 1.06",
-      "before": 3079,
-      "after": 3103,
-      "diff": 24,
+      "before": 3084,
+      "after": 3084,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "historical": 13,
-        "market": 7,
-        "current_class": 4
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 1.12",
-      "before": 1690,
+      "before": 1691,
       "after": 1691,
-      "diff": 1,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "historical": 6,
-        "current_class": -4,
-        "market": -2
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 2.01",
-      "before": 1576,
-      "after": 1566,
-      "diff": -10,
+      "before": 1564,
+      "after": 1564,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "market": -12,
-        "historical": 6,
-        "current_class": -4
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_1qb",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2028 1st",
-      "before": 2448,
-      "after": 2463,
-      "diff": 15,
+      "before": 2469,
+      "after": 2469,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "historical": 11,
-        "current_class": 10,
-        "market": -7
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "elite",
       "pos": "QB",
       "name": "Josh Allen",
-      "before": 10177,
-      "after": 10441,
-      "diff": 264,
+      "before": 10442,
+      "after": 10442,
+      "diff": 0,
       "rankBefore": 3,
       "rankAfter": 3,
-      "componentDeltas": {
-        "longevity": 209,
-        "consensus": 106,
-        "market": 93,
-        "production": -72
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "mediocre starter",
       "pos": "QB",
       "name": "Geno Smith",
-      "before": 3441,
+      "before": 3437,
       "after": 3437,
-      "diff": -4,
-      "rankBefore": 90,
+      "diff": 0,
+      "rankBefore": 89,
       "rankAfter": 89,
-      "componentDeltas": {
-        "longevity": 25,
-        "production": -24,
-        "projection": -21,
-        "consensus": 19
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "one-game backup",
       "pos": "QB",
       "name": "Jack Strand",
-      "before": 455,
-      "after": 469,
-      "diff": 14,
-      "rankBefore": 267,
-      "rankAfter": 263,
-      "componentDeltas": {
-        "consensus": 11,
-        "market": 3
-      }
+      "before": 417,
+      "after": 417,
+      "diff": 0,
+      "rankBefore": 277,
+      "rankAfter": 277,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "elite young",
       "pos": "RB",
       "name": "Jahmyr Gibbs",
-      "before": 11726,
+      "before": 11660,
       "after": 11660,
-      "diff": -66,
+      "diff": 0,
       "rankBefore": 1,
       "rankAfter": 1,
-      "componentDeltas": {
-        "longevity": 152,
-        "production": -81,
-        "projection": -69,
-        "consensus": -27
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "aging elite",
       "pos": "RB",
       "name": "Christian McCaffrey",
-      "before": 5017,
+      "before": 4835,
       "after": 4835,
-      "diff": -182,
-      "rankBefore": 40,
+      "diff": 0,
+      "rankBefore": 45,
       "rankAfter": 45,
-      "componentDeltas": {
-        "production": -73,
-        "market": -70,
-        "longevity": 67,
-        "projection": -63
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "mediocre veteran",
       "pos": "RB",
       "name": "D'Andre Swift",
-      "before": 3336,
-      "after": 3214,
-      "diff": -122,
-      "rankBefore": 91,
+      "before": 3085,
+      "after": 3085,
+      "diff": 0,
+      "rankBefore": 94,
       "rankAfter": 94,
-      "componentDeltas": {
-        "consensus": -42,
-        "production": -39,
-        "market": -35,
-        "longevity": 34
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "elite",
       "pos": "WR",
       "name": "Jaxon Smith-Njigba",
-      "before": 10906,
+      "before": 10998,
       "after": 10998,
-      "diff": 92,
+      "diff": 0,
       "rankBefore": 2,
       "rankAfter": 2,
-      "componentDeltas": {
-        "longevity": 203,
-        "production": -76,
-        "projection": -65,
-        "market": 60
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "aging",
       "pos": "WR",
       "name": "Davante Adams",
-      "before": 3606,
-      "after": 3580,
-      "diff": -26,
-      "rankBefore": 80,
+      "before": 3567,
+      "after": 3567,
+      "diff": 0,
+      "rankBefore": 81,
       "rankAfter": 81,
-      "componentDeltas": {
-        "consensus": 64,
-        "production": -51,
-        "projection": -44,
-        "longevity": 22
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "mediocre",
       "pos": "WR",
       "name": "Tre Tucker",
-      "before": 1096,
-      "after": 1112,
-      "diff": 16,
-      "rankBefore": 176,
+      "before": 1113,
+      "after": 1113,
+      "diff": 0,
+      "rankBefore": 174,
       "rankAfter": 174,
-      "componentDeltas": {
-        "longevity": 24,
-        "market": 17,
-        "production": -13,
-        "projection": -11
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "elite",
       "pos": "TE",
       "name": "Brock Bowers",
-      "before": 8044,
+      "before": 8138,
       "after": 8138,
-      "diff": 94,
+      "diff": 0,
       "rankBefore": 8,
       "rankAfter": 8,
-      "componentDeltas": {
-        "longevity": 99,
-        "consensus": 38,
-        "market": 33,
-        "projection": -32
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "young prospect",
       "pos": "TE",
       "name": "Colston Loveland",
-      "before": 4016,
+      "before": 4263,
       "after": 4263,
-      "diff": 247,
-      "rankBefore": 68,
-      "rankAfter": 62,
-      "componentDeltas": {
-        "longevity": 114,
-        "consensus": 82,
-        "market": 72,
-        "production": -8
-      }
+      "diff": 0,
+      "rankBefore": 61,
+      "rankAfter": 61,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "aging",
       "pos": "TE",
       "name": "Travis Kelce",
-      "before": 1414,
-      "after": 1128,
-      "diff": -286,
-      "rankBefore": 151,
+      "before": 1115,
+      "after": 1115,
+      "diff": 0,
+      "rankBefore": 173,
       "rankAfter": 173,
-      "componentDeltas": {
-        "longevity": -193,
-        "market": -51,
-        "production": -22,
-        "projection": -19
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "injured (IR)",
       "pos": "WR",
       "name": "A.J. Brown",
-      "before": 3941,
-      "after": 3950,
-      "diff": 9,
-      "rankBefore": 71,
-      "rankAfter": 69,
-      "componentDeltas": {
-        "longevity": 38,
-        "market": 36,
-        "projection": -34,
-        "production": -31
-      }
+      "before": 3897,
+      "after": 3897,
+      "diff": 0,
+      "rankBefore": 72,
+      "rankAfter": 72,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "rookie (top)",
       "pos": "RB",
       "name": "Jeremiyah Love",
-      "before": 8071,
-      "after": 8276,
-      "diff": 205,
-      "rankBefore": 7,
+      "before": 8277,
+      "after": 8277,
+      "diff": 0,
+      "rankBefore": 6,
       "rankAfter": 6,
-      "componentDeltas": {
-        "longevity": 144,
-        "consensus": 84,
-        "market": 52,
-        "projection": -33
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "rookie",
       "pos": "WR",
       "name": "Carnell Tate",
-      "before": 5010,
+      "before": 5038,
       "after": 5038,
-      "diff": 28,
-      "rankBefore": 41,
+      "diff": 0,
+      "rankBefore": 42,
       "rankAfter": 42,
-      "componentDeltas": {
-        "longevity": 127,
-        "consensus": -74,
-        "projection": -20,
-        "market": 19
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "rookie",
       "pos": "WR",
       "name": "Jordyn Tyson",
-      "before": 4496,
-      "after": 4646,
-      "diff": 150,
-      "rankBefore": 52,
-      "rankAfter": 50,
-      "componentDeltas": {
-        "longevity": 117,
-        "consensus": 41,
-        "market": 22,
-        "projection": -21
-      }
+      "before": 4640,
+      "after": 4640,
+      "diff": 0,
+      "rankBefore": 51,
+      "rankAfter": 51,
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 1.01",
-      "before": 5800,
-      "after": 5856,
-      "diff": 56,
+      "before": 5857,
+      "after": 5857,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "current_class": 41,
-        "historical": 29,
-        "market": -13
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 1.06",
-      "before": 3471,
-      "after": 3519,
-      "diff": 48,
+      "before": 3508,
+      "after": 3508,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "market": 19,
-        "historical": 16,
-        "current_class": 13
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 1.12",
-      "before": 2051,
-      "after": 2055,
-      "diff": 4,
+      "before": 2065,
+      "after": 2065,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "historical": 8,
-        "market": -5,
-        "current_class": 1
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2027 2.01",
-      "before": 1914,
-      "after": 1919,
-      "diff": 5,
+      "before": 1929,
+      "after": 1929,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "historical": 7,
-        "market": -4,
-        "current_class": 1
-      }
+      "componentDeltas": {}
     },
     {
       "set": "dynasty|preset_dyn_12_sf",
       "category": "draft pick",
       "pos": "PICK",
       "name": "2028 1st",
-      "before": 2878,
-      "after": 2910,
-      "diff": 32,
+      "before": 2929,
+      "after": 2929,
+      "diff": 0,
       "rankBefore": null,
       "rankAfter": null,
-      "componentDeltas": {
-        "historical": 14,
-        "current_class": 12,
-        "market": 6
-      }
+      "componentDeltas": {}
     }
   ]
 }

@@ -6,6 +6,7 @@ data/raw/
 data/normalized/
 data/calculated/
 data/snapshots/
+data/archive/
 data/state/
 data/user/
 data/cache/

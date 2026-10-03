@@ -1,5 +1,5 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "note": "SIMULATION: 12-team league drafted by model value from current data; weekly availability sampled; Δ = change in Team A expected optimal-lineup points for the rest of the season. Model numbers converted back to surplus points (value ÷ factor).",
   "avail": {
     "QB": 0.8,
@@ -11,96 +11,96 @@
     "1-for-1": {
       "n": 67,
       "raw": {
-        "corr": 0.68,
-        "slope": 0.735,
-        "meanModel": -8.684,
-        "meanSim": -11.289
+        "corr": 0.678,
+        "slope": 0.691,
+        "meanModel": -8.912,
+        "meanSim": -12.355
       },
       "packageAdjusted": {
-        "corr": 0.68,
-        "slope": 0.735,
-        "meanModel": -8.684,
-        "meanSim": -11.289
+        "corr": 0.678,
+        "slope": 0.691,
+        "meanModel": -8.912,
+        "meanSim": -12.355
       }
     },
     "2-for-1": {
       "n": 67,
       "raw": {
-        "corr": 0.647,
-        "slope": 0.75,
-        "meanModel": 35.733,
-        "meanSim": 7.648
+        "corr": 0.687,
+        "slope": 0.782,
+        "meanModel": 35.725,
+        "meanSim": -2.57
       },
       "packageAdjusted": {
-        "corr": 0.662,
-        "slope": 0.817,
-        "meanModel": 22.562,
-        "meanSim": 7.648
+        "corr": 0.693,
+        "slope": 0.837,
+        "meanModel": 22.824,
+        "meanSim": -2.57
       }
     },
     "2-for-2": {
       "n": 67,
       "raw": {
-        "corr": 0.797,
-        "slope": 0.743,
-        "meanModel": 10.622,
-        "meanSim": 6.553
+        "corr": 0.738,
+        "slope": 0.704,
+        "meanModel": 11.316,
+        "meanSim": -19.929
       },
       "packageAdjusted": {
-        "corr": 0.797,
-        "slope": 0.743,
-        "meanModel": 10.622,
-        "meanSim": 6.553
+        "corr": 0.738,
+        "slope": 0.704,
+        "meanModel": 11.316,
+        "meanSim": -19.929
       }
     },
     "3-for-1": {
       "n": 67,
       "raw": {
-        "corr": 0.596,
-        "slope": 0.679,
-        "meanModel": 99.747,
-        "meanSim": 24.26
+        "corr": 0.62,
+        "slope": 0.784,
+        "meanModel": 101.477,
+        "meanSim": 12.787
       },
       "packageAdjusted": {
-        "corr": 0.622,
-        "slope": 0.837,
-        "meanModel": 60.888,
-        "meanSim": 24.26
+        "corr": 0.598,
+        "slope": 0.898,
+        "meanModel": 62.64,
+        "meanSim": 12.787
       }
     },
     "3-for-2": {
       "n": 66,
       "raw": {
-        "corr": 0.805,
-        "slope": 0.976,
-        "meanModel": 46.199,
-        "meanSim": 15.023
+        "corr": 0.525,
+        "slope": 0.594,
+        "meanModel": 47.457,
+        "meanSim": -12.083
       },
       "packageAdjusted": {
-        "corr": 0.801,
-        "slope": 1.012,
-        "meanModel": 36.164,
-        "meanSim": 15.023
+        "corr": 0.517,
+        "slope": 0.608,
+        "meanModel": 37.807,
+        "meanSim": -12.083
       }
     },
     "4-for-2": {
       "n": 66,
       "raw": {
-        "corr": 0.581,
-        "slope": 0.785,
-        "meanModel": 92.16,
-        "meanSim": 39.525
+        "corr": 0.492,
+        "slope": 0.611,
+        "meanModel": 93.938,
+        "meanSim": 16.662
       },
       "packageAdjusted": {
-        "corr": 0.581,
-        "slope": 0.815,
-        "meanModel": 67.974,
-        "meanSim": 39.525
+        "corr": 0.497,
+        "slope": 0.638,
+        "meanModel": 70.453,
+        "meanSim": 16.662
       }
     }
   },
   "overall": {
-    "raw": 0.677,
-    "packageAdjusted": 0.699
+    "raw": 0.596,
+    "packageAdjusted": 0.602
   }
 }

@@ -1,5 +1,5 @@
 {
-  "model_version": "2.2.0",
+  "model_version": "2.3.0",
   "_comment": "Valuation model parameters. Bump model_version whenever a formula or default changes so stored trades/values remain comparable. Every parameter is documented in docs/VALUATION_MODEL.md, docs/DYNASTY_MODEL.md and docs/ROOKIE_PICK_MODEL.md.",
   "scale": {
     "top_value": 10000,
@@ -48,6 +48,20 @@
     },
     "adp_requires_corroboration": true,
     "_adp_comment": "ADP is a corroborating signal only: a player whose only usable signal is ADP gets no redraft value (N/A). Long ADP lists rank undrafted/out-of-league players by placeholder or stale draft positions (model 2.1.0, handoff bug #1).",
+    "outcome_range": {
+      "by_points_per_game": [[4, 0.29, 0.59, 1.34, 1.77], [8, 0.36, 0.7, 1.36, 1.62], [12, 0.5, 0.79, 1.26, 1.46], [16, 0.47, 0.76, 1.21, 1.36]],
+      "_comment": "Model 2.3.0 (audit E10), display only. Columns: [projected points per game from, then realised / projected at the 10th, 25th, 75th, 90th percentile]. From the app's blend vs realised points: preseason seasons 2021-2025 and in-season checkpoints (weeks 4-12) 2021-2024, 4,719 player-windows. The +/- under a value is source disagreement (median 5.5% of value historically, containing only 13% of season outcomes); this is the range real outcomes fell in."
+    },
+    "availability_shape": {
+      "enabled": true,
+      "knots": {
+        "QB": [[1, 1.04], [3, 1.02], [6, 1.0], [12, 0.98], [18, 0.92], [24, 0.86]],
+        "RB": [[1, 1.05], [6, 1.05], [9, 1.03], [12, 1.03], [18, 0.98], [30, 0.98], [36, 0.96], [48, 0.91]],
+        "WR": [[1, 1.05], [9, 1.05], [12, 1.01], [18, 0.99], [30, 0.99], [36, 0.98], [48, 0.95], [60, 0.93]],
+        "TE": [[1, 1.0], [18, 1.0], [24, 0.96]]
+      },
+      "_comment": "Model 2.3.0 (audit E11). Stars miss fewer games than depth players, and healthy-season projections (17 games) ignore that. A missed game costs the player's surplus that week (the replacement plays), so redraft value x= share of games played at the player's positional rank RELATIVE to the position's starters (1.0 = an average starter; only the within-position shape, cross-position balance unchanged). Linear between knots (positional rank, factor), flat beyond the last knot: deeper than 2x 12-team starters, not playing is a backup's role, which projections already price in. Fitted on nflverse 2019-2025 (preseason ECR rank and in-season ROS ECR rank, weeks 1/5/9); walk-forward: historical trade outcomes 0.549 -> 0.552 (better in 5/5 seasons), lineup-value tier loss 0.033 -> 0.018 preseason, 0.806 -> 0.690 from week 9. Position-level (absolute) availability made trades worse (0.541). K/DEF: none."
+    },
     "production": {
       "regression_games": 2,
       "xfp_blend": 0.25,
@@ -364,6 +378,10 @@
   },
   "trade_outcome": {
     "redraft_logit_slope": 1.5,
+    "levels": { "lean": 0.6, "clear": 0.7 },
+    "roster_logit_slope_per_week": 0.2,
+    "_roster_comment": "Model 2.3.0 (audit E12), display only (My Team): P(a team's season points rose) = 1 / (1 + exp(-k x |change in expected lineup points per week|)). From 10,000 team-trades in the historical league simulations: +1 / +3 points per week -> 55% / 65%; 4+ -> 81% observed. Realised gain = 0.80 x predicted.",
+    "_levels_comment": "Model 2.3.0 (audit E10): redraft verdict levels come from the same historical frequency: close < 60% (margin under ~27%), lean 60-70%, clear >= 70% (margin >= ~56%). Historically margins under 30% won 53-57% whatever their size, 30-50% won 64%, 50-75% 72%, 75%+ 80%. The z-score levels (|diff| / the +/- range) disagreed with the frequency shown under the verdict in 23% of trades. Dynasty keeps the z-score levels (no outcome data). Remove 'levels' to use z in redraft too.",
     "_comment": "P(the side receiving more value ends the season with more lineup points) = 1 / (1 + exp(-slope x |margin|)), margin = difference / larger side. Fitted on 5,000 random trades in historical league simulations (audit E7: 12-team PPR, full seasons 2020-2025, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68% of the time. Redraft only (dynasty outcomes cannot be validated). Shown next to the verdict; it does not change any value."
   },
   "package": {

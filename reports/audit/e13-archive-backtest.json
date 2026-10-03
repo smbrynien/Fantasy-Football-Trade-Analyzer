@@ -1,0 +1,6 @@
+{
+  "label": "REAL DATA from the app's own daily signal archive (data/archive)",
+  "skipped": true,
+  "reason": "The archive has 0 day(s) (— … —) and no completed season with at least 4 archived weeks yet. Keep the app syncing; the first full test is possible after the season ends.",
+  "archivedDays": 0
+}

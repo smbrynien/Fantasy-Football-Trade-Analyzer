@@ -1,37 +1,37 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "rows": [
     {
       "mode": "redraft",
       "removed": "fantasycalc",
       "spearman": 0.998,
-      "medianAbsPctChange": 0.016,
-      "p90AbsPctChange": 0.062,
-      "maxAbsPctChange": 0.191
+      "medianAbsPctChange": 0.018,
+      "p90AbsPctChange": 0.069,
+      "maxAbsPctChange": 0.165
     },
     {
       "mode": "redraft",
       "removed": "fantasypros_ecr",
-      "spearman": 0.985,
-      "medianAbsPctChange": 0.062,
-      "p90AbsPctChange": 0.211,
-      "maxAbsPctChange": 0.665
+      "spearman": 0.984,
+      "medianAbsPctChange": 0.067,
+      "p90AbsPctChange": 0.22,
+      "maxAbsPctChange": 0.697
     },
     {
       "mode": "redraft",
       "removed": "sleeper_projections",
       "spearman": 0.969,
       "medianAbsPctChange": 0.157,
-      "p90AbsPctChange": 0.346,
-      "maxAbsPctChange": 0.511
+      "p90AbsPctChange": 0.335,
+      "maxAbsPctChange": 0.533
     },
     {
       "mode": "redraft",
       "removed": "espn",
-      "spearman": 0.992,
-      "medianAbsPctChange": 0.06,
+      "spearman": 0.991,
+      "medianAbsPctChange": 0.063,
       "p90AbsPctChange": 0.149,
-      "maxAbsPctChange": 0.415
+      "maxAbsPctChange": 0.419
     },
     {
       "mode": "redraft",
@@ -45,57 +45,57 @@
       "mode": "redraft",
       "removed": "fantasycalc+dynastyprocess_values",
       "spearman": 0.998,
-      "medianAbsPctChange": 0.016,
-      "p90AbsPctChange": 0.062,
-      "maxAbsPctChange": 0.191
+      "medianAbsPctChange": 0.018,
+      "p90AbsPctChange": 0.069,
+      "maxAbsPctChange": 0.165
     },
     {
       "mode": "redraft",
       "removed": "sleeper_projections+espn",
-      "spearman": 0.948,
-      "medianAbsPctChange": 0.175,
+      "spearman": 0.945,
+      "medianAbsPctChange": 0.174,
       "p90AbsPctChange": 1,
       "maxAbsPctChange": 1
     },
     {
       "mode": "redraft",
       "removed": "fantasypros_ecr+fantasycalc",
-      "spearman": 0.977,
-      "medianAbsPctChange": 0.106,
-      "p90AbsPctChange": 0.287,
-      "maxAbsPctChange": 0.767
+      "spearman": 0.976,
+      "medianAbsPctChange": 0.11,
+      "p90AbsPctChange": 0.293,
+      "maxAbsPctChange": 0.751
     },
     {
       "mode": "dynasty",
       "removed": "fantasycalc",
-      "spearman": 0.992,
-      "medianAbsPctChange": 0.034,
+      "spearman": 0.993,
+      "medianAbsPctChange": 0.036,
       "p90AbsPctChange": 0.115,
       "maxAbsPctChange": 0.268
     },
     {
       "mode": "dynasty",
       "removed": "fantasypros_ecr",
-      "spearman": 0.983,
-      "medianAbsPctChange": 0.05,
-      "p90AbsPctChange": 0.156,
+      "spearman": 0.981,
+      "medianAbsPctChange": 0.053,
+      "p90AbsPctChange": 0.152,
       "maxAbsPctChange": 0.308
     },
     {
       "mode": "dynasty",
       "removed": "sleeper_projections",
       "spearman": 0.997,
-      "medianAbsPctChange": 0.059,
-      "p90AbsPctChange": 0.109,
+      "medianAbsPctChange": 0.06,
+      "p90AbsPctChange": 0.106,
       "maxAbsPctChange": 0.302
     },
     {
       "mode": "dynasty",
       "removed": "espn",
-      "spearman": 0.991,
-      "medianAbsPctChange": 0.028,
-      "p90AbsPctChange": 0.105,
-      "maxAbsPctChange": 0.269
+      "spearman": 0.992,
+      "medianAbsPctChange": 0.026,
+      "p90AbsPctChange": 0.098,
+      "maxAbsPctChange": 0.271
     },
     {
       "mode": "dynasty",
@@ -108,26 +108,26 @@
     {
       "mode": "dynasty",
       "removed": "fantasycalc+dynastyprocess_values",
-      "spearman": 0.992,
-      "medianAbsPctChange": 0.034,
+      "spearman": 0.993,
+      "medianAbsPctChange": 0.036,
       "p90AbsPctChange": 0.115,
       "maxAbsPctChange": 0.268
     },
     {
       "mode": "dynasty",
       "removed": "sleeper_projections+espn",
-      "spearman": 0.985,
-      "medianAbsPctChange": 0.071,
-      "p90AbsPctChange": 0.184,
+      "spearman": 0.984,
+      "medianAbsPctChange": 0.072,
+      "p90AbsPctChange": 0.19,
       "maxAbsPctChange": 1
     },
     {
       "mode": "dynasty",
       "removed": "fantasypros_ecr+fantasycalc",
-      "spearman": 0.934,
-      "medianAbsPctChange": 0.146,
-      "p90AbsPctChange": 0.421,
-      "maxAbsPctChange": 0.924
+      "spearman": 0.935,
+      "medianAbsPctChange": 0.149,
+      "p90AbsPctChange": 0.394,
+      "maxAbsPctChange": 0.931
     }
   ]
 }

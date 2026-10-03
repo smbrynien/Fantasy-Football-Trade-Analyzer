@@ -22,6 +22,7 @@ const COMPONENT_HELP = {
   prospect: 'Draft-capital prior: historical production of players drafted in this range at this career stage.',
   longevity: 'Seasons 2+ of the multi-year projection: aging curve, attrition risk, uncertainty and the dynasty discount rate.',
   injury: 'Expected games lost from the current injury designation.',
+  availability: 'Stars miss fewer games than depth players (2019–2025 history): value × share of games played at this positional rank, relative to an average starter.',
   trend: 'Capped share of the market\'s own 30-day value trend (weight 0 by default since model 2.0: shown for information only).',
   historical: 'Historical rookie slot value (2020-2023 classes) scaled to the current class.',
   current_class: 'Current rookie class values at this slot (consensus rookie order, smoothed).',
@@ -82,6 +83,10 @@ export function openPlayer(cid) {
       const rows = [];
       if (d) {
         rows.push(['Projected points (ROS)', d.projection.points !== null ? `${fmt1(d.projection.points)} in ${fmtGames(d.projection.games)} games${d.projection.zeroedForInjury ? ' (no projection while on IR → 0)' : ''}` : 'Unavailable']);
+        if (d.outcomeRange) {
+          const o = d.outcomeRange, r0 = (x) => Math.round(x);
+          rows.push(['Range of outcomes (ROS points)', h('span', { title: 'From players the model projected at the same points per game, 2021–2025: what they actually scored over the same stretch. The ± under the value is something else — how much the sources disagree.' }, `half of similar players finished ${r0(o.p50[0])}–${r0(o.p50[1])}, 8 in 10 between ${r0(o.p80[0])} and ${r0(o.p80[1])}`)]);
+        }
         if (d.production.gp) rows.push(['Points per game (this season)', `${fmt1(d.production.ppg)} actual · ${fmt1(d.production.xppg)} expected (opportunity) · ${d.production.gp} games`]);
         if (d.weeklyRange) rows.push(['Weekly floor / median / ceiling', `${fmt1(d.weeklyRange.floor)} / ${fmt1(d.weeklyRange.median)} / ${fmt1(d.weeklyRange.ceiling)} (10th/50th/90th pct of ${d.weeklyRange.n} games)`]);
         if (d.lastSeason) rows.push([`Last season (${d.lastSeason.season})`, `${fmt1(d.lastSeason.ppg)} PPG in ${d.lastSeason.gp} games`]);

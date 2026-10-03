@@ -12,6 +12,7 @@ import { assessBatch, cleanBatch } from '../js/core/quality.js';
 import { NORMALIZED_SCHEMA_VERSION } from '../js/core/version.js';
 import { buildPlayerDB, buildDataset } from './dataset-builder.js';
 import { updateHistory } from './history.js';
+import { archiveSignals } from './archive.js';
 
 const RAW_KEEP = 3;
 const SNAPSHOT_KEEP = 90;
@@ -242,6 +243,11 @@ async function rebuildNow(config, statusAll, state, log = () => {}) {
   await writeJSON(P.dataset, dataset);
   await writeGzJSON(path.join(P.snapshots, `${dataset.built_at.replace(/[:.]/g, '-')}__${dataset.data_version}.json.gz`), dataset);
   await pruneDir(P.snapshots, SNAPSHOT_KEEP, (f) => f.endsWith('.json.gz'));
+  try {
+    await archiveSignals(dataset); // daily signal archive (never pruned) — the history projections/markets lack
+  } catch (e) {
+    log(`signal archive failed: ${e.message}`);
+  }
   await writeJSON(P.unresolved, report, { pretty: true });
   const quality = await compileQualityReport(config, statusAll, report, dataset, db);
   await writeJSON(P.quality, quality, { pretty: true });

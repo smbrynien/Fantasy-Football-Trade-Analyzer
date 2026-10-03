@@ -22,6 +22,8 @@ const POS = ['QB', 'RB', 'WR', 'TE'];
 const TOPN = { QB: 32, RB: 60, WR: 72, TE: 32 };
 const REPL = { QB: 12, RB: 30, WR: 42, TE: 12 }; // 12-team 1QB / 2RB / 2WR + FLEX share / 1TE — as E1
 const TIERS = [[1, 6], [7, 12], [13, 24], [25, 36], [37, 72]];
+// E11: deeper than this, not playing is mostly a backup's role (already in projections), not missed games.
+export const AVAIL_CAP_RANK = { QB: 24, RB: 48, WR: 60, TE: 24 };
 const SEASONS = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
 // The 2.1.x σ per game (config/model.json redraft.uncertainty.sd_per_game before 2.2.0) — the candidate under test.
 // 2.2.0 ships 0.4 × this table (candidate 'v22').
@@ -77,23 +79,35 @@ export function windowPlayers(bench, y, startWeek) {
 
 /** Rank → points-per-game-played curve, availability by tier and an unranked prior, fitted on training windows. */
 export function fitPriors(train) {
-  const rate = {}, avail = {}, unranked = {};
+  const rate = {}, avail = {}, unranked = {}, availCurve = {}, availPos = {};
   for (const pos of POS) {
     const rows = train.filter((p) => p.pos === pos);
-    const raw = [];
+    const raw = [], rawA = [], wA = [];
     for (let r = 1; r <= 2 * TOPN[pos]; r++) {
       const h = Math.max(1, Math.round(r * 0.15));
       const xs = rows.filter((p) => p.rank && Math.abs(p.rank - r) <= h && p.gp >= 1);
       raw.push(xs.length ? xs.reduce((a, p) => a + p.total, 0) / xs.reduce((a, p) => a + p.gp, 0) : raw[raw.length - 1] ?? 0);
+      // E11: share of team games played, pooled over neighbouring ranks (wider deeper), then forced non-increasing.
+      const hA = Math.max(2, Math.round(r * 0.25));
+      const ys = rows.filter((p) => p.rank && Math.abs(p.rank - r) <= hA);
+      rawA.push(ys.length ? mean(ys.map((p) => p.gp / p.teamGames)) : rawA[rawA.length - 1] ?? 0.8);
+      wA.push(Math.max(1, ys.length));
     }
     rate[pos] = isotonicDecreasing(raw);
+    availCurve[pos] = isotonicDecreasing(rawA, wA);
     avail[pos] = TIERS.map(([a, b]) => { const xs = rows.filter((p) => p.rank >= a && p.rank <= b); return xs.length ? mean(xs.map((p) => p.gp / p.teamGames)) : 0.8; });
+    const top = rows.filter((p) => p.rank && p.rank <= REPL[pos]);
+    availPos[pos] = top.length ? mean(top.map((p) => p.gp / p.teamGames)) : 0.8;
     const un = rows.filter((p) => !p.rank && p.gp >= 1);
     unranked[pos] = un.length ? un.reduce((a, p) => a + p.total, 0) / un.reduce((a, p) => a + p.gp, 0) : 3;
   }
   return {
     rateAt: (pos, rank) => (rank ? rate[pos][Math.min(rank, rate[pos].length) - 1] : unranked[pos]),
     availAt: (pos, rank) => { const i = TIERS.findIndex(([a, b]) => rank >= a && rank <= b); return avail[pos][i < 0 ? TIERS.length - 1 : i]; },
+    /** E11: smooth, non-increasing share of team games played by positional rank (fitted on the training windows). */
+    availSmooth: (pos, rank) => availCurve[pos][Math.min(rank || availCurve[pos].length, availCurve[pos].length) - 1],
+    /** E11: one availability per position (mean over its starter ranks) — the position-level alternative. */
+    availPos: (pos) => availPos[pos],
   };
 }
 
@@ -159,7 +173,12 @@ export function lineupExperiment(bench, { startWeek = 1, kInfo = 4 } = {}) {
   }
   const phase = startWeek === 1 ? 'preseason' : 'in_season';
   const sigModel = MODEL_SIGMA[phase];
-  const predict = (p, pr, rr, sig) => pr.availAt(p.pos, p.rank) * p.teamGames * expectedSurplus(pr.rateAt(p.pos, p.rank), sig, rr[p.pos]);
+  // Availability forms (E11): 'tier' = 5-tier table (E5 default), 'smooth' = non-increasing curve by rank, 'pos' = one
+  // share per position, 'none' = every team game (what the app's healthy-season projections assume).
+  const AV = { tier: (pr, p) => pr.availAt(p.pos, p.rank), smooth: (pr, p) => pr.availSmooth(p.pos, p.rank), pos: (pr, p) => pr.availPos(p.pos), none: () => 1,
+    rel: (pr, p) => pr.availSmooth(p.pos, p.rank) / pr.availPos(p.pos),
+    relCap: (pr, p) => pr.availSmooth(p.pos, Math.min(p.rank, AVAIL_CAP_RANK[p.pos])) / pr.availPos(p.pos), relTier: (pr, p) => pr.availAt(p.pos, p.rank) / pr.availPos(p.pos) };
+  const predict = (p, pr, rr, sig, av = 'tier') => AV[av](pr, p) * p.teamGames * expectedSurplus(pr.rateAt(p.pos, p.rank), sig, rr[p.pos]);
   const rowsFor = (t, pr, rr, sigOf) => wins[t].players.filter((p) => p.rank && p.rank <= TOPN[p.pos]).map((p) => ({ y: t, g: p.g, pos: p.pos, rank: p.rank, target: sim[t].value.get(p.g), pred: predict(p, pr, rr, sigOf(p.pos)) }));
   const grid = Array.from({ length: 13 }, (_, i) => i * 0.1);
   const rowsAll = [];
@@ -187,12 +206,18 @@ export function lineupExperiment(bench, { startWeek = 1, kInfo = 4 } = {}) {
       rowsAll.push({
         y, g: p.g, pos: p.pos, rank: p.rank, target: sim[y].value.get(p.g), hindsight: sim[y].hind.get(p.g) ?? 0, gp: p.gp, teamGames: p.teamGames,
         det: predict(p, priors, replRate, 0), model: predict(p, priors, replRate, sigModel[p.pos]), v22: predict(p, priors, replRate, 0.4 * sigModel[p.pos]),
+        v22_smooth: predict(p, priors, replRate, 0.4 * sigModel[p.pos], 'smooth'), v22_pos: predict(p, priors, replRate, 0.4 * sigModel[p.pos], 'pos'),
+        v22_none: predict(p, priors, replRate, 0.4 * sigModel[p.pos], 'none'), v22_rel: predict(p, priors, replRate, 0.4 * sigModel[p.pos], 'rel'),
+        v22_reltier: predict(p, priors, replRate, 0.4 * sigModel[p.pos], 'relTier'), v22_relcap: predict(p, priors, replRate, 0.4 * sigModel[p.pos], 'relCap'),
         fit: predict(p, priors, replRate, best.m * sigModel[p.pos]), rate: predict(p, priors, replRate, sigRate[p.pos]),
       });
     }
     folds.push({ season: y, fittedMultiplier: best.m, sigmaRateOnly: Object.fromEntries(Object.entries(sigRate).map(([k, v]) => [k, r3(v)])), replacementRate: Object.fromEntries(Object.entries(replRate).map(([k, v]) => [k, r3(v)])) });
   }
-  const labels = { det: 'deterministic (σ = 0)', model: `expected surplus, 2.1.x σ (${phase} table)`, v22: 'expected surplus, 0.4 × 2.1.x σ (model 2.2.0)', fit: 'expected surplus, m × model σ, m fitted on earlier seasons', rate: 'expected surplus, rate-only σ (weekly noise removed)' };
+  const labels = { det: 'deterministic (σ = 0)', model: `expected surplus, 2.1.x σ (${phase} table)`, v22: 'expected surplus, 0.4 × 2.1.x σ (model 2.2.0)', fit: 'expected surplus, m × model σ, m fitted on earlier seasons', rate: 'expected surplus, rate-only σ (weekly noise removed)',
+    v22_smooth: 'E11: 0.4σ, availability = smooth non-increasing curve by rank', v22_pos: 'E11: 0.4σ, availability = one share per position', v22_none: 'E11: 0.4σ, no availability (every team game, as healthy projections)',
+    v22_rel: 'E11: 0.4σ, within-position availability shape (smooth curve ÷ position starter share)', v22_reltier: 'E11: 0.4σ, within-position shape from the 5-tier table',
+    v22_relcap: 'E11: 0.4σ, within-position shape, held flat beyond 2× 12-team starters (backups: role, not injury)' };
   const candidates = Object.fromEntries(Object.entries(labels).map(([k, label]) => [k, { label, ...relative(rowsAll, k), byPos: Object.fromEntries(POS.map((pos) => [pos, relative(rowsAll.filter((r) => r.pos === pos), k).ratio])) }]));
   // The old target against the new one: relative shape (same k logic: old target as the "prediction").
   const hindsight = relative(rowsAll.map((r) => ({ ...r, h: r.hindsight })), 'h');
@@ -226,3 +251,24 @@ export function lineupValue(bench) {
 }
 
 const strip = (c) => Object.fromEntries(Object.entries(c).map(([k, v]) => [k, { label: v.label, mae: v.mae, loss: v.loss, ratio: v.ratio }]));
+
+/**
+ * E11 — the availability shape the app ships (config redraft.availability_shape): share of team games played by
+ * positional rank relative to the position's starters, fitted on ALL windows (preseason ECR rank, ROS ECR rank after
+ * weeks 4 and 8; 2019–2025), held flat beyond AVAIL_CAP_RANK. The walk-forward evidence is in E5 (v22_relcap vs
+ * v22_none) and E6 (s04_pg_relcap vs s04).
+ */
+export function availabilityShape(bench) {
+  const rows = [];
+  for (const sw of [1, 5, 9]) for (const y of SEASONS) { const w = windowPlayers(bench, y, sw); if (w) rows.push(...w.players); }
+  const pr = fitPriors(rows);
+  const KN = [1, 3, 6, 9, 12, 18, 24, 30, 36, 48, 60];
+  return {
+    experiment: 'E11 availability by positional rank (share of team games played; relative to the position\'s starters)',
+    label: 'REAL HISTORICAL DATA (nflverse 2019–2025; windows from week 1, 5, 9)',
+    capRank: AVAIL_CAP_RANK,
+    starterShare: Object.fromEntries(POS.map((pos) => [pos, r3(pr.availPos(pos))])),
+    relative: Object.fromEntries(POS.map((pos) => [pos, KN.filter((k) => k <= AVAIL_CAP_RANK[pos]).map((k) => [k, r3(pr.availSmooth(pos, k) / pr.availPos(pos))])])),
+    note: 'config/model.json redraft.availability_shape.knots rounds these to 2 decimals (plateaus merged).',
+  };
+}

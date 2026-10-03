@@ -33,6 +33,7 @@ data/normalized/<src>/  validated normalized records per data type (schema_versi
 data/players/           canonical player DB, overrides, identity events, unresolved report
 data/calculated/        dataset.json (what the app loads), history.json (value history)
 data/snapshots/         dataset snapshot per build (last 90)
+data/archive/           daily signal archive, one file per day, never pruned (≈130 KB/day; FFTA_ARCHIVE=0 = off)
 data/state/             source status, last sync summary, sync log, quality report, NFL state
 data/user/              profiles and saved trades (server copy)
 ```

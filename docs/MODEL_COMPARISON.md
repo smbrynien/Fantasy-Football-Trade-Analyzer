@@ -1,9 +1,26 @@
 # Model Comparison
 
 Candidate models compared on the validation that is actually available. Methods and caveats:
-[MODEL_AUDIT.md](MODEL_AUDIT.md) (2026-10-03 audit, model 2.2.0) and [MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md).
+[MODEL_AUDIT.md](MODEL_AUDIT.md) (2026-10-03 audit, model 2.2.0; §21 research batch, 2.3.0) and [MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md).
 Historical figures are **REAL HISTORICAL DATA, walk-forward**; E6/E7 are **SIMULATED leagues on real weekly points**;
 current-data figures are **CURRENT DATA** (frozen 2026-10-03 snapshot). Reproduce with `npm run audit-model`.
+
+## 2.2.0 → 2.3.0 (research batch, MODEL_AUDIT.md §21)
+
+| Candidate (all σ × 0.4, package on) | E5 tier loss preseason / from wk 9 | E6 corr (5,000 trades) | seasons better than 2.2.0 |
+|---|---|---|---|
+| 2.2.0 — healthy-season projections, no availability | .033 / .806 | .549 | — |
+| projected points × availability (2.2.0's rejected test; shifts replacement too) | — | .527 | 0 / 5 |
+| per-game availability, one share per position | — | .541 | 0 / 5 |
+| per-game availability, smooth curve (absolute) | — | .545 | 0 / 5 |
+| **2.3.0 — per-game, within-position shape, flat beyond 2× starters** | **.018 / .690** | **.552** | **5 / 5** |
+
+Verdict models (E10, walk-forward test log-likelihood per trade): margin logistic −.595 (2.3.0 redraft levels), z with
+the app's ± −.591, z with disagreement only −.641. Roster views (E12, corr with realised margin): generic .549, lineup
+value .562, starters' points/game .538, **expected lineup points .576** (My Team since 2.3.0). Blend weights (E9): the
+app's weights had the best MAE preseason (56.6) and in season (31.5); fitted weights did not beat them out of sample.
+Current data (frozen `2026-10-03-f2898efc`, `before-after.json`): redraft Spearman 1.0, median change 6.3% (12-team 1QB)
+/ 8.8% (SF); dynasty 0%.
 
 ## 2.1.2 → 2.2.0 (second audit)
 
@@ -140,9 +157,9 @@ Compare old and new values yourself: `reports/audit/before-after.csv` (every pla
 `before-after-sample.json` (representative players with the component that drove each change). To re-create the
 "before" baseline for a future model change: `npm run sync`, then `npm run audit-model -- --freeze --snapshot-before
 --out=DIR` on the old model, then `npm run audit-model -- --only=compare --out=DIR` on the new one (same frozen
-dataset; `--out` keeps the committed reports untouched). The committed baseline `reports/audit/values-v1.json` was made
-on the 2026-10-02 frozen dataset, which is not in the repository, so on any other dataset `--only=compare` skips with
-these instructions.
+dataset; `--out` keeps the committed reports untouched). The committed baseline `reports/audit/values-v1.json` is model
+2.2.0 on the frozen `2026-10-03-f2898efc` dataset (2.3.0 research batch), which is not in the repository, so on any
+other dataset `--only=compare` skips with these instructions.
 
 ### Before / after — representative players (12-team, CURRENT DATA)
 

@@ -1,0 +1,145 @@
+{
+  "experiment": "E12 roster-specific trade evaluation (E6 leagues, 12-team 1QB PPR)",
+  "calibration": {
+    "slopeRealisedOnPredicted": 0.803,
+    "meanPredicted": -16.205,
+    "meanRealised": -24.665,
+    "logisticPerWeekSlope": 0.2,
+    "byPredictedPerWeek": [
+      {
+        "perWeek": "0-0.5",
+        "n": 945,
+        "gainedShare": 0.527
+      },
+      {
+        "perWeek": "0.5-1",
+        "n": 766,
+        "gainedShare": 0.527
+      },
+      {
+        "perWeek": "1-2",
+        "n": 1434,
+        "gainedShare": 0.589
+      },
+      {
+        "perWeek": "2-4",
+        "n": 2523,
+        "gainedShare": 0.658
+      },
+      {
+        "perWeek": "4-99",
+        "n": 4331,
+        "gainedShare": 0.807
+      }
+    ],
+    "at1": 0.55,
+    "at3": 0.646
+  },
+  "labels": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+  "trades": 5000,
+  "predictors": {
+    "generic": "2.2.0 generic values (σ × 0.4) + package adjustment (the trade verdict)",
+    "lineupValue": "Δ summed generic value of the best starting lineup (My Team \"lineup value\")",
+    "lineupPoints": "Δ starters' projected points per game (My Team)",
+    "expected": "Δ expected season lineup points with availability, bench cover and waiver fill-ins",
+    "blend_expected_x": "standardised generic and expected, weight x on expected"
+  },
+  "margin": {
+    "generic": {
+      "corr": 0.549,
+      "bySeason": {
+        "2021": 0.421,
+        "2022": 0.695,
+        "2023": 0.496,
+        "2024": 0.519,
+        "2025": 0.609
+      },
+      "even": 0.558,
+      "uneven": 0.547
+    },
+    "lineupValue": {
+      "corr": 0.562,
+      "bySeason": {
+        "2021": 0.451,
+        "2022": 0.694,
+        "2023": 0.516,
+        "2024": 0.519,
+        "2025": 0.631
+      },
+      "even": 0.573,
+      "uneven": 0.56
+    },
+    "lineupPoints": {
+      "corr": 0.538,
+      "bySeason": {
+        "2021": 0.462,
+        "2022": 0.666,
+        "2023": 0.456,
+        "2024": 0.499,
+        "2025": 0.6
+      },
+      "even": 0.552,
+      "uneven": 0.537
+    },
+    "expected": {
+      "corr": 0.576,
+      "bySeason": {
+        "2021": 0.467,
+        "2022": 0.71,
+        "2023": 0.52,
+        "2024": 0.542,
+        "2025": 0.631
+      },
+      "even": 0.584,
+      "uneven": 0.575
+    },
+    "blend_expected_0.25": {
+      "corr": 0.56,
+      "bySeason": {
+        "2021": 0.436,
+        "2022": 0.706,
+        "2023": 0.506,
+        "2024": 0.529,
+        "2025": 0.619
+      },
+      "even": 0.569,
+      "uneven": 0.559
+    },
+    "blend_expected_0.5": {
+      "corr": 0.569,
+      "bySeason": {
+        "2021": 0.449,
+        "2022": 0.712,
+        "2023": 0.513,
+        "2024": 0.536,
+        "2025": 0.626
+      },
+      "even": 0.577,
+      "uneven": 0.567
+    },
+    "blend_expected_0.75": {
+      "corr": 0.574,
+      "bySeason": {
+        "2021": 0.459,
+        "2022": 0.714,
+        "2023": 0.518,
+        "2024": 0.54,
+        "2025": 0.63
+      },
+      "even": 0.582,
+      "uneven": 0.573
+    }
+  },
+  "ownGain": {
+    "generic": 0.5,
+    "lineupValue": 0.526,
+    "lineupPoints": 0.49,
+    "expected": 0.547
+  },
+  "disagreement": {
+    "n": 414,
+    "share": 0.083,
+    "genericRight": 0.457,
+    "expectedRight": 0.531
+  }
+}

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // Automated model audit: `npm run audit-model` → reports/audit/*.json (+ CSV)
-//   --only=e1,…,e8,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
-//   E1–E4 (2.0.0 audit): preseason/in-season/dynasty backtests, rookie curve. E5–E8 (2026-10-03 audit): hindsight-free
+//   --only=e1,…,e13,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
+//   E1–E4 (2.0.0 audit): preseason/in-season/dynasty backtests, rookie curve. E5–E8 (2.2.0 audit): hindsight-free
 //   lineup value (σ), historical league simulation (trades, package), verdict calibration, dynasty value spacing.
+//   E9–E13 (2.3.0 research): signal weights from projection/ADP archives, ± calibration, availability by rank,
+//   roster-specific values, backtest from the app's own daily signal archive (skips until a season is archived).
 //   --freeze            copy the synced dataset to data/benchmark/dataset-frozen.json (the data before/after runs use)
 //   --snapshot-before   save current-model values on the frozen dataset as the 'before' baseline (values-v1.json);
 //                       freezes first if no frozen dataset exists
@@ -36,7 +38,7 @@ if (args.includes('--freeze') || (args.includes('--snapshot-before') && !fs.exis
     console.log(`Froze dataset ${current} → ${rel(FROZEN)}${previous && previous !== current ? ` (replaced ${previous})` : ''}`);
   } catch (e) { console.error(`  ${e.message}`); process.exit(1); }
 }
-const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8'].some(want);
+const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12'].some(want);
 const bench = needBench ? await loadBenchmark({ rebuild: args.includes('--rebuild') }) : null;
 if (want('e1')) { console.log('E1 preseason redraft…'); write('e1-preseason-redraft', { label: 'REAL HISTORICAL DATA', oppRates: measureOppRates(bench), ...preseasonRedraft(bench) }); }
 if (want('e2')) { console.log('E2 in-season ROS…'); write('e2-inseason-ros', { label: 'REAL HISTORICAL DATA', ...inSeasonROS(bench) }); }
@@ -51,6 +53,37 @@ if (want('e6') || want('e7')) {
   const { tradeRows, ...e6 } = sim;
   if (want('e6')) write('e6-league-simulation', e6);
   if (want('e7')) { console.log('E7 trade verdict calibration…'); write('e7-verdict-calibration', { label: sim.labels, ...tradeCalibration(tradeRows) }); }
+}
+if (want('e9') || want('e10')) {
+  const { loadConfig } = await import('../server/lib/config.js');
+  const model = loadConfig().model;
+  if (want('e9')) { const { signalWeights } = await import('./audit/weights.js'); console.log('E9 signal weights from historical projection/ADP archives…'); write('e9-signal-weights', await signalWeights(bench, model)); }
+  if (want('e10')) { const { uncertaintyCalibration } = await import('./audit/uncertainty.js'); console.log('E10 ± range calibration (~30 s)…'); write('e10-uncertainty', await uncertaintyCalibration(bench, model)); }
+}
+if (want('e11')) { const { availabilityShape } = await import('./audit/lineup.js'); console.log('E11 availability by rank…'); write('e11-availability-shape', availabilityShape(bench)); }
+if (want('e12')) { const { rosterSpecific } = await import('./audit/roster-value.js'); console.log('E12 roster-specific values (~30 s)…'); write('e12-roster-values', rosterSpecific(bench)); }
+if (want('e13')) {
+  const { listArchive, loadArchiveDay } = await import('../server/archive.js');
+  const { archiveBacktest } = await import('./audit/archive-backtest.js');
+  const { loadCSV } = await import('./lib/history-data.js');
+  const { weekPts } = await import('./audit/backtests.js');
+  const { normalizePosition } = await import('../js/core/util/positions.js');
+  const { mapNflverseStats } = await import('../adapters/nflverse.js');
+  console.log('E13 backtest from the daily signal archive…');
+  const days = [];
+  for (const d of await listArchive()) { const rec = await loadArchiveDay(d.file); if (rec) days.push(rec); }
+  // Outcomes only for completed seasons (nflverse weekly stats; a season is complete once the next one has started).
+  const thisYear = new Date().getUTCFullYear();
+  const done = [...new Set(days.map((d) => Number(d.state?.season)).filter((y) => y && (y < thisYear - 1 || (y === thisYear - 1 && new Date().getUTCMonth() >= 1))))];
+  const pts = new Map();
+  for (const y of done) {
+    const rows = await loadCSV(`stats_player_week_${y}.csv`, `https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_${y}.csv`);
+    for (const r of rows) { if (r.season_type && r.season_type !== 'REG') continue; const pos = normalizePosition(r.position); if (!['QB', 'RB', 'WR', 'TE'].includes(pos)) continue; const k = `${r.player_id}:${y}`; if (!pts.has(k)) pts.set(k, []); pts.get(k).push([Number(r.week), weekPts(mapNflverseStats(r), pos)]); }
+  }
+  const outcomes = (g, y, from) => { const ws = pts.get(`${g}:${y}`); return ws ? ws.filter(([w]) => w >= from).reduce((a, [, p]) => a + p, 0) : (done.includes(y) ? 0 : null); };
+  const res = archiveBacktest(days, outcomes, { completedSeasons: done });
+  if (res.skipped) console.log(`  SKIPPED: ${res.reason}`);
+  write('e13-archive-backtest', { label: 'REAL DATA from the app\'s own daily signal archive (data/archive)', ...res });
 }
 if (want('e8')) { const { dynastyShape } = await import('./audit/dynasty-shape.js'); console.log('E8 dynasty value spacing…'); const hist = await loadSeasons(2006, 2025); write('e8-dynasty-spacing', { label: 'REAL HISTORICAL DATA', ...dynastyShape(bench, hist, { mults: [0, 0.5, 1, 1.25] }) }); }
 if (want('current')) {
@@ -113,6 +146,10 @@ if (!setupOnly) {
   if (e6) for (const [m, v] of Object.entries(e6.summary || {})) { rows.push(['E6 league simulation', e6.labels, m, 'corr(predicted margin, realised outcome)', v.all.corr]); rows.push(['E6 league simulation', e6.labels, m, 'corr, uneven player counts', v.unevenCount.corr]); }
   if (e7) for (const b of e7.byMargin || []) rows.push(['E7 verdict calibration', e7.label, `margin ${b.margin}`, 'share won by favoured side', b.hitRate]);
   if (e8) for (const [m, v] of Object.entries(e8.results || {})) rows.push(['E8 dynasty spacing', e8.label, m, 'tier loss (log ratio²)', v.loss]);
+  const e9 = rd('e9-signal-weights'), e10 = rd('e10-uncertainty'), e12 = rd('e12-roster-values');
+  if (e9) { for (const [m, v] of Object.entries(e9.preseason?.summary || {})) rows.push(['E9 preseason weights', e9.label, m, 'spearman (season points)', v.rho]); for (const [m, v] of Object.entries(e9.inSeason?.overall || {})) rows.push(['E9 in-season weights', e9.label, m, 'MAE (rest-of-season points)', v.mae]); }
+  if (e10) { rows.push(['E10 ± calibration', e10.labels, 'app ± range', 'share of season outcomes inside ±1', e10.player.shareInsideAppRange]); rows.push(['E10 ± calibration', e10.labels, 'signal disagreement', 'spearman with outcome error', e10.player.spearmanDisagreementVsError]); for (const [m, v] of Object.entries(e10.trades?.models || {})) rows.push(['E10 win-probability models', e10.labels, m, 'test log-likelihood per trade', v.testLogLikPerTrade]); }
+  if (e12) { for (const [m, v] of Object.entries(e12.margin || {})) rows.push(['E12 roster-specific values', e12.labels, m, 'corr(predicted margin, realised outcome)', v.corr]); for (const [m, v] of Object.entries(e12.ownGain || {})) rows.push(['E12 roster-specific values', e12.labels, m, 'corr(predicted own change, own realised gain)', v]); }
   const mono = rd('cur-monotonicity'), pk = rd('cur-package-simulation');
   if (mono) rows.push(['Monotonicity', mono.label, 'current', 'failures', mono.failures]);
   if (pk) for (const [m, v] of Object.entries(pk.overall || {})) rows.push(['Package simulation', pk.label, m, 'corr(model diff, simulated lineup gain)', v]);

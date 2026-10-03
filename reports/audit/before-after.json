@@ -1,105 +1,97 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, frozen) — model 2.1.2 → 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, frozen) — model 2.2.0 → 2.3.0",
   "sets": {
     "redraft|preset_12_1qb_ppr": {
-      "spearmanValues": 0.993,
-      "medianAbsPctChange": 0.676,
+      "spearmanValues": 1,
+      "medianAbsPctChange": 0.063,
       "top100ByPosition": {
         "before": {
-          "QB": 16,
-          "RB": 29,
+          "QB": 13,
+          "RB": 30,
           "WR": 43,
           "TE": 12
         },
         "after": {
           "QB": 13,
           "RB": 30,
-          "WR": 43,
+          "WR": 42,
           "TE": 12
         }
       },
       "top10": {
         "before": [
-          "Jahmyr Gibbs 9896",
-          "Jaxon Smith-Njigba 8595",
-          "Bijan Robinson 7855",
-          "Amon-Ra St. Brown 7220",
-          "Ja'Marr Chase 7215",
-          "Puka Nacua 6774",
-          "Christian McCaffrey 6490",
-          "Jonathan Taylor 6477",
-          "Kenneth Walker III 6464",
-          "CeeDee Lamb 5994"
+          "Jahmyr Gibbs 9884",
+          "Jaxon Smith-Njigba 8665",
+          "Bijan Robinson 7876",
+          "Amon-Ra St. Brown 7227",
+          "Ja'Marr Chase 7225",
+          "Puka Nacua 6827",
+          "Jonathan Taylor 6504",
+          "Kenneth Walker III 6489",
+          "Christian McCaffrey 6485",
+          "CeeDee Lamb 5926"
         ],
         "after": [
-          "Jahmyr Gibbs 9886",
+          "Jahmyr Gibbs 9884",
           "Jaxon Smith-Njigba 8665",
-          "Bijan Robinson 7877",
-          "Amon-Ra St. Brown 7235",
-          "Ja'Marr Chase 7226",
-          "Puka Nacua 6774",
-          "Jonathan Taylor 6494",
-          "Christian McCaffrey 6491",
+          "Bijan Robinson 7876",
+          "Amon-Ra St. Brown 7227",
+          "Ja'Marr Chase 7225",
+          "Puka Nacua 6827",
+          "Jonathan Taylor 6504",
           "Kenneth Walker III 6489",
-          "CeeDee Lamb 5975"
+          "Christian McCaffrey 6485",
+          "CeeDee Lamb 5926"
         ]
       },
       "byAge": {
         "under 23": {
-          "n": 13,
-          "medianPctChange": -0.291
+          "n": 14,
+          "medianPctChange": -0.066
         },
         "23-26": {
           "n": 61,
-          "medianPctChange": -0.381
+          "medianPctChange": -0.066
         },
         "26-29": {
-          "n": 57,
-          "medianPctChange": -0.287
+          "n": 56,
+          "medianPctChange": -0.048
         },
         "29+": {
-          "n": 51,
-          "medianPctChange": -0.399
+          "n": 50,
+          "medianPctChange": -0.054
         }
       },
       "droppedToZero": [],
-      "biggestRisers": [
-        "Jaxon Smith-Njigba 8595→8665",
-        "Kenneth Walker III 6464→6489",
-        "Bijan Robinson 7855→7877",
-        "Jonathan Taylor 6477→6494",
-        "Trey McBride 5010→5023",
-        "Amon-Ra St. Brown 7220→7235",
-        "Ja'Marr Chase 7215→7226"
-      ],
+      "biggestRisers": [],
       "biggestFallers": [
-        "Geno Smith 972→251",
-        "C.J. Stroud 1133→379",
-        "Malik Willis 1138→396",
-        "Sam Darnold 1173→417",
-        "Jayden Daniels 1347→572",
-        "Kenyon Sadiq 996→444",
-        "Justin Herbert 1452→649",
-        "Kyler Murray 1376→625",
-        "Keenan Allen 1003→460",
-        "Alec Pierce 1000→461",
-        "Hunter Henry 974→454",
-        "Bo Nix 1488→697"
+        "Jayden Daniels 584→506",
+        "Kyler Murray 625→548",
+        "Alec Pierce 459→406",
+        "Justin Herbert 649→575",
+        "Keenan Allen 459→407",
+        "Marvin Harrison Jr. 480→427",
+        "Tre Tucker 523→466",
+        "Jordyn Tyson 568→507",
+        "Adonai Mitchell 587→525",
+        "Bo Nix 697→624",
+        "Dontayvion Wicks 592→530",
+        "Romeo Doubs 599→537"
       ],
       "picks": [],
       "meanValueTop50": {
-        "before": 4609,
-        "after": 4448
+        "before": 4448,
+        "after": 4356
       }
     },
     "redraft|preset_12_sf_ppr": {
-      "spearmanValues": 0.994,
-      "medianAbsPctChange": 0.591,
+      "spearmanValues": 1,
+      "medianAbsPctChange": 0.088,
       "top100ByPosition": {
         "before": {
-          "QB": 33,
+          "QB": 34,
           "RB": 26,
-          "WR": 34,
+          "WR": 33,
           "TE": 7
         },
         "after": {
@@ -111,79 +103,73 @@
       },
       "top10": {
         "before": [
-          "Jahmyr Gibbs 10700",
-          "Josh Allen 9742",
-          "Jaxon Smith-Njigba 8945",
-          "Bijan Robinson 8643",
-          "Lamar Jackson 7847",
-          "Ja'Marr Chase 7595",
-          "Amon-Ra St. Brown 7566",
-          "Brock Purdy 7410",
+          "Jahmyr Gibbs 10665",
+          "Josh Allen 9805",
+          "Jaxon Smith-Njigba 8978",
+          "Bijan Robinson 8658",
+          "Lamar Jackson 7733",
+          "Ja'Marr Chase 7575",
+          "Amon-Ra St. Brown 7544",
           "Jonathan Taylor 7311",
-          "Christian McCaffrey 7261"
+          "Christian McCaffrey 7261",
+          "Kenneth Walker III 7244"
         ],
         "after": [
-          "Jahmyr Gibbs 10682",
-          "Josh Allen 9790",
-          "Jaxon Smith-Njigba 8979",
+          "Jahmyr Gibbs 10665",
+          "Josh Allen 9712",
+          "Jaxon Smith-Njigba 8978",
           "Bijan Robinson 8658",
-          "Lamar Jackson 7732",
-          "Ja'Marr Chase 7578",
-          "Amon-Ra St. Brown 7547",
-          "Jonathan Taylor 7327",
-          "Brock Purdy 7286",
-          "Christian McCaffrey 7260"
+          "Lamar Jackson 7585",
+          "Ja'Marr Chase 7575",
+          "Amon-Ra St. Brown 7544",
+          "Jonathan Taylor 7311",
+          "Christian McCaffrey 7261",
+          "Kenneth Walker III 7244"
         ]
       },
       "byAge": {
         "under 23": {
-          "n": 15,
-          "medianPctChange": -0.305
+          "n": 14,
+          "medianPctChange": -0.066
         },
         "23-26": {
           "n": 70,
-          "medianPctChange": -0.191
+          "medianPctChange": -0.08
         },
         "26-29": {
-          "n": 58,
-          "medianPctChange": -0.093
+          "n": 59,
+          "medianPctChange": -0.067
         },
         "29+": {
-          "n": 52,
-          "medianPctChange": -0.149
+          "n": 53,
+          "medianPctChange": -0.068
         }
       },
       "droppedToZero": [],
-      "biggestRisers": [
-        "Josh Allen 9742→9790",
-        "Jaxon Smith-Njigba 8945→8979",
-        "Kenneth Walker III 7224→7244",
-        "Bijan Robinson 8643→8658",
-        "Jonathan Taylor 7311→7327"
-      ],
+      "biggestRisers": [],
       "biggestFallers": [
-        "Tre Tucker 1246→679",
-        "Alec Pierce 1241→686",
-        "Dontayvion Wicks 1309→738",
-        "Adonai Mitchell 1307→748",
-        "Jordyn Tyson 1372→795",
-        "Romeo Doubs 1368→793",
-        "Michael Pittman 1348→784",
-        "Dalton Schultz 1278→747",
-        "Jake Ferguson 1314→770",
-        "Jordan Mason 1288→763",
-        "Khalil Shakir 1409→836",
-        "Xavier Worthy 1412→847"
+        "Aaron Rodgers 2836→2323",
+        "Baker Mayfield 3312→2713",
+        "Cam Ward 3026→2478",
+        "Carson Wentz 855→700",
+        "Case Keenum 1001→820",
+        "Daniel Jones 3394→2780",
+        "Deshaun Watson 2363→1936",
+        "Fernando Mendoza 1960→1605",
+        "Geno Smith 3522→2885",
+        "J.J. McCarthy 1629→1334",
+        "Jameis Winston 2010→1646",
+        "Jaxson Dart 902→739"
       ],
       "picks": [],
       "meanValueTop50": {
-        "before": 6074,
-        "after": 5896
+        "before": 5896,
+        "after": 5719
       }
     },
     "dynasty|preset_dyn_12_1qb": {
-      "spearmanValues": 0.999,
-      "medianAbsPctChange": 0.025,
+      "spearmanValues": 1,
+      "medianAbsPctChange": 0,
       "top100ByPosition": {
         "before": {
           "QB": 10,
@@ -200,137 +186,111 @@
       },
       "top10": {
         "before": [
-          "Jahmyr Gibbs 11875",
-          "Jaxon Smith-Njigba 11022",
-          "Ja'Marr Chase 10156",
-          "Bijan Robinson 10097",
-          "Puka Nacua 8253",
-          "Jeremiyah Love 8226",
-          "Ashton Jeanty 8183",
-          "Brock Bowers 8094",
-          "Amon-Ra St. Brown 8023",
-          "Trey McBride 7483"
-        ],
-        "after": [
-          "Jahmyr Gibbs 11812",
+          "Jahmyr Gibbs 11811",
           "Jaxon Smith-Njigba 11118",
           "Ja'Marr Chase 10204",
           "Bijan Robinson 10022",
           "Jeremiyah Love 8434",
           "Ashton Jeanty 8404",
-          "Puka Nacua 8214",
+          "Puka Nacua 8213",
           "Brock Bowers 8188",
-          "Amon-Ra St. Brown 7955",
+          "Amon-Ra St. Brown 7956",
+          "Trey McBride 7427"
+        ],
+        "after": [
+          "Jahmyr Gibbs 11811",
+          "Jaxon Smith-Njigba 11118",
+          "Ja'Marr Chase 10204",
+          "Bijan Robinson 10022",
+          "Jeremiyah Love 8434",
+          "Ashton Jeanty 8404",
+          "Puka Nacua 8213",
+          "Brock Bowers 8188",
+          "Amon-Ra St. Brown 7956",
           "Trey McBride 7427"
         ]
       },
       "byAge": {
         "under 23": {
-          "n": 21,
-          "medianPctChange": 0.016
+          "n": 22,
+          "medianPctChange": 0
         },
         "23-26": {
           "n": 77,
-          "medianPctChange": 0.003
+          "medianPctChange": 0
         },
         "26-29": {
           "n": 56,
-          "medianPctChange": -0.013
+          "medianPctChange": 0
         },
         "29+": {
-          "n": 40,
-          "medianPctChange": -0.008
+          "n": 39,
+          "medianPctChange": 0
         }
       },
       "droppedToZero": [],
-      "biggestRisers": [
-        "Sam LaPorta 3503→3831",
-        "Tyler Warren 4580→5009",
-        "Harold Fannin 3677→3963",
-        "Colston Loveland 4063→4311",
-        "Fernando Mendoza 1416→1490",
-        "Tucker Kraft 3046→3204",
-        "Bo Nix 1868→1960",
-        "Denver Broncos 1050→1098",
-        "Houston Texans 1161→1214",
-        "Jordan Love 1324→1385",
-        "Lamar Jackson 3244→3363",
-        "Trevor Lawrence 2463→2554"
-      ],
-      "biggestFallers": [
-        "Travis Kelce 1447→1159",
-        "Kyle Pitts 1714→1436",
-        "George Kittle 2345→2083",
-        "Isaiah Likely 1937→1723",
-        "Ricky Pearsall 1732→1569",
-        "De'Von Achane 4475→4073",
-        "Rico Dowdle 1145→1042",
-        "Josh Jacobs 2303→2145",
-        "Chuba Hubbard 2572→2404",
-        "David Montgomery 2302→2157",
-        "Jayden Reed 1862→1767",
-        "Rhamondre Stevenson 1425→1354"
-      ],
+      "biggestRisers": [],
+      "biggestFallers": [],
       "picks": [
-        "2027 1.01 5433→5494",
-        "2027 1.02 4648→4671",
-        "2027 Early 1st 4534→4574",
-        "2028 1.01 4321→4359",
-        "2027 1.03 4299→4349",
-        "2027 1.04 3758→3782",
-        "2029 1.01 3738→3759",
-        "2028 1.02 3631→3634",
-        "2028 Early 1st 3551→3570",
-        "2027 1.05 3390→3414",
-        "2028 1.03 3343→3370",
-        "2027 1st 3148→3178",
-        "2029 1.02 3131→3122",
-        "2027 1.06 3079→3103",
-        "2029 Early 1st 3063→3066",
-        "2027 Mid 1st 2923→2958"
+        "2027 1.01 5483→5483",
+        "2027 1.02 4660→4660",
+        "2027 Early 1st 4562→4562",
+        "2028 1.01 4367→4367",
+        "2027 1.03 4340→4340",
+        "2029 1.01 3785→3785",
+        "2027 1.04 3765→3765",
+        "2028 1.02 3643→3643",
+        "2028 Early 1st 3577→3577",
+        "2027 1.05 3396→3396",
+        "2028 1.03 3380→3380",
+        "2027 1st 3169→3169",
+        "2029 1.02 3148→3148",
+        "2029 Early 1st 3090→3090",
+        "2027 1.06 3084→3084",
+        "2027 Mid 1st 2948→2948"
       ],
       "meanValueTop50": {
-        "before": 5866,
-        "after": 5867
+        "before": 5868,
+        "after": 5868
       }
     },
     "dynasty|preset_dyn_12_sf": {
-      "spearmanValues": 0.999,
-      "medianAbsPctChange": 0.029,
+      "spearmanValues": 1,
+      "medianAbsPctChange": 0,
       "top100ByPosition": {
         "before": {
           "QB": 33,
-          "RB": 22,
-          "WR": 36,
-          "TE": 9
+          "RB": 21,
+          "WR": 38,
+          "TE": 8
         },
         "after": {
           "QB": 33,
           "RB": 21,
-          "WR": 37,
-          "TE": 9
+          "WR": 38,
+          "TE": 8
         }
       },
       "top10": {
         "before": [
-          "Jahmyr Gibbs 11726",
-          "Jaxon Smith-Njigba 10906",
-          "Josh Allen 10177",
-          "Ja'Marr Chase 10040",
-          "Bijan Robinson 9950",
-          "Puka Nacua 8137",
-          "Jeremiyah Love 8071",
-          "Brock Bowers 8044",
-          "Ashton Jeanty 8028",
-          "Amon-Ra St. Brown 7908"
+          "Jahmyr Gibbs 11660",
+          "Jaxon Smith-Njigba 10998",
+          "Josh Allen 10442",
+          "Ja'Marr Chase 10085",
+          "Bijan Robinson 9872",
+          "Jeremiyah Love 8277",
+          "Ashton Jeanty 8246",
+          "Brock Bowers 8138",
+          "Puka Nacua 8095",
+          "Amon-Ra St. Brown 7838"
         ],
         "after": [
           "Jahmyr Gibbs 11660",
           "Jaxon Smith-Njigba 10998",
-          "Josh Allen 10441",
+          "Josh Allen 10442",
           "Ja'Marr Chase 10085",
           "Bijan Robinson 9872",
-          "Jeremiyah Love 8276",
+          "Jeremiyah Love 8277",
           "Ashton Jeanty 8246",
           "Brock Bowers 8138",
           "Puka Nacua 8095",
@@ -340,71 +300,45 @@
       "byAge": {
         "under 23": {
           "n": 19,
-          "medianPctChange": 0.013
+          "medianPctChange": 0
         },
         "23-26": {
-          "n": 77,
-          "medianPctChange": 0.002
+          "n": 76,
+          "medianPctChange": 0
         },
         "26-29": {
-          "n": 53,
-          "medianPctChange": -0.01
+          "n": 54,
+          "medianPctChange": 0
         },
         "29+": {
-          "n": 46,
-          "medianPctChange": -0.006
+          "n": 45,
+          "medianPctChange": 0
         }
       },
       "droppedToZero": [],
-      "biggestRisers": [
-        "Sam LaPorta 3459→3783",
-        "Tyler Warren 4534→4961",
-        "Harold Fannin 3632→3916",
-        "Colston Loveland 4016→4263",
-        "Tucker Kraft 3002→3158",
-        "Mac Jones 2574→2686",
-        "Daniel Jones 4034→4207",
-        "Justin Fields 2286→2381",
-        "Bo Nix 5596→5824",
-        "Jordan Love 4861→5061",
-        "Bryce Young 4796→4982",
-        "Fernando Mendoza 4931→5121"
-      ],
-      "biggestFallers": [
-        "Kyle Pitts 1679→1401",
-        "George Kittle 2309→2046",
-        "Isaiah Likely 1901→1685",
-        "Ricky Pearsall 1637→1475",
-        "De'Von Achane 4348→3942",
-        "Chuba Hubbard 2451→2286",
-        "David Montgomery 2185→2038",
-        "Josh Jacobs 2173→2031",
-        "Derrick Henry 3877→3667",
-        "Jayden Reed 1768→1673",
-        "Tyson Bagent 1558→1475",
-        "RJ Harvey 2033→1930"
-      ],
+      "biggestRisers": [],
+      "biggestFallers": [],
       "picks": [
-        "2027 1.01 5800→5856",
-        "2027 1.02 5013→5030",
-        "2027 Early 1st 4902→4953",
-        "2028 1.01 4742→4803",
-        "2027 1.03 4668→4751",
-        "2027 1.04 4127→4177",
-        "2029 1.01 4062→4098",
-        "2028 1.02 4050→4076",
-        "2028 Early 1st 3964→4015",
-        "2027 1.05 3780→3833",
-        "2028 1.03 3757→3830",
-        "2027 1st 3584→3617",
-        "2027 1.06 3471→3519",
-        "2029 1.02 3452→3458",
-        "2027 Mid 1st 3393→3429",
-        "2029 Early 1st 3385→3426"
+        "2027 1.01 5857→5857",
+        "2027 1.02 5031→5031",
+        "2027 Early 1st 4938→4938",
+        "2028 1.01 4832→4832",
+        "2027 1.03 4717→4717",
+        "2027 1.04 4146→4146",
+        "2028 1.02 4105→4105",
+        "2029 1.01 4095→4095",
+        "2028 Early 1st 4032→4032",
+        "2028 1.03 3836→3836",
+        "2027 1.05 3816→3816",
+        "2027 1st 3611→3611",
+        "2027 1.06 3508→3508",
+        "2029 1.02 3456→3456",
+        "2027 Mid 1st 3421→3421",
+        "2029 Early 1st 3406→3406"
       ],
       "meanValueTop50": {
-        "before": 6453,
-        "after": 6526
+        "before": 6527,
+        "after": 6527
       }
     }
   }

@@ -1,14 +1,14 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "note": "How much final values move when a component is removed (influence, NOT accuracy).",
   "rows": [
     {
       "mode": "redraft",
       "removed": "projection",
       "spearman": 0.975,
-      "medianAbsPctChange": 0.081,
-      "p90AbsPctChange": 0.221,
-      "maxAbsPctChange": 2.417
+      "medianAbsPctChange": 0.083,
+      "p90AbsPctChange": 0.227,
+      "maxAbsPctChange": 2.6
     },
     {
       "mode": "redraft",
@@ -21,25 +21,25 @@
     {
       "mode": "redraft",
       "removed": "consensus",
-      "spearman": 0.985,
-      "medianAbsPctChange": 0.062,
-      "p90AbsPctChange": 0.211,
-      "maxAbsPctChange": 0.665
+      "spearman": 0.984,
+      "medianAbsPctChange": 0.067,
+      "p90AbsPctChange": 0.22,
+      "maxAbsPctChange": 0.697
     },
     {
       "mode": "redraft",
       "removed": "market",
       "spearman": 0.998,
-      "medianAbsPctChange": 0.016,
-      "p90AbsPctChange": 0.062,
-      "maxAbsPctChange": 0.191
+      "medianAbsPctChange": 0.018,
+      "p90AbsPctChange": 0.069,
+      "maxAbsPctChange": 0.165
     },
     {
       "mode": "redraft",
       "removed": "adp",
       "spearman": 0.991,
-      "medianAbsPctChange": 0.02,
-      "p90AbsPctChange": 0.068,
+      "medianAbsPctChange": 0.021,
+      "p90AbsPctChange": 0.064,
       "maxAbsPctChange": 1
     },
     {
@@ -63,31 +63,31 @@
       "removed": "injury",
       "spearman": 0.999,
       "medianAbsPctChange": 0.008,
-      "p90AbsPctChange": 0.022,
-      "maxAbsPctChange": 0.128
+      "p90AbsPctChange": 0.023,
+      "maxAbsPctChange": 0.123
     },
     {
       "mode": "dynasty",
       "removed": "fundamental",
       "spearman": 0.99,
-      "medianAbsPctChange": 0.047,
-      "p90AbsPctChange": 0.134,
-      "maxAbsPctChange": 0.318
+      "medianAbsPctChange": 0.046,
+      "p90AbsPctChange": 0.13,
+      "maxAbsPctChange": 0.32
     },
     {
       "mode": "dynasty",
       "removed": "market",
-      "spearman": 0.992,
-      "medianAbsPctChange": 0.034,
+      "spearman": 0.993,
+      "medianAbsPctChange": 0.036,
       "p90AbsPctChange": 0.115,
       "maxAbsPctChange": 0.268
     },
     {
       "mode": "dynasty",
       "removed": "consensus",
-      "spearman": 0.983,
-      "medianAbsPctChange": 0.05,
-      "p90AbsPctChange": 0.156,
+      "spearman": 0.981,
+      "medianAbsPctChange": 0.053,
+      "p90AbsPctChange": 0.152,
       "maxAbsPctChange": 0.308
     },
     {

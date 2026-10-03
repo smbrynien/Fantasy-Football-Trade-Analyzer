@@ -45,3 +45,17 @@ export function assessConfidence(o, cfg) {
   const sigma = Math.max(final * floorPct, cfg.range_sd_multiplier * s * (availW / Math.max(availW, 1e-9)));
   return { score, label, reasons, coverage, cv, sigma, signalSd: s };
 }
+
+/**
+ * Range real rest-of-season outcomes fell in for players projected like this one (model 2.3.0, audit E10; display
+ * only). table: config redraft.outcome_range.by_points_per_game = [[fromPerGame, q10, q25, q75, q90], ...].
+ * Returns null without a usable projection. The ± of the value is a different thing: how much the sources disagree.
+ */
+export function outcomeRange(points, games, table) {
+  if (!Array.isArray(table) || !table.length || !(points > 0) || !(games > 0)) return null;
+  const perGame = points / games;
+  let row = table[0];
+  for (const r of table) if (perGame >= r[0]) row = r;
+  const [, q10, q25, q75, q90] = row;
+  return { points, perGame, p50: [points * q25, points * q75], p80: [points * q10, points * q90] };
+}

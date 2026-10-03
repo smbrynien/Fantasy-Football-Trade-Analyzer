@@ -110,17 +110,28 @@ export function analyzeTrade(result, idsA, idsB, { dataSources = {}, names = nul
   const sigmaDiff = Math.sqrt(sa.sigma ** 2 + sb.sigma ** 2);
   const z = sigmaDiff > 0 ? Math.abs(diff) / sigmaDiff : (diff === 0 ? 0 : Infinity);
 
-  let assessment;
-  if (!idsA.length || !idsB.length) assessment = { level: 'incomplete', text: 'Add at least one asset to each side to compare.' };
-  else if (z < 1) assessment = { level: 'even', text: `The model considers this trade close: the ${Math.round(Math.abs(diff)).toLocaleString()}-point gap is smaller than the combined uncertainty of ±${Math.round(sigmaDiff).toLocaleString()}.` };
-  else if (z < 2) assessment = { level: 'lean', text: `Team ${diff > 0 ? 'A' : 'B'} receives more value (${Math.abs(pct * 100).toFixed(1)}%). The gap exceeds the model's uncertainty, but only modestly — reasonable people could disagree.` };
-  else assessment = { level: 'clear', text: `Team ${diff > 0 ? 'A' : 'B'} receives clearly more value in this model (${Math.abs(pct * 100).toFixed(1)}%, about ${z.toFixed(1)}× the combined uncertainty).` };
-
-  // How often a margin this size actually worked out over a season (audit E7; redraft only, display only).
-  const slope = result.model.trade_outcome?.redraft_logit_slope;
+  // How often a margin this size actually worked out over a season (audit E7; redraft only).
+  const tcfg = result.model.trade_outcome || {};
+  const slope = tcfg.redraft_logit_slope;
   const outcome = result.mode === 'redraft' && complete && diff !== 0 && slope > 0
     ? { favoured: diff > 0 ? 'A' : 'B', probability: 1 / (1 + Math.exp(-slope * Math.abs(pct))) }
     : null;
+  // Redraft verdict levels come from that same calibrated frequency (model 2.3.0, audit E10): z with the ± range put
+  // 23% of trades in a level that contradicted the frequency shown under it (e.g. "close" next to "went B's way 70%").
+  const levels = tcfg.levels;
+  const byOutcome = result.mode === 'redraft' && levels && complete;
+  // classified on the frequency as shown (rounded to 5%), so a "Leans" verdict never sits above "about 70%"
+  const p = outcome ? Math.round(outcome.probability * 20) / 20 : 0.5;
+  const side = diff > 0 ? 'A' : 'B';
+
+  let assessment;
+  if (!idsA.length || !idsB.length) assessment = { level: 'incomplete', text: 'Add at least one asset to each side to compare.' };
+  else if (byOutcome && p < levels.lean) assessment = { level: 'even', basis: 'outcome', text: diff === 0 ? 'Both sides receive the same value.' : `The model considers this trade close: Team ${side} receives ${Math.abs(pct * 100).toFixed(1)}% more value, and trades with a margin this size went either way about equally often over a season.` };
+  else if (byOutcome && p < levels.clear) assessment = { level: 'lean', basis: 'outcome', text: `Team ${side} receives more value (${Math.abs(pct * 100).toFixed(1)}%). Trades with this margin favoured the side receiving more value somewhat more often than not — reasonable people could disagree.` };
+  else if (byOutcome) assessment = { level: 'clear', basis: 'outcome', text: `Team ${side} receives clearly more value in this model (${Math.abs(pct * 100).toFixed(1)}%); trades with this margin went that side's way most of the time.` };
+  else if (z < 1) assessment = { level: 'even', text: `The model considers this trade close: the ${Math.round(Math.abs(diff)).toLocaleString()}-point gap is smaller than the combined uncertainty of ±${Math.round(sigmaDiff).toLocaleString()}.` };
+  else if (z < 2) assessment = { level: 'lean', text: `Team ${diff > 0 ? 'A' : 'B'} receives more value (${Math.abs(pct * 100).toFixed(1)}%). The gap exceeds the model's uncertainty, but only modestly — reasonable people could disagree.` };
+  else assessment = { level: 'clear', text: `Team ${diff > 0 ? 'A' : 'B'} receives clearly more value in this model (${Math.abs(pct * 100).toFixed(1)}%, about ${z.toFixed(1)}× the combined uncertainty).` };
 
   const keys = new Set([...Object.keys(sa.components), ...Object.keys(sb.components)]);
   const componentDiffs = COMPONENT_ORDER.filter((k) => keys.has(k)).map((k) => ({ key: k, a: sa.components[k] || 0, b: sb.components[k] || 0, diff: (sa.components[k] || 0) - (sb.components[k] || 0) }));

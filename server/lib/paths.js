@@ -18,6 +18,7 @@ export const P = {
   values: path.join(DATA_DIR, 'calculated', 'values-default.json'),
   history: path.join(DATA_DIR, 'calculated', 'history.json'),
   snapshots: path.join(DATA_DIR, 'snapshots'),
+  archive: path.join(DATA_DIR, 'archive'),
   sourceStatus: path.join(DATA_DIR, 'state', 'sources-status.json'),
   lastSync: path.join(DATA_DIR, 'state', 'last-sync.json'),
   syncLog: path.join(DATA_DIR, 'state', 'sync-log.json'),

@@ -34,12 +34,22 @@ export function leadText(diff, N = NEUTRAL) {
   return r === 0 ? 'even' : `${diff > 0 ? N.a : N.b} +${fmtValue(r)}`;
 }
 
-/** Plain-language headline for the verdict (the model's own z-score levels; wording only). */
+/**
+ * Plain-language headline for the verdict (wording only). Redraft levels come from how often a margin this size worked
+ * out historically (assessment.basis 'outcome', model 2.3.0); dynasty levels from the model's z-score.
+ */
 export function verdictHeadline(ana, N = NEUTRAL) {
   const team = ana.diff > 0 ? N.A : N.B;
   const gap = fmtValue(Math.abs(ana.diff));
   const pct = `${Math.abs(ana.pct * 100).toFixed(0)}%`;
   const unc = `±${fmtValue(ana.sigmaDiff)}`;
+  if (ana.assessment.basis === 'outcome') {
+    switch (ana.assessment.level) {
+      case 'even': return { label: 'Close — roughly fair', sub: ana.diff === 0 ? 'Both sides receive the same value.' : `${team} receives ${gap} more (${pct}) — over a season, a margin this small goes either way.` };
+      case 'lean': return { label: `Leans ${mid(team)}`, sub: `${team} receives ${gap} more (${pct}).` };
+      default: return { label: `${team} clearly ahead`, sub: `${team} receives ${gap} more (${pct}).` };
+    }
+  }
   switch (ana.assessment.level) {
     case 'incomplete': return { label: 'Add assets to both sides', sub: 'The verdict appears once each team receives something.' };
     case 'even': return { label: 'Close — roughly fair', sub: `The ${gap}-point gap is within the model's uncertainty (${unc}).` };

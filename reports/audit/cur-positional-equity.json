@@ -1,94 +1,94 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "note": "Synthetic players (label: SYNTHETIC) with identical 250 projected PPR points over 14 games, valued in each league. Differences arise only from replacement levels (roster economics).",
   "rows": [
     {
       "league": "10-team 1QB",
-      "QB": 1361,
-      "QB_replacement": 222.866,
-      "RB": 5271,
+      "QB": 1288,
+      "QB_replacement": 222.869,
+      "RB": 5273,
       "RB_replacement": 149.407,
-      "WR": 5064,
+      "WR": 5066,
       "WR_replacement": 149.21,
-      "TE": 5579,
-      "TE_replacement": 133.005
+      "TE": 5316,
+      "TE_replacement": 133.004
     },
     {
       "league": "12-team 1QB",
-      "QB": 1499,
-      "QB_replacement": 220.192,
-      "RB": 5972,
-      "RB_replacement": 135.242,
-      "WR": 5947,
-      "WR_replacement": 133.485,
-      "TE": 5871,
+      "QB": 1419,
+      "QB_replacement": 220.187,
+      "RB": 5974,
+      "RB_replacement": 135.244,
+      "WR": 5949,
+      "WR_replacement": 133.484,
+      "TE": 5594,
       "TE_replacement": 127.85
     },
     {
       "league": "14-team 1QB",
-      "QB": 2000,
-      "QB_replacement": 212.236,
-      "RB": 6765,
-      "RB_replacement": 121.749,
-      "WR": 6345,
+      "QB": 1893,
+      "QB_replacement": 212.228,
+      "RB": 6768,
+      "RB_replacement": 121.735,
+      "WR": 6347,
       "WR_replacement": 125.589,
-      "TE": 6213,
-      "TE_replacement": 123.777
+      "TE": 5920,
+      "TE_replacement": 123.774
     },
     {
       "league": "16-team 1QB",
-      "QB": 2585,
+      "QB": 2446,
       "QB_replacement": 204.268,
-      "RB": 7152,
+      "RB": 7154,
       "RB_replacement": 111.93,
-      "WR": 7029,
-      "WR_replacement": 114.95,
-      "TE": 6781,
-      "TE_replacement": 114.308
+      "WR": 7032,
+      "WR_replacement": 114.949,
+      "TE": 6461,
+      "TE_replacement": 114.306
     },
     {
       "league": "12-team Superflex",
-      "QB": 5941,
+      "QB": 5641,
       "QB_replacement": 180.441,
-      "RB": 6805,
-      "RB_replacement": 121.749,
-      "WR": 6378,
+      "RB": 6808,
+      "RB_replacement": 121.735,
+      "WR": 6380,
       "WR_replacement": 125.589,
-      "TE": 6213,
-      "TE_replacement": 123.777
+      "TE": 5920,
+      "TE_replacement": 123.774
     },
     {
       "league": "12-team 2QB",
-      "QB": 5941,
+      "QB": 5641,
       "QB_replacement": 180.441,
-      "RB": 6805,
-      "RB_replacement": 121.749,
-      "WR": 6378,
+      "RB": 6808,
+      "RB_replacement": 121.735,
+      "WR": 6380,
       "WR_replacement": 125.589,
-      "TE": 6213,
-      "TE_replacement": 123.777
+      "TE": 5920,
+      "TE_replacement": 123.774
     },
     {
       "league": "12-team TE premium 1.0",
-      "QB": 1499,
-      "QB_replacement": 220.192,
-      "RB": 5671,
+      "QB": 1409,
+      "QB_replacement": 220.187,
+      "RB": 5673,
       "RB_replacement": 140.928,
-      "WR": 5064,
+      "WR": 5066,
       "WR_replacement": 149.21,
-      "TE": 10007,
-      "TE_replacement": 146.576
+      "TE": 9534,
+      "TE_replacement": 146.577
     },
     {
       "league": "12-team 3WR 2FLEX",
-      "QB": 1429,
-      "QB_replacement": 220.192,
-      "RB": 6942,
-      "RB_replacement": 115.171,
-      "WR": 6764,
-      "WR_replacement": 114.95,
-      "TE": 6857,
-      "TE_replacement": 111.914
+      "QB": 1343,
+      "QB_replacement": 220.187,
+      "RB": 6945,
+      "RB_replacement": 115.156,
+      "WR": 6767,
+      "WR_replacement": 114.949,
+      "TE": 6533,
+      "TE_replacement": 111.912
     }
   ]
 }

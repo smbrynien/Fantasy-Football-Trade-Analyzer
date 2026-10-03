@@ -1,5 +1,5 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "rows": [
     {
       "mode": "redraft",
@@ -7,47 +7,47 @@
       "spearman": 1,
       "medianAbsPctChange": 0,
       "p90AbsPctChange": 0.022,
-      "maxAbsPctChange": 0.07
+      "maxAbsPctChange": 0.055
     },
     {
       "mode": "redraft",
       "perturbation": "ECR ±1 rank noise",
-      "spearman": 0.999,
-      "medianAbsPctChange": 0.001,
-      "p90AbsPctChange": 0.054,
-      "maxAbsPctChange": 0.181
+      "spearman": 0.998,
+      "medianAbsPctChange": 0.003,
+      "p90AbsPctChange": 0.066,
+      "maxAbsPctChange": 0.208
     },
     {
       "mode": "redraft",
       "perturbation": "projections ±5% noise",
-      "spearman": 0.993,
-      "medianAbsPctChange": 0.045,
-      "p90AbsPctChange": 0.149,
-      "maxAbsPctChange": 0.262
+      "spearman": 0.999,
+      "medianAbsPctChange": 0.019,
+      "p90AbsPctChange": 0.056,
+      "maxAbsPctChange": 0.094
     },
     {
       "mode": "dynasty",
       "perturbation": "market ±5% noise",
-      "spearman": 0.998,
-      "medianAbsPctChange": 0.005,
-      "p90AbsPctChange": 0.05,
-      "maxAbsPctChange": 0.156
+      "spearman": 0.999,
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0.04,
+      "maxAbsPctChange": 0.077
     },
     {
       "mode": "dynasty",
       "perturbation": "ECR ±1 rank noise",
       "spearman": 0.998,
-      "medianAbsPctChange": 0.002,
-      "p90AbsPctChange": 0.046,
-      "maxAbsPctChange": 0.198
+      "medianAbsPctChange": 0,
+      "p90AbsPctChange": 0.051,
+      "maxAbsPctChange": 0.163
     },
     {
       "mode": "dynasty",
       "perturbation": "projections ±5% noise",
       "spearman": 1,
-      "medianAbsPctChange": 0.006,
-      "p90AbsPctChange": 0.016,
-      "maxAbsPctChange": 0.059
+      "medianAbsPctChange": 0.004,
+      "p90AbsPctChange": 0.013,
+      "maxAbsPctChange": 0.031
     }
   ]
 }

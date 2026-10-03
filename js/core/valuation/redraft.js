@@ -5,13 +5,13 @@
 
 import { resolveScoring } from '../scoring.js';
 import { blendWeights } from '../settings.js';
-import { weightedMean, clamp, quantile, median } from '../util/stats.js';
+import { weightedMean, clamp, quantile, median, interp } from '../util/stats.js';
 import { computeLeagueRates, derivePlayerInputs } from './context.js';
 import { computeLeagueStructure, surplusPoints } from './replacement.js';
 import { buildCurves } from './mapping.js';
 import { collectRankings, collectMarket, collectADP, adpFormatsFor } from './signals.js';
 import { aggregateGroup, blendGroups } from './blend.js';
-import { assessConfidence } from './confidence.js';
+import { assessConfidence, outcomeRange } from './confidence.js';
 import { FANTASY_POSITIONS } from '../util/positions.js';
 
 export const REDRAFT_GROUPS = ['projection', 'production', 'consensus', 'market', 'adp'];
@@ -147,6 +147,7 @@ export function runRedraft(dataset, league, model, env) {
         usage: x.usage,
         injury: x.injury,
         basePoints: x.basePoints,
+        outcomeRange: outcomeRange(x.proj.points ?? x.basePoints, x.proj.points !== null && x.proj.games > 0 ? x.proj.games : x.remGames, cfg.outcome_range?.by_points_per_game),
         replacement: structure.replacement[x.pos], waiver: structure.waiver[x.pos], outcomeSD: sdFor(x.pos),
         consensus: consensus.get(cid)?.sources || [],
         market: mk?.sources || [],
@@ -155,5 +156,30 @@ export function runRedraft(dataset, league, model, env) {
       },
     });
   }
+  applyAvailabilityShape(assets, cfg.availability_shape);
   return { mode: 'redraft', assets, structure, curves, scoring, weights, phase, marketLists };
+}
+
+/**
+ * Availability shape (model 2.3.0, audit E11): stars miss fewer games than depth players, which healthy-season
+ * projections ignore. A missed game costs that week's surplus (the replacement plays), so each player's score is
+ * multiplied by the share of games played at his positional rank relative to the position's starters. The factor
+ * is non-increasing in rank, so the order within a position never changes; the difference is reported as the
+ * 'availability' component so the components still sum to the value.
+ */
+export function applyAvailabilityShape(assets, shape) {
+  if (!shape?.enabled || !shape.knots) return;
+  const byPos = {};
+  for (const a of assets.values()) if (shape.knots[a.position]) (byPos[a.position] ||= []).push(a);
+  for (const [pos, list] of Object.entries(byPos)) {
+    list.sort((x, y) => y.score - x.score || String(x.id).localeCompare(String(y.id)));
+    list.forEach((a, i) => {
+      const factor = interp(shape.knots[pos], i + 1);
+      a.details.availability = { rank: i + 1, factor };
+      if (!(a.score > 0) || factor === 1) return;
+      a.contributions.availability = a.score * (factor - 1);
+      a.score *= factor;
+      if (a.confidence) a.confidence = { ...a.confidence, sigma: a.confidence.sigma * factor };
+    });
+  }
 }

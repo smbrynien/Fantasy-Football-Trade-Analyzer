@@ -1,7 +1,8 @@
 # Valuation Model (common framework + redraft)
 
-Model version: see `model_version` in [`config/model.json`](../config/model.json) — **2.2.0** after the second
-[model audit](MODEL_AUDIT.md) (2026-10-03; the first, 2.0.0, is [MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md)). Every
+Model version: see `model_version` in [`config/model.json`](../config/model.json) — **2.3.0** after the research batch
+in [MODEL_AUDIT.md §21](MODEL_AUDIT.md) (2.2.0 was the second model audit, 2026-10-03; the first, 2.0.0, is
+[MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md)). Every
 parameter mentioned here is configurable there or in **Settings** (per league profile, stored as `overrides`).
 
 Code: `js/core/valuation/` — `engine.js` (orchestration), `context.js` (inputs), `replacement.js` (scarcity),
@@ -153,12 +154,19 @@ accurate in 17 of 20 and better overall (ρ .459 vs .453, MAE 35.6 vs 35.7). The
 already built on weekly matchups, so a separate multiplier double counts. The default is 0 (configurable; the detail
 is still shown in the player view).
 
-### Availability (unchanged, and a tested non-change)
+### Availability (2.3.0: stars miss fewer games than depth players)
 
-Production is scaled by measured availability; projections are not, because weekly projection sources already omit
-players ruled out. The audit tested also scaling projections by availability (players on average play 80–88% of
-remaining games): in the historical league simulation it predicted trade outcomes *worse* (E6 correlation .527 vs .549),
-because availability differs far more by depth tier (stars ≈ .87–.90) than by position. Rejected.
+Production is scaled by measured availability per position (QB .80, RB .77, WR .83, TE .82). Projections assume a
+healthy season (17 games), and availability differs more by *depth* than by position: from 2019–2025, top-12 RBs played
+≈ 86% of their team's games, RBs ranked 25–48 ≈ 76% (`reports/audit/e11-availability-shape.json`). Since 2.3.0 each
+redraft value is multiplied by `redraft.availability_shape`: the share of games played at the player's positional rank
+**relative to the position's starters** (RB/WR stars ×1.05, depth down to ×0.91–0.93; QB ×1.04 → 0.86 at QB24; TE flat
+to 18), linear between knots, flat beyond 2× 12-team starters (deeper, not playing is a backup's *role*, which
+projections already contain). It shows as the "Availability (games played)" component. Why this form: a missed game
+costs the player's *surplus* that week (the replacement plays), so value = availability × healthy surplus; only the
+within-position shape helped — absolute position shares, and scaling projected *points* (the form 2.2.0 tested and
+rejected), predicted trade outcomes worse (E6 .541 / .527 vs .549; 2.3.0 .552, better in all five seasons). Dynasty
+is unchanged.
 
 ### Not modelled separately (deliberately)
 
@@ -176,13 +184,21 @@ Heuristic score 0–100 = coverage^0.6 × agreement × sample × freshness × in
 * independence: <2 independent source groups → ×0.75
 
 High ≥ 65, Moderate ≥ 40. The **fair-value range** is ±max(floor%, signal SD), floor = 5% + 10%×(1 − coverage).
-This is not a statistical confidence interval and is labelled as such.
+This is not a statistical confidence interval and is labelled as such: it measures how much the sources disagree. In
+2.3.0's check (E10) the reconstructed ± contained only 13% of season outcomes (median miss 29%), though players with
+more disagreement did miss by more (25% → 35% across terciles). The player view therefore also shows a **range of
+outcomes** (redraft, display only, `redraft.outcome_range`): what players projected at the same points per game actually
+scored, 2021–2025 — e.g. at 8–12 points per game half finished within 0.70–1.36× the projection and 8 in 10 within
+0.36–1.62×.
 
 ## 5. Trades (`trade.js`)
 
 * Totals, absolute and % difference, per-component differences, each signal compared separately (market vs model).
-* Uncertainty: `σ_diff = √(Σσ_A² + Σσ_B²)` (independence assumed). Interpretation by `z = |diff|/σ_diff`:
-  < 1 "close", 1–2 "modest edge", > 2 "clear" — never "good/bad trade" from raw numbers alone.
+* Uncertainty: `σ_diff = √(Σσ_A² + Σσ_B²)` (independence assumed). **Verdict levels** — never "good/bad trade":
+  redraft (2.3.0) from the historical outcome frequency below, rounded as shown: < 60% "close", 60–70% "leans", ≥ 70%
+  "clearly ahead" (`trade_outcome.levels`; ≈ margins < 27%, 27–56%, ≥ 56%). Before 2.3.0 redraft used z, and 23% of
+  random trades showed a level that contradicted the frequency printed under it (E10). Dynasty: `z = |diff|/σ_diff`,
+  < 1 "close", 1–2 "modest edge", > 2 "clear" (no outcome data to calibrate against).
 * **How often it works out** (2.2.0, redraft only, display only): `P = 1 / (1 + e^(−1.5·|margin|))`, margin =
   difference / larger side (`trade_outcome.redraft_logit_slope`). Fitted on 5,000 random trades in historical league
   simulations (E7, 2020–2025 seasons, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68%
@@ -197,6 +213,13 @@ This is not a statistical confidence interval and is labelled as such.
   every season (corr .542 vs .523; uneven trades .540 vs .522); strengths 0.5–1.5 and a doubled roster-slot cost were
   within ±.006 — kept.
 * Dynasty extras: value-weighted age; win-now vs future split.
+* **Your team** (My Team, 2.3.0, `roster.js expectedLineupPoints`): expected lineup points per week before → after —
+  every rostered player available with his availability (position share × availability shape × current injury), the
+  best available lineup starts, empty slots at the league's waiver level (Monte Carlo, deterministic). In historical
+  league simulations it predicted what a trade did to a team better than generic values (E12: .576 vs .549, 5/5
+  seasons) and replaced the starters' points per game (.538). Shown with how often teams with that change gained
+  (`trade_outcome.roster_logit_slope_per_week` 0.2: +1 / +3 points per week → 55% / 65%). It is roster context, not a
+  value change; the verdict stays league-generic.
 * Every calculation carries model version, data version, settings hash, league and source timestamps; saved trades
   can be re-checked later ("Why changed?").
 
@@ -226,6 +249,7 @@ is in [MODEL_AUDIT.md](MODEL_AUDIT.md); candidate models are compared in [MODEL_
 | 2.1.0 | redraft: ADP is corroborating only (`redraft.adp_requires_corroboration`); ADP-only players are N/A instead of being valued from deep ADP ranks. No other value changes (verified on the frozen 2026-10-02 dataset: all 7 presets × both modes × in-season/preseason, only ADP-only assets removed) |
 | 2.1.2 | picks: each season's slot curve made non-increasing (isotonic) — future classes inverted at round boundaries; impossible picks (drafted class, > 5 years out, round > league rounds, slot outside 1..teams) are unavailable. 0 player values changed; only future-class picks next to former inversions moved (frozen 2026-10-02 dataset, all presets). Identity: contradicting birth date/age/draft year blocks a name match (no real-data change) |
 | 2.2.0 | second audit (docs/MODEL_AUDIT.md): redraft option-value σ × 0.4 (E5/E6); schedule strength 0 (E2); dynasty counts only the remaining games of the current season (later seasons discounted from now, partial final season keeps a 5-season horizon) and injuries as expected games lost (shared redraft table; out for the season = rest of the season), replacing the flat 35%-of-a-season IR rule; calibration shape constraints (aging curves unimodal and still declining past the data, exit hazard monotone in age) fixed two age-monotonicity failures; trade view shows the historical outcome frequency (redraft). Frozen 2026-10-03 data: redraft top-10 within ±1%, median change 0.7%, deep/bench players down (e.g. 12-team 1QB #150 972 → 447); dynasty Spearman 0.999, median change 2.9% |
+| 2.3.0 | research batch (docs/MODEL_AUDIT.md §21): redraft availability shape by positional rank (E11; per-game form, within-position, flat beyond 2× starters); redraft verdict levels from the calibrated outcome frequency (E10) and a range-of-outcomes line in the player view; My Team expected lineup points with bench cover (E12); signal weights confirmed on leak-free projection/ADP archives (E9, unchanged) and a daily signal archive + E13 backtest for the market weight. Frozen 2026-10-03 data (`2026-10-03-f2898efc`): redraft Spearman 1.0, median change 6.3% (1QB) / 8.8% (SF), top-10 unchanged, depth down up to 18%; dynasty unchanged |
 | 2.1.1 | market list selection: lists in the wrong QB format are excluded (were used silently when a source had nothing else) and reported in `meta.excluded_market_lists`; TE-premium lists matched to the league's `bonus_rec_te` (always preferred `tep: 0` before). No value change on current data (no source lacks a format; no TEP lists): verified 0 changes across all presets/modes/phases |
 
 `model_version` (config/model.json) changes whenever formulas/defaults change; `data_version` identifies the data

@@ -3,7 +3,7 @@
 
 import { h, clear, fmtValue, fmtAge, fmt1, posBadge, confBadge, injuryBadge, toast, openModal } from '../dom.js';
 import { app, getValuations, activeProfile, playerData, myRoster, saveMyRoster, load, save, isPlainObject, isStringArray } from '../state.js';
-import { bestLineup } from '../../core/roster.js';
+import { bestLineup, expectationInputs, expectedLineupPoints } from '../../core/roster.js';
 import { assetSearchBox, buildSearchIndex, searchAssets } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
 import { parsePickAssetId, pickDisplayName } from '../../core/pick-labels.js';
@@ -15,6 +15,15 @@ export function pointsPerGame(id) {
   const a = getValuations('redraft')?.assets.get(id);
   const r = a?.details?.projection?.rate;
   return Number.isFinite(r) ? r : null;
+}
+
+const expCache = new WeakMap();
+/** Inputs for expected lineup points (redraft rates, availability, waiver level), cached per redraft valuation run. */
+export function rosterExpectation() {
+  const red = getValuations('redraft');
+  if (!red) return null;
+  if (!expCache.has(red)) expCache.set(red, expectationInputs(red));
+  return expCache.get(red);
 }
 
 export function renderTeam(root) {
@@ -61,6 +70,7 @@ export function renderTeam(root) {
     body.append(h('div.kpis.mt', {},
       kpi('Starting lineup value', fmtValue(L.starters.reduce((s, a) => s + a.value, 0)), `${L.starters.length} starters${L.emptySlots.length ? ` · ${L.emptySlots.length} empty slot(s): ${L.emptySlots.join(', ')}` : ''}`),
       kpi('Projected points / game', fmt1(pts(L.starters)), 'starters, rest-of-season projection rate'),
+      (() => { const ex = rosterExpectation(); const v = ex ? expectedLineupPoints(assets, result.league, ex) : null; return v !== null ? kpi('Expected lineup points / week', fmt1(v), 'missed games, your bench as cover; empty slots at waiver level') : null; })(),
       kpi('Bench value', fmtValue(L.bench.reduce((s, a) => s + a.value, 0)), `${L.bench.length} player(s)`),
       app.mode === 'dynasty' ? kpi('Value-weighted age', fmtAge(weightedAge(players)), 'all rostered players') : null,
       picks.length ? kpi('Draft picks', fmtValue(picks.reduce((s, a) => s + a.value, 0)), `${picks.length} pick(s)`) : null));

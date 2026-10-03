@@ -12,7 +12,7 @@
 // Unlike the 2.0.0 package simulation (which drafted AND scored with the model's own values), outcomes here are real
 // weekly points, including injuries, byes, breakouts and busts.
 
-import { windowPlayers, fitPriors } from './lineup.js';
+import { windowPlayers, fitPriors, AVAIL_CAP_RANK } from './lineup.js';
 import { computeLeagueStructure, surplusPoints } from '../../js/core/valuation/replacement.js';
 import { packageAdjustment } from '../../js/core/valuation/trade.js';
 import { mean, pearson, sd } from '../../js/core/util/stats.js';
@@ -38,12 +38,16 @@ function candidateValues(players, priors, spec) {
   for (const p of players) {
     if (!p.rank) continue;
     const games = spec.availability ? priors.availAt(p.pos, p.rank) * p.teamGames : p.teamGames;
-    pool.push({ cid: p.g, position: p.pos, points: games * priors.rateAt(p.pos, p.rank), games });
+    pool.push({ cid: p.g, position: p.pos, rank: p.rank, points: games * priors.rateAt(p.pos, p.rank), games });
   }
   const structure = computeLeagueStructure(pool, LEAGUE);
   const assets = new Map();
   for (const x of pool) {
-    const v = surplusPoints(x.points, x.position, structure, spec.beta, spec.sigmaMult * SIGMA[x.position] * x.games);
+    let v = surplusPoints(x.points, x.position, structure, spec.beta, spec.sigmaMult * SIGMA[x.position] * x.games);
+    // E11 per-game form: a missed game costs the player's surplus that week (the replacement plays), so expected value =
+    // share of games played × healthy-season surplus. (spec.availability above scales POINTS before the replacement
+    // level is computed — the 2.2.0 audit's candidate, which also shifts the replacement level.)
+    if (spec.perGameAvail && v) v *= AVAIL_FORMS[spec.perGameAvail](priors, x);
     assets.set(x.cid, { id: x.cid, kind: 'player', position: x.position, value: v ?? 0, name: x.cid });
   }
   const result = { mode: 'redraft', league: LEAGUE, structure, assets, model: { package: { enabled: !!spec.pkg, redraft: spec.pkg || {} } } };
@@ -148,7 +152,17 @@ function applyTrade(rosters, a, b, outA, outB, players, value) {
   return next;
 }
 
+const AVAIL_FORMS = {
+  tier: (pr, x) => pr.availAt(x.position, x.rank),
+  smooth: (pr, x) => pr.availSmooth(x.position, x.rank),
+  pos: (pr, x) => pr.availPos(x.position),
+  // within-position shape only: smooth curve relative to the position's starter-level share (cross-position unchanged)
+  relative: (pr, x) => pr.availSmooth(x.position, x.rank) / pr.availPos(x.position),
+  relCap: (pr, x) => pr.availSmooth(x.position, Math.min(x.rank, AVAIL_CAP_RANK[x.position])) / pr.availPos(x.position),
+};
+
 const DETAIL = 's04'; // candidate whose side totals are kept for the verdict calibration (E7)
+export { LEAGUE, SIGMA, predictTrade };
 export const CANDIDATES = {
   current: { label: '2.1.2: σ = model table, healthy games, β .35, package 1/1', sigmaMult: 1, beta: 0.35, availability: false, pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
   current_raw: { label: '2.1.2 without package adjustment (plain sums)', sigmaMult: 1, beta: 0.35, availability: false, pkg: null },
@@ -161,6 +175,11 @@ export const CANDIDATES = {
   s04_avail_pk05: { label: 'σ × 0.4, availability, displacement .5', sigmaMult: 0.4, beta: 0.35, availability: true, pkg: { displacement_strength: 0.5, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
   s04_avail_pk15: { label: 'σ × 0.4, availability, displacement 1.5, keep ≥ .1', sigmaMult: 0.4, beta: 0.35, availability: true, pkg: { displacement_strength: 1.5, roster_slot_cost: 1, min_retained_fraction: 0.1 } },
   s04_avail_slot2: { label: 'σ × 0.4, availability, roster-slot cost × 2', sigmaMult: 0.4, beta: 0.35, availability: true, pkg: { displacement_strength: 1, roster_slot_cost: 2, min_retained_fraction: 0.25 } },
+  s04_pg_tier: { label: 'E11: σ × 0.4, per-game availability (5-tier table)', sigmaMult: 0.4, beta: 0.35, availability: false, perGameAvail: 'tier', pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
+  s04_pg_smooth: { label: 'E11: σ × 0.4, per-game availability (smooth curve by rank)', sigmaMult: 0.4, beta: 0.35, availability: false, perGameAvail: 'smooth', pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
+  s04_pg_pos: { label: 'E11: σ × 0.4, per-game availability (one share per position)', sigmaMult: 0.4, beta: 0.35, availability: false, perGameAvail: 'pos', pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
+  s04_pg_rel: { label: 'E11: σ × 0.4, within-position availability shape only', sigmaMult: 0.4, beta: 0.35, availability: false, perGameAvail: 'relative', pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
+  s04_pg_relcap: { label: 'E11: σ × 0.4, within-position availability shape, flat beyond 2× starters (model 2.3.0)', sigmaMult: 0.4, beta: 0.35, availability: false, perGameAvail: 'relCap', pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
   s1_avail: { label: 'σ = model table, availability', sigmaMult: 1, beta: 0.35, availability: true, pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
 };
 
@@ -172,7 +191,12 @@ function fitStats(xs, ys) {
   return { n: xs.length, corr: r3(pearson(xs, ys)), slope: r3(sxx ? sxy / sxx : null) };
 }
 
-export function leagueSimulation(bench, { tradesPerSeason = 600, seed = 7 } = {}) {
+/**
+ * @param onTrade optional (ctx) => object: called once per simulated trade with the full league context (season, priors,
+ *   candidate values, rosters before/after, the trade, realised gains); whatever it returns is kept as trade.extra.
+ *   Used by E10 (uncertainty) and E12 (roster-specific values); it does not change the simulation.
+ */
+export function leagueSimulation(bench, { tradesPerSeason = 600, seed = 7, onTrade = null } = {}) {
   const seasons = {};
   for (const y of [2019, 2020, 2021, 2022, 2023, 2024, 2025]) { const w = windowPlayers(bench, y, 1); if (w) seasons[y] = w; }
   const years = Object.keys(seasons).map(Number).sort();
@@ -199,7 +223,8 @@ export function leagueSimulation(bench, { tradesPerSeason = 600, seed = 7 } = {}
       const outcome = (pts[a] - basePts[a]) - (pts[b] - basePts[b]);
       const pred = Object.fromEntries(Object.entries(cands).map(([c, cand]) => [c, predictTrade(cand, outB.map((p) => p.g), outA.map((p) => p.g))]));
       const detail = predictTrade(cands[DETAIL], outB.map((p) => p.g), outA.map((p) => p.g), true);
-      trades.push({ y, type: `${nb}-for-${na}`, nA: nb, nB: na, outcome, gainA: pts[a] - basePts[a], gainB: pts[b] - basePts[b], pred, detail });
+      const extra = onTrade ? onTrade({ y, season, priors, cands, rosters, next, a, b, outA, outB, outcome, gainA: pts[a] - basePts[a], gainB: pts[b] - basePts[b], baseValue }) : undefined;
+      trades.push({ y, type: `${nb}-for-${na}`, nA: nb, nB: na, outcome, gainA: pts[a] - basePts[a], gainB: pts[b] - basePts[b], pred, detail, extra });
     }
   }
   const summary = {};

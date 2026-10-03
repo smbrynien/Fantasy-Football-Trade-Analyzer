@@ -21,9 +21,9 @@ const r3 = (x) => (x === null || x === undefined || !Number.isFinite(x) ? null :
 export function weekPts(st, pos) { return scoreStats(st, pos, ppr, { perGame: true }).points || 0; }
 
 function weeksOf(bench, g, y) { return (bench.weekly[g] && bench.weekly[g][y]) || []; }
-function played(wk) { return (wk.st.pass_att || 0) + (wk.st.rush_att || 0) + (wk.st.rec_tgt || 0) + (wk.st.rec || 0) > 0; }
+export function played(wk) { return (wk.st.pass_att || 0) + (wk.st.rush_att || 0) + (wk.st.rec_tgt || 0) + (wk.st.rec || 0) > 0; }
 
-function windowPoints(bench, g, y, from, to) {
+export function windowPoints(bench, g, y, from, to) {
   const pos = bench.meta[g]?.pos;
   let pts = 0, gp = 0;
   for (const wk of weeksOf(bench, g, y)) if (wk.w >= from && wk.w <= to) { pts += weekPts(wk.st, pos); if (played(wk)) gp++; }
@@ -40,7 +40,7 @@ function replacementFrom(rows, key) {
 }
 
 /** Fit a monotone rank→target curve per position from training pairs. Returns predict(pos, rank). */
-function fitRankCurve(pairs) {
+export function fitRankCurve(pairs) {
   const by = {};
   for (const { pos, rank, y } of pairs) { const k = Math.max(1, Math.round(rank)); ((by[pos] ||= {})[k] ||= []).push(y); }
   const curves = {};
@@ -66,7 +66,7 @@ export function positionalRanks(rows) {
   return out;
 }
 
-function metrics(rows, predKey, targetKey = 'target') {
+export function metrics(rows, predKey, targetKey = 'target') {
   const ok = rows.filter((r) => Number.isFinite(r[predKey]));
   const mae = mean(ok.map((r) => Math.abs(r[predKey] - r[targetKey])));
   const byPos = {};
@@ -184,7 +184,7 @@ function prevUsage(bench, g, y) {
   return mean(ws.map((wk) => (wk.st.rec_tgt || 0) * rate.tgt + (wk.st.rush_att || 0) * rate.car + (wk.st.pass_att || 0) * rate.att));
 }
 // League-average PPR points per opportunity (stable across seasons; computed from 2018-2025 nflverse, see audit report)
-const OPP_RATE = { QB: { tgt: 1.6, car: 0.62, att: 0.48 }, RB: { tgt: 1.55, car: 0.6, att: 0 }, WR: { tgt: 1.75, car: 0.75, att: 0 }, TE: { tgt: 1.55, car: 0.6, att: 0 } };
+export const OPP_RATE = { QB: { tgt: 1.6, car: 0.62, att: 0.48 }, RB: { tgt: 1.55, car: 0.6, att: 0 }, WR: { tgt: 1.75, car: 0.75, att: 0 }, TE: { tgt: 1.55, car: 0.6, att: 0 } };
 export function measureOppRates(bench) {
   const acc = {};
   for (const [g, seasons] of Object.entries(bench.weekly)) {
@@ -200,7 +200,7 @@ export function measureOppRates(bench) {
   return Object.fromEntries(Object.entries(acc).map(([p, a]) => [p, { perTarget: r3(a.recPts / a.tgt), perCarry: r3(a.rushPts / a.car), perPassAtt: a.att > 1000 ? r3(a.passPts / a.att) : null }]));
 }
 
-function fitLinear(x, y) {
+export function fitLinear(x, y) {
   if (x.length < 5) return { a: mean(y) || 0, b: 0 };
   const mx = mean(x), my = mean(y);
   let sxy = 0, sxx = 0;

@@ -7,7 +7,7 @@ import { balanceSuggestions, comboSuggestions } from '../../core/valuation/balan
 import { compareCounteroffers, addVariant, sameTrade, variantLabel, MAX_VARIANTS } from '../../core/counteroffers.js';
 import { leadText, verdictHeadline, marketCheck, outcomeText, tradeFromHash, tradeHash, sideNames, relabel, mid } from '../trade-helpers.js';
 import { rosterImpact } from '../../core/roster.js';
-import { pointsPerGame } from './team.js';
+import { pointsPerGame, rosterExpectation } from './team.js';
 import { COMPONENT_LABELS } from '../../core/valuation/engine.js';
 import { pickAssetId, parsePickAssetId, pickDisplayName } from '../../core/pick-labels.js';
 import { assetSearchBox } from '../search.js';
@@ -324,23 +324,25 @@ export function renderTrade(root) {
   function lineupBlock() {
     if (!roster.ids.length || !trade.me || !trade.a.length || !trade.b.length) return null;
     const get = trade[trade.me], give = trade[trade.me === 'a' ? 'b' : 'a'];
-    const r = rosterImpact(result, roster.ids, give, get, { points: pointsPerGame });
+    const r = rosterImpact(result, roster.ids, give, get, { points: pointsPerGame, expected: rosterExpectation() });
     const dv = r.after.starterValue - r.before.starterValue;
-    const pts = r.before.points && r.after.points ? r.after.points.total - r.before.points.total : null;
+    const ex = r.expectedDelta;
+    const eo = r.expectedOutcome;
     const who = (xs) => xs.map((a) => `${a.name} (${a.position})`).join(', ');
     const depth = r.depth.filter((d) => d.before !== d.after || d.startersBefore !== d.startersAfter);
     return h('div.lineup-impact.mt', {},
       h('div.small.bold', {}, 'Your starting lineup'),
       h('div.lineup-kpis', {},
         h('div', {}, h('span.muted.small', {}, 'Lineup value '), h('strong', {}, `${fmtValue(r.before.starterValue)} → ${fmtValue(r.after.starterValue)}`), ' ', h('span.bold', { class: dv > 0 ? 'trend-up' : dv < 0 ? 'trend-down' : '' }, `(${fmtSigned(dv)})`)),
-        pts !== null ? h('div', {}, h('span.muted.small', {}, 'Projected points / game '), h('strong', {}, `${r.before.points.total.toFixed(1)} → ${r.after.points.total.toFixed(1)}`), ' ', h('span.bold', { class: pts > 0.05 ? 'trend-up' : pts < -0.05 ? 'trend-down' : '' }, `(${pts > 0 ? '+' : ''}${pts.toFixed(1)})`)) : null),
+        ex !== null ? h('div', { title: 'Expected points per week of your best AVAILABLE lineup: each player counts with how often players like him play (injuries, current designation), bench players fill in, empty spots come from waivers. This-season projections.' }, h('span.muted.small', {}, 'Expected lineup points / week '), h('strong', {}, `${r.before.expected.toFixed(1)} → ${r.after.expected.toFixed(1)}`), ' ', h('span.bold', { class: ex > 0.05 ? 'trend-up' : ex < -0.05 ? 'trend-down' : '' }, `(${ex > 0 ? '+' : ''}${ex.toFixed(1)})`)) : null),
+      eo ? h('div.small.muted', {}, `In historical league simulations, teams whose expected lineup ${eo.better ? 'rose' : 'fell'} this much ${eo.better ? 'gained' : 'lost'} points over the season about ${Math.round((eo.probability * 100) / 5) * 5}% of the time.`) : null,
       h('div.small', {}, r.startersIn.length || r.startersOut.length
         ? [r.startersIn.length ? h('span', {}, h('strong', {}, 'Into your lineup: '), who(r.startersIn), '. ') : null, r.startersOut.length ? h('span', {}, h('strong', {}, 'Out of your lineup: '), who(r.startersOut), '.') : null]
         : 'No change to your starters — the trade only changes your bench and depth.'),
       depth.length ? h('div.small.muted', {}, 'Depth: ', depth.map((d) => `${d.position} ${d.before}→${d.after}${d.startersBefore !== d.startersAfter ? ` (starting ${d.startersBefore}→${d.startersAfter})` : ''}`).join(' · ')) : null,
       r.notOnRoster.length ? h('div.small.warn-text', {}, `⚠ Not on your saved roster: ${r.notOnRoster.map(assetName).join(', ')} — check which side is you, or update `, h('a', { href: '#/team' }, 'My Team'), '.') : null,
       r.overLimit ? h('div.small.warn-text', {}, `⚠ You would have ${r.overLimit} more player${r.overLimit === 1 ? '' : 's'} than roster spots — someone would have to be dropped (not counted above).`) : null,
-      h('div.tiny.muted', {}, 'Best lineup from your saved roster using these values (projected points: redraft rest-of-season rate). Facts about your lineup, not a recommendation.'));
+      h('div.tiny.muted', {}, 'Best lineup from your saved roster using these values; expected points use this season\'s projections, how often players miss games, and your bench as cover. Facts about your lineup, not a recommendation.'));
   }
 
   /** "What would even it out?" — one-click additions for the side that receives less. */
@@ -420,7 +422,7 @@ export function renderTrade(root) {
     }
     const at = list.findIndex((v) => sameTrade(v, trade));
     const live = complete && at < 0;
-    const rows = compareCounteroffers(result, live ? [...list, { a: trade.a, b: trade.b, label: 'Current (not added)' }] : list, { me: trade.me, rosterIds: roster.ids, points: pointsPerGame, names: assetName });
+    const rows = compareCounteroffers(result, live ? [...list, { a: trade.a, b: trade.b, label: 'Current (not added)' }] : list, { me: trade.me, rosterIds: roster.ids, points: pointsPerGame, expected: rosterExpectation(), names: assetName });
     const showLineup = rows.some((r) => r.lineup);
     const cell = (ids, ch, label) => {
       const added = [...(ch ? ch.added : [])];
@@ -459,7 +461,7 @@ export function renderTrade(root) {
         h('td.num.nowrap', { 'data-label': 'Who gets more' }, h('span.bold', {}, leadText(r.diff, n)), h('div.tiny.muted', {}, `${n.a} ${fmtValue(r.totals[0])} · ${n.b} ${fmtValue(r.totals[1])}`)),
         showLineup ? h('td.num.nowrap', { 'data-label': 'Your lineup' }, r.lineup
           ? [h('span.bold', { class: r.lineup.valueDelta > 0 ? 'trend-up' : r.lineup.valueDelta < 0 ? 'trend-down' : '' }, fmtSigned(r.lineup.valueDelta)),
-            r.lineup.pointsDelta !== null ? h('div.tiny.muted', {}, `${r.lineup.pointsDelta > 0 ? '+' : ''}${r.lineup.pointsDelta.toFixed(1)} pts/game`) : null]
+            r.lineup.expectedDelta !== null ? h('div.tiny.muted', {}, `${r.lineup.expectedDelta > 0 ? '+' : ''}${r.lineup.expectedDelta.toFixed(1)} exp. pts/week`) : null]
           : '—') : null,
         h('td.nowrap', {}, isLive
           ? h('button.btn.btn-xs', { onclick: addToComparison, disabled: list.length >= MAX_VARIANTS ? true : null }, '＋ Add')
@@ -469,7 +471,7 @@ export function renderTrade(root) {
     countersEl.append(
       h('div.table-wrap', {}, h('table.data.counter-table', {},
         h('thead', {}, h('tr', {}, h('th', {}, 'Version'), h('th', {}, `${n.A} receives`), h('th', {}, `${n.B} receives`), h('th', {}, 'Verdict'), h('th.num', {}, 'Who gets more'),
-          showLineup ? h('th.num', { title: 'Change in your best starting lineup (value, projected points per game)' }, 'Your lineup') : null, h('th', {}, ''))),
+          showLineup ? h('th.num', { title: 'Change in your best starting lineup (value) and in your expected lineup points per week (injuries and bench cover included)' }, 'Your lineup') : null, h('th', {}, ''))),
         tbody)),
       h('div.flex.mt-s', {},
         h('span.tiny.muted', {}, `+ added / struck through = removed, compared with ${variantLabel(list[0], 0).toLowerCase() === 'original' ? 'the original' : `"${variantLabel(list[0], 0)}"`}. Click a name to rename it. Up to ${MAX_VARIANTS} versions per mode, kept in this browser.`),

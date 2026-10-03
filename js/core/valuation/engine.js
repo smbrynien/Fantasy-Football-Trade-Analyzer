@@ -16,13 +16,14 @@ export const COMPONENT_LABELS = {
   prospect: 'Prospect / draft capital',
   longevity: 'Age / longevity (future seasons)',
   injury: 'Injury',
+  availability: 'Availability (games played)',
   trend: 'Trend (market momentum)',
   historical: 'Historical slot value',
   current_class: 'Current rookie class',
   fundamental: 'Fundamental (multi-year model)',
 };
 
-export const COMPONENT_ORDER = ['market', 'consensus', 'projection', 'production', 'prospect', 'longevity', 'adp', 'historical', 'current_class', 'trend', 'injury'];
+export const COMPONENT_ORDER = ['market', 'consensus', 'projection', 'production', 'prospect', 'longevity', 'adp', 'historical', 'current_class', 'trend', 'injury', 'availability'];
 
 function referenceLeague(model, league, leagueDefaults) {
   const ref = model.reference_league;

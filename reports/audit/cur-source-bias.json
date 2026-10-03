@@ -1,5 +1,5 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "note": "Positive premium = first source ranks that age group better than the second source does (percentile points within position).",
   "rows": [
     {
@@ -7,35 +7,35 @@
       "pos": "QB",
       "n": 72,
       "rho": 0.933,
-      "youngPremium": -0.01,
-      "veteranPremium": 0.025,
-      "ageSlope": 0.007
+      "youngPremium": -0.007,
+      "veteranPremium": 0.024,
+      "ageSlope": 0.006
     },
     {
       "comparison": "FantasyCalc dynasty vs FantasyPros dynasty ECR",
       "pos": "RB",
-      "n": 107,
+      "n": 105,
       "rho": 0.967,
-      "youngPremium": -0.006,
-      "veteranPremium": 0.031,
+      "youngPremium": -0.005,
+      "veteranPremium": 0.029,
       "ageSlope": 0.004
     },
     {
       "comparison": "FantasyCalc dynasty vs FantasyPros dynasty ECR",
       "pos": "WR",
-      "n": 144,
-      "rho": 0.943,
-      "youngPremium": -0.009,
-      "veteranPremium": 0.021,
+      "n": 146,
+      "rho": 0.942,
+      "youngPremium": -0.01,
+      "veteranPremium": 0.017,
       "ageSlope": 0.005
     },
     {
       "comparison": "FantasyCalc dynasty vs FantasyPros dynasty ECR",
       "pos": "TE",
-      "n": 63,
-      "rho": 0.939,
-      "youngPremium": -0.003,
-      "veteranPremium": 0.063,
+      "n": 64,
+      "rho": 0.934,
+      "youngPremium": -0.006,
+      "veteranPremium": 0.069,
       "ageSlope": 0.01
     },
     {
@@ -78,27 +78,27 @@
       "comparison": "FantasyCalc redraft vs FantasyPros ROS ECR",
       "pos": "QB",
       "n": 32,
-      "rho": 0.956,
+      "rho": 0.95,
       "youngPremium": 0,
-      "veteranPremium": 0.02,
-      "ageSlope": 0.006
+      "veteranPremium": 0.014,
+      "ageSlope": 0.005
     },
     {
       "comparison": "FantasyCalc redraft vs FantasyPros ROS ECR",
       "pos": "RB",
-      "n": 59,
-      "rho": 0.941,
+      "n": 60,
+      "rho": 0.943,
       "youngPremium": -0.032,
-      "veteranPremium": 0.029,
+      "veteranPremium": 0.032,
       "ageSlope": 0.01
     },
     {
       "comparison": "FantasyCalc redraft vs FantasyPros ROS ECR",
       "pos": "WR",
       "n": 78,
-      "rho": 0.96,
-      "youngPremium": -0.009,
-      "veteranPremium": 0.024,
+      "rho": 0.962,
+      "youngPremium": -0.005,
+      "veteranPremium": 0.019,
       "ageSlope": 0.003
     },
     {
@@ -106,9 +106,9 @@
       "pos": "TE",
       "n": 27,
       "rho": 0.942,
-      "youngPremium": -0.01,
-      "veteranPremium": 0.007,
-      "ageSlope": 0.002
+      "youngPremium": -0.024,
+      "veteranPremium": 0.01,
+      "ageSlope": 0.004
     },
     {
       "comparison": "Sleeper ADP vs FantasyPros ROS ECR",
@@ -134,8 +134,8 @@
       "n": 100,
       "rho": 0.892,
       "youngPremium": 0.004,
-      "veteranPremium": -0.002,
-      "ageSlope": 0
+      "veteranPremium": -0.003,
+      "ageSlope": -0.001
     },
     {
       "comparison": "Sleeper ADP vs FantasyPros ROS ECR",
@@ -179,7 +179,7 @@
       "n": 93,
       "rho": 0.936,
       "youngPremium": -0.019,
-      "veteranPremium": 0,
+      "veteranPremium": -0.001,
       "ageSlope": -0.001
     },
     {

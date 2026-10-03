@@ -1,11 +1,11 @@
 {
-  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
+  "label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
   "checks": 75,
   "failures": 1,
   "failed": [
     {
       "name": "2 years younger does not lower dynasty value: Harold Fannin (22.2)",
-      "detail": "3963 → 3889"
+      "detail": "3964 → 3889"
     }
   ]
 }

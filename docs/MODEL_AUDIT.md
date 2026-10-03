@@ -1,4 +1,4 @@
-# Model Audit (model 2.1.2 → 2.2.0, 2026-10-03)
+# Model Audit (model 2.1.2 → 2.2.0, 2026-10-03; research batch → 2.3.0 in §21)
 
 A second adversarial, quantitative review of the valuation system. The first audit (model 1.0.0 → 2.0.0) is
 [MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md); this one starts from its conclusions and tries to break them.
@@ -406,7 +406,7 @@ group with the available ones, since all groups are on the same curve), confiden
 | SoS double counting projections | E2 | **removed** |
 | Fundamental age bias | E3 −.014 / +.012 | small, monitored |
 | Finite horizon penalises the very young | monotonicity (−1.9%) | documented |
-| Availability by tier (stars .87–.90, depth .72–.81) not modelled | E5 | investigated; position-level scaling of projections made trades worse (E6) |
+| Availability by tier (stars .87–.90, depth .72–.81) not modelled | E5 | **fixed in 2.3.0** (§21 E11): the 2.2.0 test scaled *points* before the replacement level was set (a functional-form error); the per-game form with a within-position shape improves E5 and E6 |
 | ESPN projections less favourable to young QBs; FantasyCalc favours veteran TEs | `cur-source-bias.json` | not corrected (no evidence which is right) |
 
 ## 17. Data leakage findings
@@ -438,14 +438,15 @@ package-strength tweaks (±.006), volatility penalties.
 | Medium | dynasty injury = games lost | flat 35% IR | ignores week; inconsistent with redraft | logic | consistent injury handling | depends on the untested games-lost table | low | medium |
 | Medium | SoS weight 0 | 0.5 strength on production | no gain; double counts | E2 17/20 | simpler | loses a small in-season signal if projections lag matchups | trivial | medium-high |
 | Medium | trade outcome frequency (display) | verdict only | verdict over-read as certainty | E7 | honest communication | simulated managers are simple | low | medium |
-| Investigate | availability by tier | position-level | stars miss fewer games than depth | E5 availability table | — | adds parameters | medium | — |
-| Investigate | calibrated ± ranges | disagreement heuristic | not calibrated | — | — | needs projection/market archives | high | — |
+| Done (2.3.0) | availability by tier | none in projections | stars miss fewer games than depth | §21 E11 | proportional depth values | small | low | medium-high |
+| Done (2.3.0) | calibrated ± / verdicts | disagreement heuristic | ± covers 13% of outcomes; verdict and outcome line disagreed | §21 E10 | honest ranges, consistent verdicts | — | low | medium |
 | Investigate | injury table, K/DEF | judgment | untestable | — | — | needs injury history | medium | — |
 
 ## 20. Remaining limitations
 
-* **No archives** for projections, ADP or trade-market values: their weights remain judgment. Daily snapshots
-  (90 kept) are the only archive going forward; once a season of snapshots exists, E1/E2 can test them.
+* **No archive for trade-market values**: their weight remains judgment. Projections and ADP turned out to have leak-free
+  public archives (§21 E9). The app now keeps a daily signal archive (never pruned) and E13 backtests it — market
+  included — once a season has been archived.
 * **The ± range** is a source-disagreement heuristic. E7 shows the verdict levels are ordered correctly (53% / 58% / 71%
   won) but a "clear" edge is far from a sure thing; the displayed outcome frequency is from preseason redraft
   simulations and is only a rough guide in season.
@@ -455,9 +456,111 @@ package-strength tweaks (±.006), volatility penalties.
   partly preference.
 * Contracts, coaching, college production and landing spot enter only through consensus/market; IDP, auction, best
   ball and custom K/DEF scoring are not modelled.
-* **Most valuable future research:** (1) archive projections and market values daily and backtest their weights;
-  (2) calibrate the ± range against outcomes per signal-disagreement level; (3) model availability by depth tier;
-  (4) roster-specific valuation using the E6 simulator (the infrastructure now exists).
+* **Most valuable future research:** all four items listed here in 2.2.0 were worked on in 2.3.0 (§21). Next: run E13
+  after the 2026 season (market weight); dynasty verdict calibration (needs multi-season outcomes); bye weeks in the
+  expected-lineup view; availability shape in dynasty.
 
 Reproduce: `npm run audit-model` (everything, ≈2 min after the first benchmark download), `-- --only=e5,e6,e7,e8`,
 `-- --rebuild`, `-- --freeze`, `-- --snapshot-before`, `-- --out=DIR` (see `scripts/audit-model.js`).
+
+## 21. Research batch → model 2.3.0 (2026-10-03, later the same day)
+
+Four open research items from §20, each with a walk-forward experiment in `npm run audit-model` (outputs
+`reports/audit/e9…e13-*.json`, scorecard rows; the before/after in `before-after*.json` is now **2.2.0 → 2.3.0** on the
+frozen `2026-10-03-f2898efc` dataset). E1–E4, E7 and E8 reproduced byte for byte; E5/E6 gained candidates only.
+
+### E9 — signal weights from archives (projections, ADP)
+
+**Finding: free, leak-free archives exist for two of the four untested groups** (`scripts/lib/signal-history.js`).
+Sleeper (Rotowire) *weekly* projections for past weeks are frozen before each week (Aaron Rodgers, hurt in week 1 of
+2023, keeps his week-1 projection and has none from week 2). Sleeper *season* projections and all of ESPN's past data
+were revised after the fact (injured players stripped, Puka Nacua's 2023 projection raised to 1,004 yards; ESPN shows
+his end-of-season ADP 44) — not usable. Preseason ADP: Sleeper 2020+ (`adp_*` in the season object) and
+FantasyFootballCalculator 2019+ (final preseason window, dated before week 1). Trade-market values: no history.
+
+| REAL HISTORICAL, walk-forward | ρ | MAE | note |
+|---|---|---|---|
+| Preseason 2021–25 (same sample, n ≈ 180/season): ECR | .478 | 56.8 | |
+| week-1 projection | .472 | 58.0 | |
+| ADP (Sleeper + FFC) | .486 | 57.0 | Sleeper alone .492, FFC alone .417 |
+| **app weights** (consensus .40, projection .30, ADP .15, renormalised) | .490 | **56.6** | best MAE of every single signal and blend |
+| weights fitted on earlier seasons (ADP .7–.9!) | .492 | 56.7 | no out-of-sample gain |
+| In season (20 checkpoints, weeks 4–12, 2021–24): ROS ECR | .484 | 32.3 | |
+| next-week projection × remaining games | .506 | 31.9 | projections out-rank ROS consensus |
+| production (app formula) | .467 | 32.7 | |
+| **app weights** | .511 | **31.5** | no fitted blend beat it on MAE overall; fitted production weight 0, consensus .6–.7, projection .3–.4 |
+
+**Decision: weights unchanged** — they sit on a flat optimum; production's 0.10 makes no measurable difference either
+way. The market weight still cannot be tested, so the app now writes a **daily signal archive**
+(`server/archive.js`, `data/archive/signals-YYYY-MM-DD.json.gz`, ≈130 KB/day, never pruned, `FFTA_ARCHIVE=0` turns it
+off) and **E13** (`scripts/audit/archive-backtest.js`) runs the same comparison with the market group once a completed
+season is archived (skips with instructions until then; tested on a synthetic archive). Caveat: one projection source
+(Rotowire) is testable, and the in-season projection proxy is a single week's projection × remaining games.
+
+### E10 — is the ± range calibrated?
+
+Signal disagreement rebuilt for past preseasons (consensus, projection, ADP; no market). Player level, 878 players
+(2021–25, ≥60 projected points):
+
+* The app's ± (median **5.5%** of value here) contained only **13%** of season outcomes — it measures how much the
+  sources disagree about the *estimate*, not the season. Median absolute outcome error: **29%**.
+* Disagreement does carry information: Spearman with the outcome error +.125 (positive for every position); median
+  error 25% → 29% → 35% from the low to the high disagreement tercile.
+* Realised ÷ predicted points by predicted points per game (preseason and in-season pooled, 4,719 player-windows):
+  < 8 ppg 80% range 0.29–1.77, 8–12 0.36–1.62, 12–16 0.50–1.46, 16+ 0.47–1.36 (window length hardly matters).
+
+Trade level (E6 trades, walk-forward one-parameter fits, test log-likelihood per trade): margin logistic −.595, z with
+σ = 10% of value −.595, z with the app's disagreement σ −.591, disagreement-only σ −.641. The app's σ adds almost
+nothing over the margin, and disagreement alone is worse. With the reconstructed σ, z put 74% of trades in "clear"
+and "close"/"lean" won equally often (56% / 56%). On real data the app's σ is larger (market and in-season
+disagreement; median 24% of value in redraft), but **23% of random redraft trades showed a verdict level that
+contradicted the outcome frequency printed under it** (e.g. "Close — roughly fair" above "went B's way about 70%").
+
+**Implemented (2.3.0):** redraft verdict levels come from the calibrated frequency itself — close < 60%, lean 60–70%,
+clear ≥ 70% (`trade_outcome.levels`; classified on the rounded figure the user sees). Dynasty keeps the z levels (no
+outcome data). The player view shows a **range of outcomes** from the table above (`redraft.outcome_range`, display
+only); Help explains that the ± is source disagreement.
+
+### E11 — stars miss fewer games than depth
+
+Share of team games played by ECR positional rank (2019–2025, windows from weeks 1/5/9; `e11-availability-shape.json`):
+RB 1–6 ≈ .86, RB 25–48 ≈ .76; WR .87 → .80; TE flat to rank 18; QB/TE beyond ~24 drop to .3–.7 because backups don't
+play — a role, which projections already price in. Healthy-season projections (17 games for 609 of 641 Sleeper
+projections) ignore all of it.
+
+**The 2.2.0 test of availability was mis-specified**: it multiplied *points* by availability before the replacement
+level was set, which also lowers the replacement level and shifts every surplus. A missed game costs that week's
+*surplus* (the replacement plays), so the right form is `value = availability × healthy surplus`. Results:
+
+| Candidate (σ × 0.4) | E5 loss pre / wk5 / wk9 / k2 / k8 | E6 corr | E6 per season 2021–25 |
+|---|---|---|---|
+| no availability (= 2.2.0 app) | .033 / .213 / .806 / .034 / .041 | .549 | .421 .695 .496 .519 .609 |
+| 2.2.0 test: points × availability | — | .527 | lower in 5/5 |
+| per-game, one share per position | — | .541 | lower in 5/5 |
+| per-game, smooth curve (absolute) | — | .545 | lower in 5/5 |
+| **per-game, within-position shape, flat beyond 2× starters (2.3.0)** | **.018 / .208 / .690 / .028 / .028** | **.552** | **.423 .697 .500 .522 .612** |
+
+Paired bootstrap over trades: +.0035 (95% CI .0029–.0041). Absolute shares (QB .85 vs RB .81) hurt: cross-position
+balance is already right, only the within-position shape helps. **Implemented** as `redraft.availability_shape`
+(knots = the fitted curve rounded; component "Availability (games played)"; ± scaled with the value). Frozen-data
+effect (12-team 1QB PPR, value ≥ 100): median −5.7%, depth down up to 18% (RB24 1,396 → 1,303; WR48 657 → 594),
+top-10 unchanged, elite QB/TE −1…−5% relative to elite RB/WR; dynasty unchanged; monotonicity 1 failure (unchanged).
+
+### E12 — roster-specific values (E6 simulator)
+
+Each E6 trade re-predicted from preseason information with what it does to the two rosters:
+
+| Predictor | corr with realised margin | corr with each team's own gain | seasons better than generic |
+|---|---|---|---|
+| generic values + package (the verdict) | .549 | .500 | — |
+| Δ lineup value (My Team, generic values of the best lineup) | .562 | .526 | 3 of 5 (1 tied, 1 −.001) |
+| Δ starters' projected points per game (My Team until 2.3.0) | .538 | .490 | 1 of 5 |
+| **Δ expected lineup points** (availability, bench cover, waiver fill-in) | **.576** | **.547** | **5 of 5** |
+
+Realised gain ≈ 0.80 × predicted; a team whose expected lineup rose 1 / 3 points per week gained 55% / 65% of the time
+(4+: 81% observed). When generic and roster views disagree on the direction (8% of trades), the roster view was right
+53% vs 46%. **Implemented:** My Team and the trade lineup block show **expected lineup points per week** before → after
+with that historical frequency (`roster.js expectedLineupPoints`, `trade_outcome.roster_logit_slope_per_week` 0.2),
+replacing the starters' points-per-game line. The verdict itself stays league-generic (the same trade means different
+things to the two teams). Caveats: the simulator's outcome is also lineup points, so the expected view shares its
+structure; byes are not modelled; simple managers (§20).

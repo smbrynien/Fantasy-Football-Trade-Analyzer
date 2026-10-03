@@ -1,0 +1,421 @@
+{
+  "experiment": "E10 calibration of the ± range (player outcomes 2021–2025 preseason; E6 simulated trades)",
+  "labels": "REAL HISTORICAL outcomes; signal disagreement rebuilt from leak-free archives (consensus, projection, ADP; no market history)",
+  "player": {
+    "n": 878,
+    "appRangeMedianPct": 0.055,
+    "shareInsideAppRange": 0.128,
+    "medianAbsErrorPct": 0.291,
+    "spearmanDisagreementVsError": 0.125,
+    "byPosition": {
+      "QB": {
+        "n": 143,
+        "spearman": 0.141
+      },
+      "RB": {
+        "n": 268,
+        "spearman": 0.135
+      },
+      "WR": {
+        "n": 328,
+        "spearman": 0.11
+      },
+      "TE": {
+        "n": 139,
+        "spearman": 0.092
+      }
+    },
+    "byDisagreement": [
+      {
+        "disagreement": "0.002–0.036",
+        "n": 292,
+        "medianAbsErrorPct": 0.248,
+        "outcome80": [
+          0.466,
+          1.568
+        ],
+        "insideAppRange": 0.127
+      },
+      {
+        "disagreement": "0.037–0.078",
+        "n": 293,
+        "medianAbsErrorPct": 0.287,
+        "outcome80": [
+          0.469,
+          1.622
+        ],
+        "insideAppRange": 0.082
+      },
+      {
+        "disagreement": "0.079–0.739",
+        "n": 293,
+        "medianAbsErrorPct": 0.347,
+        "outcome80": [
+          0.396,
+          1.762
+        ],
+        "insideAppRange": 0.174
+      }
+    ],
+    "byPredictedPoints": [
+      {
+        "predictedPoints": "60–120",
+        "n": 215,
+        "outcome80": [
+          0.312,
+          1.793
+        ],
+        "outcome50": [
+          0.598,
+          1.393
+        ],
+        "medianAbsErrorPct": 0.4
+      },
+      {
+        "predictedPoints": "120–180",
+        "n": 337,
+        "outcome80": [
+          0.448,
+          1.633
+        ],
+        "outcome50": [
+          0.729,
+          1.38
+        ],
+        "medianAbsErrorPct": 0.329
+      },
+      {
+        "predictedPoints": "180–250",
+        "n": 252,
+        "outcome80": [
+          0.486,
+          1.534
+        ],
+        "outcome50": [
+          0.77,
+          1.272
+        ],
+        "medianAbsErrorPct": 0.257
+      },
+      {
+        "predictedPoints": "250–+",
+        "n": 74,
+        "outcome80": [
+          0.586,
+          1.275
+        ],
+        "outcome50": [
+          0.761,
+          1.163
+        ],
+        "medianAbsErrorPct": 0.207
+      }
+    ],
+    "inSeason": {
+      "n": 3844,
+      "cells": [
+        {
+          "remainingGames": "1-7",
+          "predictedPerGame": "4-8",
+          "n": 363,
+          "q10": 0.261,
+          "q25": 0.596,
+          "q75": 1.264,
+          "q90": 1.675
+        },
+        {
+          "remainingGames": "1-7",
+          "predictedPerGame": "8-12",
+          "n": 492,
+          "q10": 0.284,
+          "q25": 0.639,
+          "q75": 1.326,
+          "q90": 1.615
+        },
+        {
+          "remainingGames": "1-7",
+          "predictedPerGame": "12-16",
+          "n": 187,
+          "q10": 0.55,
+          "q25": 0.791,
+          "q75": 1.273,
+          "q90": 1.491
+        },
+        {
+          "remainingGames": "1-7",
+          "predictedPerGame": "16-+",
+          "n": 70,
+          "q10": 0.523,
+          "q25": 0.751,
+          "q75": 1.269,
+          "q90": 1.463
+        },
+        {
+          "remainingGames": "8-11",
+          "predictedPerGame": "4-8",
+          "n": 649,
+          "q10": 0.274,
+          "q25": 0.584,
+          "q75": 1.316,
+          "q90": 1.776
+        },
+        {
+          "remainingGames": "8-11",
+          "predictedPerGame": "8-12",
+          "n": 786,
+          "q10": 0.371,
+          "q25": 0.699,
+          "q75": 1.367,
+          "q90": 1.616
+        },
+        {
+          "remainingGames": "8-11",
+          "predictedPerGame": "12-16",
+          "n": 317,
+          "q10": 0.496,
+          "q25": 0.794,
+          "q75": 1.259,
+          "q90": 1.443
+        },
+        {
+          "remainingGames": "8-11",
+          "predictedPerGame": "16-+",
+          "n": 98,
+          "q10": 0.463,
+          "q25": 0.812,
+          "q75": 1.199,
+          "q90": 1.353
+        },
+        {
+          "remainingGames": "12-18",
+          "predictedPerGame": "4-8",
+          "n": 298,
+          "q10": 0.269,
+          "q25": 0.567,
+          "q75": 1.421,
+          "q90": 1.768
+        },
+        {
+          "remainingGames": "12-18",
+          "predictedPerGame": "8-12",
+          "n": 399,
+          "q10": 0.389,
+          "q25": 0.75,
+          "q75": 1.383,
+          "q90": 1.623
+        },
+        {
+          "remainingGames": "12-18",
+          "predictedPerGame": "12-16",
+          "n": 145,
+          "q10": 0.397,
+          "q25": 0.786,
+          "q75": 1.235,
+          "q90": 1.418
+        },
+        {
+          "remainingGames": "12-18",
+          "predictedPerGame": "16-+",
+          "n": 40,
+          "q10": 0.519,
+          "q25": 0.732,
+          "q75": 1.221,
+          "q90": 1.347
+        }
+      ]
+    },
+    "outcomeRangeTable": [
+      {
+        "fromPerGame": 4,
+        "n": 1618,
+        "q10": 0.292,
+        "q25": 0.592,
+        "q50": 0.95,
+        "q75": 1.336,
+        "q90": 1.765
+      },
+      {
+        "fromPerGame": 8,
+        "n": 2003,
+        "q10": 0.363,
+        "q25": 0.704,
+        "q50": 1.05,
+        "q75": 1.364,
+        "q90": 1.616
+      },
+      {
+        "fromPerGame": 12,
+        "n": 845,
+        "q10": 0.503,
+        "q25": 0.793,
+        "q50": 1.028,
+        "q75": 1.26,
+        "q90": 1.457
+      },
+      {
+        "fromPerGame": 16,
+        "n": 253,
+        "q10": 0.474,
+        "q25": 0.76,
+        "q50": 1.012,
+        "q75": 1.209,
+        "q90": 1.36
+      }
+    ]
+  },
+  "trades": {
+    "n": 4990,
+    "appVerdictLevels": {
+      "close": {
+        "n": 660,
+        "won": 0.558
+      },
+      "lean": {
+        "n": 640,
+        "won": 0.564
+      },
+      "clear": {
+        "n": 3690,
+        "won": 0.728
+      }
+    },
+    "models": {
+      "margin": {
+        "label": "logistic in |diff| / larger side (app outcome line since 2.2.0)",
+        "testLogLikPerTrade": -0.595,
+        "brier": 0.203,
+        "n": 3993,
+        "fittedK": {
+          "2022": 1.25,
+          "2023": 1.5,
+          "2024": 1.5,
+          "2025": 1.5
+        },
+        "calibration": {
+          "p<60%": {
+            "n": 1098,
+            "predicted": 0.552,
+            "won": 0.555
+          },
+          "60–70%": {
+            "n": 1453,
+            "predicted": 0.651,
+            "won": 0.636
+          },
+          "70–80%": {
+            "n": 2155,
+            "predicted": 0.754,
+            "won": 0.762
+          },
+          "≥80%": {
+            "n": 284,
+            "predicted": 0.806,
+            "won": 0.849
+          }
+        }
+      },
+      "zShare": {
+        "label": "Φ(k·z), σ = 10% of each asset value",
+        "testLogLikPerTrade": -0.595,
+        "brier": 0.203,
+        "n": 3993,
+        "fittedK": {
+          "2022": 0.07500000000000001,
+          "2023": 0.1,
+          "2024": 0.07500000000000001,
+          "2025": 0.07500000000000001
+        },
+        "calibration": {
+          "p<60%": {
+            "n": 1473,
+            "predicted": 0.55,
+            "won": 0.554
+          },
+          "60–70%": {
+            "n": 1506,
+            "predicted": 0.649,
+            "won": 0.678
+          },
+          "70–80%": {
+            "n": 1778,
+            "predicted": 0.744,
+            "won": 0.779
+          },
+          "≥80%": {
+            "n": 233,
+            "predicted": 0.818,
+            "won": 0.837
+          }
+        }
+      },
+      "zApp": {
+        "label": "Φ(k·z), σ = the app's disagreement σ (max(floor, signal SD))",
+        "testLogLikPerTrade": -0.591,
+        "brier": 0.202,
+        "n": 3993,
+        "fittedK": {
+          "2022": 0.07500000000000001,
+          "2023": 0.07500000000000001,
+          "2024": 0.07500000000000001,
+          "2025": 0.07500000000000001
+        },
+        "calibration": {
+          "p<60%": {
+            "n": 2087,
+            "predicted": 0.548,
+            "won": 0.579
+          },
+          "60–70%": {
+            "n": 1388,
+            "predicted": 0.645,
+            "won": 0.697
+          },
+          "70–80%": {
+            "n": 840,
+            "predicted": 0.747,
+            "won": 0.787
+          },
+          "≥80%": {
+            "n": 675,
+            "predicted": 0.865,
+            "won": 0.859
+          }
+        }
+      },
+      "zDis": {
+        "label": "Φ(k·z), σ = signal disagreement only (floor 1% of value)",
+        "testLogLikPerTrade": -0.641,
+        "brier": 0.217,
+        "n": 3993,
+        "fittedK": {
+          "2022": 0.025,
+          "2023": 0.05,
+          "2024": 0.05,
+          "2025": 0.025
+        },
+        "calibration": {
+          "p<60%": {
+            "n": 3852,
+            "predicted": 0.537,
+            "won": 0.643
+          },
+          "60–70%": {
+            "n": 730,
+            "predicted": 0.638,
+            "won": 0.841
+          },
+          "70–80%": {
+            "n": 205,
+            "predicted": 0.741,
+            "won": 0.805
+          },
+          "≥80%": {
+            "n": 203,
+            "predicted": 0.892,
+            "won": 0.798
+          }
+        }
+      }
+    }
+  }
+}
