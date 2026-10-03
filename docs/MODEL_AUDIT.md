@@ -564,3 +564,82 @@ with that historical frequency (`roster.js expectedLineupPoints`, `trade_outcome
 replacing the starters' points-per-game line. The verdict itself stays league-generic (the same trade means different
 things to the two teams). Caveats: the simulator's outcome is also lineup points, so the expected view shares its
 structure; byes are not modelled; simple managers (§20).
+
+## 22. Trade finder audit (E14, 2026-10-03, third session)
+
+**Feature.** My Team → "Trade finder: what could I offer?" (and on the Trade page when you are one side and have added
+only the asset you want): for a target player or pick, packages of 1–3 assets from your saved team that the model calls
+fair for **both** sides and that improve **your** team most, a few diverse options. `js/core/trade-finder.js`
+`findTradePackages`. No value changes (asset values, verdicts and `model_version` 2.3.0 untouched); `analyzeTrade` gained
+a per-run cache of its value curves (identical numbers, ~8× faster, which also speeds up "Even it out").
+
+**Rules.** Every package of up to 3 of your 30 most valuable unprotected assets is scored exactly with `analyzeTrade`
+(package adjustment included). *Fair*: the verdict calls it close ("even") and your value edge lies in
+[−15%, +maxEdge], maxEdge = 5% by default ("Strict"; "Balanced" 10%, "Model's close" = the verdict band). *No
+throw-ins*: a package is dropped when a smaller part of it would already be acceptable to the other side (they receive
+at least as much, or the gap is inside the band and close). *Improves*: redraft = expected lineup points per week after −
+before (E12's best predictor), ≥ +0.1; dynasty = value of the best starting lineup after − before. *Diverse*: each of
+your assets in at most 2 of the (up to 5) options. *Owner known* (a saved roster of the league holds the target, e.g.
+all teams imported from Sleeper): options are ranked by **your + their** gain; their roster is trimmed back to its size
+after they receive extra players (they drop their lowest values). "Never offer" per team.
+
+**Experiment E14** (`scripts/audit/trade-finder.js`, `npm run audit-model -- --only=e14`; REAL HISTORICAL outcomes,
+SIMULATED leagues = the E6 simulator: 12-team 1QB PPR, 13-man rosters drafted on preseason values fitted on earlier
+seasons, weekly lineups and waivers, real weekly points 2021–2025). 3,000 (my team, target on another roster) requests
+on seed 14 and an independent 3,000 on seed 99; each strategy picks a package, the trade is applied after the draft (E6's
+drop/sign step keeps rosters legal) and the season is replayed. Realised gain = season points with − without the trade.
+
+| Strategy (seed 14) | found a package | my realised gain (95% CI) | my gain > 0 | their realised gain |
+|---|---|---|---|---|
+| **Finder (app): top option** | 21% | **+6.4 (0.1, 12.6)** | 52% | −18.7 |
+| Finder: any option shown (mean) | 21% | +6.6 (0.8, 12.3) | 52% | −18.6 |
+| Ranked by lineup value instead of expected points | 21% | +7.9 (1.7, 14.0) | 54% | −20.6 |
+| Value only: most evenly valued fair package | 89% | −16.5 (−19.7, −13.3) | 42% | −16.3 |
+| Random fair package | 89% | −19.8 (−23.0, −16.7) | 40% | −18.4 |
+| maxEdge 0% / 10% / verdict band | 17% / 28% / 38% | +2.8 / +9.1 / +9.7 | — | −19.0 / −22.7 / −29.5 |
+| Their roster known, ranked by my + their gain | 21% | +6.5 (0.2, 12.8) | 52% | **−12.2** |
+
+Context: in this simulator any trade costs both teams on average (roster churn; the random fair package: −19.8 / −18.4),
+so "their gain" is judged against the value-only baselines, not against zero.
+
+**Paired on the same requests** (finder top − alternative; seed 14 / replication seed 99):
+
+| Comparison | my team | their team |
+|---|---|---|
+| vs random fair package | **+13.4 (7.8, 19.0)** / **+11.5 (6.2, 16.7)** | +4.4 / +2.1 (n.s.) |
+| vs most evenly valued package | +5.0 (−0.5, 10.4) / **+15.0 (9.9, 20.1)** | +2.7 / −2.1 (n.s.) |
+| vs owner-aware ranking (my + their gain) | +0.2 / +1.6 (n.s.) | **−6.5 (−9.6, −3.3)** / **−5.9 (−9.4, −2.5)** |
+| vs owner-aware ranking (smaller of the two) | −0.5 / **+4.6 (1.0, 8.3)** | −5.1 / −7.4 |
+| vs maxEdge 0% | **+5.7 (1.7, 9.8)** / **+6.5 (2.9, 10.2)** | −0.8 / −3.3 (n.s.) |
+| vs verdict band ("Model's close") | −6.1 (−10.7, −1.5) | **+7.1 (2.9, 11.3)** |
+| vs packages of ≤ 2 assets | +1.0 / +2.1 (0.3, 3.9) | −2.6 (−4.0, −1.2) / −2.1 (−4.0, −0.1) |
+| vs a size penalty (0.5 pts/wk per extra asset) | 0.0 | +0.4 (n.s.) |
+| vs no throw-in rule | 0 (identical top option: giving more can never raise my lineup) | 0 |
+
+**Decisions.** (1) Ship the finder: its packages help the team that makes them (+6.4 / +6.6 season points on the two
+seeds) and beat value-only choices by 11–15 points without measurable harm to the other team. (2) Default fairness
+Strict (5%): 0% cost the proposer ~6 points with no measurable benefit to the other side; the verdict band costs the
+other side ~7 points; 10% is roughly neutral and offered as "Balanced". (3) Owner known → rank by the sum of both gains
+(+6 points for the other team on both seeds, no measurable cost to the proposer); "smaller of the two" cost the proposer
+4.6 on one seed. (4) Keep 3-asset packages (2-asset caps move ~2 points from proposer to the other side; a size
+penalty does nothing). (5) The no-throw-in rule stays for the list (it never changes the top option). (6) Show the
+calibration honestly: predicted gains (~14.6 season points) are ~2.3× the realised ones, and within the finder's own
+options predicted gain does not separate better from worse ones (corr .01; all shown options are about equally good),
+so the UI says "about 6–7 points over a season on average, with a lot of luck trade to trade".
+
+**Current data** (`2026-10-03` dataset, every preset × redraft/dynasty, 60 requests each, 3 fairness presets; §E14
+`currentData`): 0 rule violations (fair by an independent `analyzeTrade`, no throw-in, gain, roster membership,
+diversity); coverage strict 50–95% (a value-drafted league has more fitting targets than random ones); p95 search time
+23–71 ms (max 86). Redraft with the owner's roster known, their expected lineup change for the top option goes from
+−2.5…+0.2 to −0.2…+1.6 pts/week. **Dynasty caveat:** ranked by starting-lineup value, top options are consolidation
+trades that cost the other team 800–2,800 lineup value (value-fair overall, more depth for them); owner-aware ranking
+halves that. No multi-season outcome test exists for dynasty — judgment, stated in the UI.
+
+**Bugs found by the audit (fixed before release).** (a) With a wide band every superset of any single asset was
+treated as having a throw-in (a lone asset that left the other side clearly short counted as "enough") — the "Model's
+close" preset found *fewer* packages than Strict; "enough" now means acceptable to the other side. (b) Two identical
+generic picks listed the same package twice. (c) The other team's predicted gain counted the players they would have
+to drop as bench cover. Each has a regression test (`tests/trade-finder.test.js`).
+
+**Limits.** E14 is redraft, 12-team 1QB PPR, trades right after the draft, simple simulated managers; it cannot test
+whether a real manager accepts. The finder never sees the other team's roster unless it is saved.

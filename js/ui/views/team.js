@@ -4,7 +4,8 @@
 
 import { h, clear, fmtValue, fmtAge, fmt1, posBadge, confBadge, injuryBadge, toast, openModal } from '../dom.js';
 import { app, getValuations, activeProfile, allProfiles, setProfile, playerData, myRoster, saveMyRoster, load, save, isPlainObject, isStringArray,
-  allTeams, teamsFor, activeTeam, setActiveTeam, createTeam, updateTeam, deleteTeam } from '../state.js';
+  allTeams, teamsFor, activeTeam, setActiveTeam, createTeam, updateTeam, deleteTeam, opponentsFor, upsertOpponents } from '../state.js';
+import { finderPanel } from './trade-finder.js';
 import { bestLineup, expectationInputs, expectedLineupPoints, rosterTargets } from '../../core/roster.js';
 import { assetSearchBox, buildSearchIndex, searchAssets } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
@@ -141,7 +142,20 @@ export function renderTeam(root) {
         return h('span.chip', { title: `${n} rostered, ${st} in your best lineup` }, `${p} ${n} (${st} starting)`);
       })),
       h('p.tiny.muted.mt-s', {}, 'Best lineup = highest-valued eligible players for each starting slot (dedicated slots first, then FLEX, then Superflex), using this league\'s values.')));
-    body.append(targetsPanel(L));
+    const team2 = activeTeam(profile);
+    finder = team2 ? finderPanel({ result, profile, team: team2, expected: rosterExpectation(), onChange: () => { roster = myRoster(profile); draw(); } }) : null;
+    if (finder) body.append(finder);
+    body.append(targetsPanel(L), opponentsPanel());
+  }
+
+  let finder = null;
+  /** Other teams of this league saved for the trade finder (from Sleeper): count and remove. */
+  function opponentsPanel() {
+    const opp = opponentsFor(profile);
+    if (!opp.length) return h('p.small.muted.mt.no-print', {}, 'Tip: import your league from Sleeper with "Also save the other teams" — the trade finder then also checks what each offer does to the other team\'s lineup.');
+    return h('details.panel.mt.no-print', {}, h('summary', {}, h('strong', {}, `Other teams in this league (${opp.length})`), h('span.small.muted', {}, ' — used by the trade finder to judge the other side')),
+      h('ul.small', {}, opp.map((t) => h('li', {}, `${t.name} — ${t.ids.length} players`, t.updated_at ? h('span.muted', {}, ` (saved ${new Date(t.updated_at).toLocaleDateString()})`) : null))),
+      h('button.btn.btn-sm.btn-danger', { onclick: () => { if (confirm(`Remove the ${opp.length} saved rosters of the other teams in this league?`)) { for (const t of opp) deleteTeam(t.id); } } }, 'Remove them'));
   }
 
   // ---- Trade targets by roster need (F46) ----
@@ -192,7 +206,8 @@ export function renderTeam(root) {
         h('td.num.bold', {}, `+${fmt1(t.gain)}`),
         h('td.num', {}, fmtValue(t.asset.value)),
         h('td.num', {}, fmt1(t.perThousand)),
-        h('td.nowrap.no-print', {}, h('button.btn.btn-xs', { title: 'Start a trade where you receive this player', onclick: () => tradeFor(t.asset.id) }, 'Trade for'))))))),
+        h('td.nowrap.no-print', {}, finder ? h('button.btn.btn-xs', { title: 'Let the trade finder suggest fair packages from your roster for this player', onclick: () => finder.setTarget(t.asset.id) }, 'Find packages') : null, ' ',
+          h('button.btn.btn-xs', { title: 'Start a trade where you receive this player', onclick: () => tradeFor(t.asset.id) }, 'Trade for'))))))),
     h('p.tiny.muted.mt-s', {}, `Scored: the ${40} most valuable players per position inside the value band (NFL free agents left out). Each gain assumes nobody leaves your roster.`));
     return panel;
   }
@@ -266,6 +281,7 @@ export function renderTeam(root) {
       const cur = activeTeam(profile);
       // A filled team is kept by default: the import becomes a new saved team named after the Sleeper team.
       const asNew = h('input', { type: 'checkbox', checked: Boolean(cur && cur.ids.length) });
+      const withOthers = h('input', { type: 'checkbox', checked: true });
       const loadTeams = async () => {
         const id = lid.value.trim();
         if (!/^\d{5,25}$/.test(id)) { clear(out).append(h('p.small', {}, 'Enter the numeric league ID.')); return; }
@@ -279,19 +295,25 @@ export function renderTeam(root) {
           if (!Array.isArray(rosters) || !rosters.length) throw new Error('no teams found for that league ID');
           const byUser = new Map((Array.isArray(users) ? users : []).map((u) => [u.user_id, u]));
           const bySleeper = new Map((app.dataset.players || []).filter((p) => p.ids?.sleeper).map((p) => [String(p.ids.sleeper), p.cid]));
-          clear(out).append(h('p.small', {}, 'Which team is yours?'), h('div.stack', {}, rosters.map((r) => {
+          const teamsOf = rosters.map((r) => {
             const u = byUser.get(r.owner_id);
             const label = u?.metadata?.team_name || u?.display_name || `Team ${r.roster_id}`;
             const ids = [...new Set([...(r.players || []), ...(r.reserve || []), ...(r.taxi || [])].map(String))];
-            return h('button.btn', { style: { justifyContent: 'space-between', width: '100%' }, onclick: () => {
-              const cids = ids.map((x) => bySleeper.get(x)).filter(Boolean);
-              const meta = { source: 'sleeper', sleeper_league: id, team_name: label };
-              if (asNew.checked || !activeTeam(profile)) { createTeam({ name: label, ...meta, ids: cids }, profile); roster = myRoster(profile); }
-              else setIds(cids, meta);
-              close();
-              toast(`Imported ${cids.length} of ${ids.length} players from "${label}".${cids.length < ids.length ? ' Unmatched players are not in the current player database.' : ''} Draft picks aren't imported — add them with the search box.`, cids.length < ids.length ? 'warn' : 'ok', 8000);
-            } }, h('span.bold', {}, label), h('span.small.muted', {}, `${ids.length} players`));
-          })));
+            return { r, label, ids, cids: ids.map((x) => bySleeper.get(x)).filter(Boolean) };
+          });
+          clear(out).append(h('p.small', {}, 'Which team is yours?'), h('div.stack', {}, teamsOf.map(({ r, label, ids, cids }) => h('button.btn', { style: { justifyContent: 'space-between', width: '100%' }, onclick: () => {
+            const meta = { source: 'sleeper', sleeper_league: id, sleeper_roster_id: r.roster_id, team_name: label };
+            // The other teams first (no re-render yet): saved as opponents for the trade finder, updated if saved before.
+            const others = withOthers.checked ? upsertOpponents(teamsOf.filter((x) => x.r.roster_id !== r.roster_id).map((x) => ({ name: x.label, ids: x.cids, source: 'sleeper', sleeper_league: id, sleeper_roster_id: x.r.roster_id, team_name: x.label })), profile) : null;
+            // My team: the same Sleeper team saved before is refreshed in place; otherwise a new team or the current one.
+            const same = teamsFor(profile).find((t) => t.sleeper_league === id && t.sleeper_roster_id === r.roster_id);
+            if (same) { updateTeam(same.id, { ...meta, ids: cids }); setActiveTeam(same.id, profile); }
+            else if (asNew.checked || !activeTeam(profile)) createTeam({ name: label, ...meta, ids: cids }, profile);
+            else setIds(cids, meta);
+            roster = myRoster(profile);
+            close();
+            toast(`${same ? 'Refreshed' : 'Imported'} ${cids.length} of ${ids.length} players from "${label}".${others ? ` Other teams: ${others.added} saved, ${others.updated} refreshed.` : ''}${cids.length < ids.length ? ' Unmatched players are not in the current player database.' : ''} Draft picks aren't imported — add them with the search box.`, cids.length < ids.length ? 'warn' : 'ok', 9000);
+          } }, h('span.bold', {}, label), h('span.small.muted', {}, `${ids.length} players`)))));
         } catch (e) {
           clear(out).append(h('p.small', {}, `Could not load the league: ${e.message}. Check the ID and your internet connection.`));
         }
@@ -300,7 +322,8 @@ export function renderTeam(root) {
         h('div.flex-between', {}, h('h3', { style: { margin: 0 } }, 'Import your roster from Sleeper'), h('button.btn.btn-sm', { onclick: close, 'aria-label': 'Close' }, '×')),
         h('p.small.muted', {}, 'Reads the league\'s public team list from Sleeper (no login).'),
         h('div.flex', { style: { flexWrap: 'nowrap' } }, lid, h('button.btn.btn-primary', { onclick: loadTeams }, 'Load teams')),
-        cur ? h('label.small.mt-s', { style: { display: 'block' } }, asNew, ` Save as a new team (otherwise "${cur.name}" is replaced)`) : null, out);
+        cur ? h('label.small.mt-s', { style: { display: 'block' } }, asNew, ` Save as a new team (otherwise "${cur.name}" is replaced; a team imported from the same Sleeper team before is always refreshed)`) : null,
+        h('label.small.mt-s', { style: { display: 'block' } }, withOthers, ' Also save the other teams of this league (the trade finder then checks what an offer does to their lineup)'), out);
     });
   }
 

@@ -193,6 +193,45 @@ try {
       await fetch('/api/teams', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teams: [] }) }); // server copy too
     });
 
+    if (viewport.width >= 1024) {
+      // Desktop: trade finder — fair packages from my team for a target, owner roster known → ranked for both teams.
+      const mineIds = ['TQB14', 'TRB3', 'TRB9', 'TRB13', 'TRB17', 'TWR8', 'TWR12', 'TWR16', 'TWR20', 'TTE16'];
+      const teams = [
+        { id: 'team_e2e_me', name: 'E2E mine', profileId: 'preset_12_1qb_ppr', ids: mineIds, updated_at: '2026-10-03T00:00:00Z' },
+        { id: 'team_e2e_rival', name: 'Rival', profileId: 'preset_12_1qb_ppr', opponent: true, ids: ['TQB3', 'TRB1', 'TWR2', 'TWR6', 'TTE5', 'TRB20'], updated_at: '2026-10-03T00:00:00Z' },
+      ];
+      await page.evaluate((t) => { localStorage.setItem('ffta.teams', JSON.stringify(t)); localStorage.removeItem('ffta.finder.fairness'); }, teams);
+      await page.goto(`${base}/#/team`); await page.reload();
+      const fin = page.locator('.finder input[type=search]');
+      await fin.waitFor({ timeout: 8000 });
+      await fin.fill('Test QB 3');
+      const fo = page.locator('.search-results [role=option]').first();
+      await fo.waitFor({ timeout: 5000 }); await fo.dispatchEvent('mousedown');
+      await page.locator('.finder-option').first().waitFor({ timeout: 5000 }).catch(() => {});
+      const cards = await page.locator('.finder-option').allInnerTexts();
+      const owner = await page.locator('.finder-target').innerText().catch(() => '');
+      check(cards.length >= 2 && cards.every((c) => /^Option \d/.test(c)) && /Owner: Rival/.test(owner) && cards.every((c) => /Rival:/.test(c)),
+        `trade finder: several fair, improving packages, the owner's roster counted (${cards.length} options; ${owner.replace(/\n/g, ' ').slice(0, 80)})`);
+      await page.locator('.finder-option').first().locator('button', { hasText: 'Open in Trade' }).click();
+      await page.locator('.verdict-head').first().waitFor({ timeout: 5000 });
+      const fv = await page.evaluate(() => ({ t: JSON.parse(localStorage.getItem('ffta.trade.redraft')), level: document.querySelector('.verdict-head')?.className }));
+      check(fv.t.a.join() === 'TQB3' && fv.t.b.length >= 1 && fv.t.b.every((id) => mineIds.includes(id)) && fv.t.me === 'a' && /\beven\b/.test(fv.level), `trade finder: "Open in Trade" loads a close trade (${fv.t.b.join('+')}, ${fv.level})`);
+      // Trade page: me = A, only the target on my side → "Packages from your roster" chips; one click fills their side.
+      await page.evaluate(() => localStorage.setItem('ffta.trade.redraft', JSON.stringify({ a: ['TQB3'], b: [], me: 'a' })));
+      await page.goto(`${base}/#/trade`); await page.reload();
+      await page.locator('.finder-chip').first().waitFor({ timeout: 5000 }).catch(() => {});
+      const nChips = await page.locator('.finder-chip').count();
+      if (nChips) await page.locator('.finder-chip').first().click();
+      await page.waitForTimeout(300);
+      check(nChips >= 2 && (await page.evaluate(() => JSON.parse(localStorage.getItem('ffta.trade.redraft')).b.length)) >= 1, `trade page: packages from my roster offered and added in one click (${nChips} chips)`);
+      const inputs = await page.evaluate(() => [...document.querySelectorAll('.trade-side input[type=search]')].map((e) => Math.round(e.getBoundingClientRect().top)));
+      check(inputs.length === 2 && inputs[0] === inputs[1], `trade: both search boxes level when one side has a package adjustment (${inputs.join(' / ')})`);
+      await page.evaluate(async () => {
+        for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.trade') || k.startsWith('ffta.team') || k.startsWith('ffta.finder')) localStorage.removeItem(k);
+        await fetch('/api/teams', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teams: [] }) });
+      });
+    }
+
     // Keyboard: a Players row opens the player with Enter.
     await page.goto(`${base}/#/players`);
     const row = page.locator(viewport.width > 720 ? 'table.data tbody tr' : '.pcard').first();

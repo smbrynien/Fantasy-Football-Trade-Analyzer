@@ -244,6 +244,74 @@ E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineupValue,"corr(predicted own change, own realised gain)",0.526
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineupPoints,"corr(predicted own change, own realised gain)",0.49
 E12 roster-specific values,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,expected,"corr(predicted own change, own realised gain)",0.547
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder,my realised season gain,6.353
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder,their realised season gain,-18.685
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder,coverage (share of requests with a package),0.212
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder_any,my realised season gain,6.572
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder_any,their realised season gain,-18.627
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder_any,coverage (share of requests with a package),0.212
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineup_value,my realised season gain,7.87
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineup_value,their realised season gain,-20.586
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,lineup_value,coverage (share of requests with a package),0.212
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,most_even,my realised season gain,-16.473
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,most_even,their realised season gain,-16.292
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,most_even,coverage (share of requests with a package),0.885
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,random_fair,my realised season gain,-19.847
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,random_fair,their realised season gain,-18.415
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,random_fair,coverage (share of requests with a package),0.885
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,not_minimal,my realised season gain,6.353
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,not_minimal,their realised season gain,-18.685
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,not_minimal,coverage (share of requests with a package),0.212
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge10,my realised season gain,9.119
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge10,their realised season gain,-22.721
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge10,coverage (share of requests with a package),0.278
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge0,my realised season gain,2.847
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge0,their realised season gain,-18.952
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge0,coverage (share of requests with a package),0.174
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge_close,my realised season gain,9.697
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge_close,their realised season gain,-29.465
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,edge_close,coverage (share of requests with a package),0.377
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,two_max,my realised season gain,7.945
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,two_max,their realised season gain,-16.949
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,two_max,coverage (share of requests with a package),0.201
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_filter,my realised season gain,5.639
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_filter,their realised season gain,3.937
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_filter,coverage (share of requests with a package),0.069
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_sum,my realised season gain,6.507
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_sum,their realised season gain,-12.232
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_sum,coverage (share of requests with a package),0.212
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_min,my realised season gain,5.892
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_min,their realised season gain,-13.55
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,mutual_min,coverage (share of requests with a package),0.212
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,pen05,my realised season gain,6.392
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,pen05,their realised season gain,-19.123
+E14 trade finder,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,pen05,coverage (share of requests with a package),0.212
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − finder_any,"my gain difference, same requests",-0.219
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − finder_any,"their gain difference, same requests",-0.058
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − lineup_value,"my gain difference, same requests",-1.517
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − lineup_value,"their gain difference, same requests",1.901
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − most_even,"my gain difference, same requests",4.971
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − most_even,"their gain difference, same requests",2.657
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − random_fair,"my gain difference, same requests",13.435
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − random_fair,"their gain difference, same requests",4.44
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − not_minimal,"my gain difference, same requests",0
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − not_minimal,"their gain difference, same requests",0
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − edge10,"my gain difference, same requests",-6.15
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − edge10,"their gain difference, same requests",2.499
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − edge0,"my gain difference, same requests",5.731
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − edge0,"their gain difference, same requests",-0.779
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − edge_close,"my gain difference, same requests",-6.095
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − edge_close,"their gain difference, same requests",7.109
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − two_max,"my gain difference, same requests",0.956
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − two_max,"their gain difference, same requests",-2.576
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_filter,"my gain difference, same requests",2.849
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_filter,"their gain difference, same requests",-10.301
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_sum,"my gain difference, same requests",-0.154
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_sum,"their gain difference, same requests",-6.453
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_min,"my gain difference, same requests",0.461
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_min,"their gain difference, same requests",-5.135
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − pen05,"my gain difference, same requests",-0.039
+E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − pen05,"their gain difference, same requests",0.438
 Monotonicity,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",current,failures,1
 Package simulation,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",raw,"corr(model diff, simulated lineup gain)",0.596
 Package simulation,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",packageAdjusted,"corr(model diff, simulated lineup gain)",0.602

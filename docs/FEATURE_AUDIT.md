@@ -73,6 +73,7 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
 | F47 | Merge Data → Sources into the Sync dashboard (expandable rows) | Low–Medium | rare | Low | Medium | Low (one table) | none | Low | Neutral | **Medium** | Tier 2 |
 | F48 | Players: positional rank column ("5 · WR3"), fewer default columns ≤1360 px | Low–Medium | weekly | Low | Low | Low | none | Low | Neutral | **Medium** | Tier 2 |
 | F49 | Duplicate-safe search (assets already in the trade/roster/comparison shown as unavailable) | High (correctness) | every trade | — | Low | Low | none | Low | Positive | **High** | **Implemented** (second audit) |
+| F51 | Trade finder — "I want X, what could I offer?": fair packages from My Team that improve my lineup, owner-aware with saved league rosters | High | weekly | Medium | Medium (exact `analyzeTrade` per package; E12 expected points) | Low | F1, F46 | Medium (must not read as "they will accept") | Positive | **High** | **Implemented** 2026-10-03 (`js/core/trade-finder.js`; audit E14, MODEL_AUDIT §22) |
 | F50 | Data-quality summary first; batch table collapsed | Medium | rare | Low | Low | Low | none | Low | Neutral | **Medium** | **Implemented** (second audit) |
 
 ## 2. High priority

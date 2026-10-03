@@ -1,7 +1,9 @@
 // TRADE CALCULATOR — the central experience.
 
-import { h, clear, fmtValue, fmtSigned, fmtPct, fmtRange, fmtAge, posBadge, confBadge, injuryBadge, toast, download, fmtTime, copyText, openModal } from '../dom.js';
-import { app, getValuations, load, save, activeProfile, allProfiles, playerData, isPlainObject, isStringArray, myRoster, teamsFor, activeTeam, setActiveTeam } from '../state.js';
+import { h, clear, fmtValue, fmtSigned, fmt1, fmtPct, fmtRange, fmtAge, posBadge, confBadge, injuryBadge, toast, download, fmtTime, copyText, openModal } from '../dom.js';
+import { app, getValuations, load, save, activeProfile, allProfiles, playerData, isPlainObject, isStringArray, myRoster, teamsFor, activeTeam, setActiveTeam, opponentsFor } from '../state.js';
+import { findTradePackages } from '../../core/trade-finder.js';
+import { finderFairness } from './trade-finder.js';
 import { analyzeTrade } from '../../core/valuation/trade.js';
 import { balanceSuggestions, comboSuggestions } from '../../core/valuation/balance.js';
 import { compareCounteroffers, addVariant, sameTrade, variantLabel, MAX_VARIANTS } from '../../core/counteroffers.js';
@@ -132,7 +134,9 @@ export function renderTrade(root) {
     panel.append(h('h2', {}, h('span', {}, label),
       h('span.side-total', { title: sideAna.package.total ? `${fmtValue(sideAna.raw)} raw − ${fmtValue(sideAna.package.total)} package adjustment` : 'Sum of the asset values' },
         fmtValue(sideAna.adjusted), h('small', {}, ` (${assets.length} asset${assets.length === 1 ? '' : 's'})`),
-        sideAna.package.total ? h('small.block.muted', {}, `${fmtValue(sideAna.raw)} before package adj.`) : null)));
+        sideAna.package.total ? h('small.block.muted', {}, `${fmtValue(sideAna.raw)} before package adj.`)
+          // the other side shows that line: keep the same height so both search boxes stay level
+          : currentAnalysis().sides.some((x) => x.package.total) ? h('small.block.muted', { 'aria-hidden': 'true', style: { visibility: 'hidden' } }, '–') : null)));
     panel.append(assetSearchBox({
       getResult: () => result,
       onPick: (a) => addAsset(side, a),
@@ -259,7 +263,7 @@ export function renderTrade(root) {
       mkt ? h('p.small.market-check', { class: mkt.cls }, h('strong', {}, 'Market check: '), mkt.text) : null,
       ana.notes.length ? h('ul.small.mt-s', {}, ana.notes.map((x) => h('li', {}, relabel(x, n)))) : null,
       lineupBlock(),
-      balanceBlock(ana),
+      ...(() => { const f = finderBlock(); return [f, f?.dataset.options ? null : balanceBlock(ana)]; })(), // the finder's packages replace plain value matches
     );
 
     // package adjustments: explains why the totals are not plain sums
@@ -388,6 +392,32 @@ export function renderTrade(root) {
       r.notOnRoster.length ? h('div.small.warn-text', {}, `⚠ Not on your saved roster: ${r.notOnRoster.map(assetName).join(', ')} — check which side is you, or update `, h('a', { href: '#/team' }, 'My Team'), '.') : null,
       r.overLimit ? h('div.small.warn-text', {}, `⚠ You would have ${r.overLimit} more player${r.overLimit === 1 ? '' : 's'} than roster spots — someone would have to be dropped (not counted above).`) : null,
       h('div.tiny.muted', {}, 'Best lineup from your saved roster using these values; expected points use this season\'s projections, how often players miss games, and your bench as cover. Facts about your lineup, not a recommendation.'));
+  }
+
+  /**
+   * Trade finder on the Trade page: I am one side, I receive exactly one asset and the other side is still empty →
+   * fair packages from my roster that improve my team (js/core/trade-finder.js; the full view is on My Team).
+   */
+  function finderBlock() {
+    const me = trade.me, other = me === 'a' ? 'b' : me === 'b' ? 'a' : null;
+    if (!other || !roster.ids.length || trade[me].length !== 1 || trade[other].length) return null;
+    const targetId = trade[me][0];
+    if (roster.ids.includes(targetId)) return null;
+    const owner = opponentsFor().filter((t) => t.ids.includes(targetId));
+    const team = activeTeam();
+    const res = findTradePackages(result, roster.ids, targetId, { expected: rosterExpectation(), keep: isStringArray(team?.keep) ? team.keep : [], theirs: owner.length === 1 ? owner[0].ids : null, limit: 4, maxEdge: finderFairness().maxEdge });
+    if (!res.ok) return h('div.balance.mt.no-print.small.muted', {}, h('strong', {}, 'Packages from your roster: '), res.reason);
+    const gainText = (v) => (res.metric === 'expected' ? `${v >= 0 ? '+' : '−'}${fmt1(Math.abs(v))} pts/wk` : `${fmtSigned(v)} lineup value`);
+    const list = res.options;
+    return h('div.balance.mt.no-print', { 'data-options': list.length ? String(list.length) : null },
+      h('div.small', {}, h('strong', {}, 'Packages from your roster: '),
+        list.length ? `fair for both sides and better for your team (${res.metric === 'expected' ? 'expected lineup points per week' : 'value of your starting lineup'})${owner.length === 1 ? `, ranked for both teams with ${owner[0].name}'s saved roster` : ''} — value math, not a prediction of what they accept:`
+          : `nothing on your roster is both a fair offer for ${res.target.name} and an improvement for your team.`, ' ', h('a', { href: '#/team' }, 'Trade finder on My Team')),
+      list.length ? h('div.chips.mt-s', {}, list.map((op) => h('button.chip.suggest.finder-chip', {
+        type: 'button',
+        title: `Offer ${op.give.map((g) => g.name).join(' + ')} for ${res.target.name}. They receive ${fmtValue(op.theirs)}, you ${fmtValue(op.mine)} (after the package adjustment).${op.theirGain !== undefined ? ` Their lineup: ${gainText(op.theirGain)}.` : ''}`,
+        onclick: () => addAssets(other, op.ids.map((id) => result.getAsset(id))),
+      }, op.give.flatMap((g, i) => [i ? h('span.muted', {}, ' + ') : null, posBadge(g.position), ' ', g.name]), ' ', h('span.muted', {}, `you ${gainText(op.gain)}${op.theirGain !== undefined ? ` · them ${gainText(op.theirGain)}` : ''}`)))) : null);
   }
 
   /** "What would even it out?" — one-click additions for the side that receives less. */

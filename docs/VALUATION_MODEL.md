@@ -220,6 +220,10 @@ scored, 2021–2025 — e.g. at 8–12 points per game half finished within 0.70
   seasons) and replaced the starters' points per game (.538). Shown with how often teams with that change gained
   (`trade_outcome.roster_logit_slope_per_week` 0.2: +1 / +3 points per week → 55% / 65%). It is roster context, not a
   value change; the verdict stays league-generic.
+* **Trade finder** (My Team / Trade page, `js/core/trade-finder.js`, audit E14 in docs/MODEL_AUDIT.md §22): for a
+  wanted player or pick, packages of 1–3 assets from your team that `analyzeTrade` calls close with your value edge in
+  [−15%, +5%] (presets 10% / verdict band), without throw-ins, ranked by your expected lineup points per week (dynasty:
+  starting-lineup value); with the owner's roster saved, by both teams' gains. Uses existing values only.
 * Every calculation carries model version, data version, settings hash, league and source timestamps; saved trades
   can be re-checked later ("Why changed?").
 

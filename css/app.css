@@ -467,3 +467,11 @@ details.panel > summary { cursor: pointer; }
 .audit-exp { border-top: 1px solid var(--border); padding: .5rem 0; }
 .audit-exp summary { cursor: pointer; }
 .audit-scorecard td.best { color: var(--accent); }
+/* My Team: trade finder */
+.finder-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: .75rem; }
+.finder-option { border: 1px solid var(--border); border-radius: 8px; padding: .65rem .75rem; background: var(--panel-2); display: flex; flex-direction: column; gap: .3rem; }
+.finder-option.alt { opacity: .85; border-style: dashed; }
+.finder-gain { font-weight: 800; font-variant-numeric: tabular-nums; }
+.finder-gain.good, .finder-option .good { color: var(--good); }
+.finder-gain.bad, .finder-option .bad { color: var(--bad); }
+.finder label, .finder select { max-width: 100%; } /* long fairness labels never widen the page */

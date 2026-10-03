@@ -1,0 +1,1504 @@
+{
+  "experiment": "E14 trade finder: do the suggested packages help the team making them, and are they fair to the other team? (E6 leagues, 12-team 1QB PPR)",
+  "labels": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+  "method": "Per season: E6 league drafted on preseason values; sampled (my team, target on another roster) pairs; each strategy chooses a package from my roster; the trade is applied after the draft and the season replayed with real weekly points (realised gain = season points with − without the trade). Values: the 2.3.0 candidate; expected lineup points: availability by rank + waiver fill-ins (as E12).",
+  "league": {
+    "teams": 12,
+    "roster": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 2,
+      "TE": 1,
+      "FLEX": 1,
+      "SUPERFLEX": 0,
+      "K": 0,
+      "DEF": 0,
+      "BENCH": 6,
+      "IR": 0
+    },
+    "flex_eligibility": {
+      "FLEX": [
+        "RB",
+        "WR",
+        "TE"
+      ],
+      "SUPERFLEX": [
+        "QB",
+        "RB",
+        "WR",
+        "TE"
+      ]
+    }
+  },
+  "targetsPerSeason": 600,
+  "summary": {
+    "finder": {
+      "label": "Finder (app): top option by expected lineup points (minimal, maxEdge 5%)",
+      "coverage": 0.212,
+      "myGain": {
+        "n": 635,
+        "mean": 6.353,
+        "lo": 0.104,
+        "hi": 12.602
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -18.685,
+        "lo": -24.835,
+        "hi": -12.536
+      },
+      "myGainPositive": 0.524,
+      "theirGainNonNegative": 0.398,
+      "bothGain": 0.131,
+      "netForBoth": {
+        "n": 635,
+        "mean": -12.332,
+        "lo": -18.43,
+        "hi": -6.234
+      },
+      "corrPredictedVsRealised": 0.008,
+      "meanPredicted": 14.566,
+      "meanValueEdge": -0.003,
+      "meanPackageSize": 1.556,
+      "meanOptions": 1.969,
+      "bySeason": {
+        "2021": 23.174,
+        "2022": 5.325,
+        "2023": 6.673,
+        "2024": -2.61,
+        "2025": -0.655
+      }
+    },
+    "finder_any": {
+      "label": "Finder: any of the options shown (mean over up to 5)",
+      "coverage": 0.212,
+      "myGain": {
+        "n": 635,
+        "mean": 6.572,
+        "lo": 0.796,
+        "hi": 12.349
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -18.627,
+        "lo": -24.556,
+        "hi": -12.698
+      },
+      "myGainPositive": 0.518,
+      "theirGainNonNegative": 0.386,
+      "bothGain": 0.123,
+      "netForBoth": {
+        "n": 635,
+        "mean": -12.054,
+        "lo": -17.561,
+        "hi": -6.548
+      },
+      "corrPredictedVsRealised": 0.05,
+      "meanPredicted": 12.715,
+      "meanValueEdge": -0.004,
+      "meanPackageSize": 1.623,
+      "meanOptions": 1.969,
+      "bySeason": {
+        "2021": 20.832,
+        "2022": 6.693,
+        "2023": 5.125,
+        "2024": 0.696,
+        "2025": 0.103
+      }
+    },
+    "lineup_value": {
+      "label": "Finder ranked by starting-lineup value instead of expected points",
+      "coverage": 0.212,
+      "myGain": {
+        "n": 635,
+        "mean": 7.87,
+        "lo": 1.702,
+        "hi": 14.039
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -20.586,
+        "lo": -26.708,
+        "hi": -14.464
+      },
+      "myGainPositive": 0.54,
+      "theirGainNonNegative": 0.392,
+      "bothGain": 0.134,
+      "netForBoth": {
+        "n": 635,
+        "mean": -12.716,
+        "lo": -18.787,
+        "hi": -6.645
+      },
+      "corrPredictedVsRealised": 0.078,
+      "meanPredicted": 13.98,
+      "meanValueEdge": -0.001,
+      "meanPackageSize": 1.635,
+      "meanOptions": 1.97,
+      "bySeason": {
+        "2021": 22.486,
+        "2022": 11.672,
+        "2023": 6.53,
+        "2024": -6.207,
+        "2025": 2.902
+      }
+    },
+    "most_even": {
+      "label": "Value only: the most evenly valued fair package (no roster view)",
+      "coverage": 0.885,
+      "myGain": {
+        "n": 2656,
+        "mean": -16.473,
+        "lo": -19.675,
+        "hi": -13.271
+      },
+      "theirGain": {
+        "n": 2656,
+        "mean": -16.292,
+        "lo": -19.489,
+        "hi": -13.094
+      },
+      "myGainPositive": 0.415,
+      "theirGainNonNegative": 0.413,
+      "bothGain": 0.104,
+      "netForBoth": {
+        "n": 2656,
+        "mean": -32.765,
+        "lo": -36.047,
+        "hi": -29.484
+      },
+      "corrPredictedVsRealised": 0.231,
+      "meanPredicted": -18.03,
+      "meanValueEdge": -0.009,
+      "meanPackageSize": 1.822,
+      "meanOptions": 2.682,
+      "bySeason": {
+        "2021": -16.921,
+        "2022": -2.739,
+        "2023": -8.418,
+        "2024": -30.589,
+        "2025": -23.575
+      }
+    },
+    "random_fair": {
+      "label": "A random fair minimal package (no roster view)",
+      "coverage": 0.885,
+      "myGain": {
+        "n": 2656,
+        "mean": -19.847,
+        "lo": -23.004,
+        "hi": -16.69
+      },
+      "theirGain": {
+        "n": 2656,
+        "mean": -18.415,
+        "lo": -21.643,
+        "hi": -15.188
+      },
+      "myGainPositive": 0.398,
+      "theirGainNonNegative": 0.409,
+      "bothGain": 0.101,
+      "netForBoth": {
+        "n": 2656,
+        "mean": -38.262,
+        "lo": -41.602,
+        "hi": -34.922
+      },
+      "corrPredictedVsRealised": 0.177,
+      "meanPredicted": -19.228,
+      "meanValueEdge": -0.015,
+      "meanPackageSize": 1.878,
+      "meanOptions": 5.615,
+      "bySeason": {
+        "2021": -16.906,
+        "2022": -13.546,
+        "2023": -12.94,
+        "2024": -35.066,
+        "2025": -20.919
+      }
+    },
+    "not_minimal": {
+      "label": "Finder without the no-throw-in rule (top by expected points)",
+      "coverage": 0.212,
+      "myGain": {
+        "n": 635,
+        "mean": 6.353,
+        "lo": 0.104,
+        "hi": 12.602
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -18.685,
+        "lo": -24.835,
+        "hi": -12.536
+      },
+      "myGainPositive": 0.524,
+      "theirGainNonNegative": 0.398,
+      "bothGain": 0.131,
+      "netForBoth": {
+        "n": 635,
+        "mean": -12.332,
+        "lo": -18.43,
+        "hi": -6.234
+      },
+      "corrPredictedVsRealised": 0.008,
+      "meanPredicted": 14.566,
+      "meanValueEdge": -0.003,
+      "meanPackageSize": 1.556,
+      "meanOptions": 2.496,
+      "bySeason": {
+        "2021": 23.174,
+        "2022": 5.325,
+        "2023": 6.673,
+        "2024": -2.61,
+        "2025": -0.655
+      }
+    },
+    "edge10": {
+      "label": "Finder with maxEdge 10% (I may take more value)",
+      "coverage": 0.278,
+      "myGain": {
+        "n": 835,
+        "mean": 9.119,
+        "lo": 3.623,
+        "hi": 14.615
+      },
+      "theirGain": {
+        "n": 835,
+        "mean": -22.721,
+        "lo": -28.486,
+        "hi": -16.955
+      },
+      "myGainPositive": 0.532,
+      "theirGainNonNegative": 0.387,
+      "bothGain": 0.122,
+      "netForBoth": {
+        "n": 835,
+        "mean": -13.602,
+        "lo": -18.742,
+        "hi": -8.461
+      },
+      "corrPredictedVsRealised": 0.081,
+      "meanPredicted": 14.2,
+      "meanValueEdge": 0.038,
+      "meanPackageSize": 1.547,
+      "meanOptions": 1.937,
+      "bySeason": {
+        "2021": 16.642,
+        "2022": 12.153,
+        "2023": 6.904,
+        "2024": -4.688,
+        "2025": 12.016
+      }
+    },
+    "edge0": {
+      "label": "Finder with maxEdge 0% (I never receive more value)",
+      "coverage": 0.174,
+      "myGain": {
+        "n": 522,
+        "mean": 2.847,
+        "lo": -4.374,
+        "hi": 10.069
+      },
+      "theirGain": {
+        "n": 522,
+        "mean": -18.952,
+        "lo": -26.096,
+        "hi": -11.809
+      },
+      "myGainPositive": 0.519,
+      "theirGainNonNegative": 0.418,
+      "bothGain": 0.148,
+      "netForBoth": {
+        "n": 522,
+        "mean": -16.105,
+        "lo": -23.286,
+        "hi": -8.924
+      },
+      "corrPredictedVsRealised": 0.023,
+      "meanPredicted": 14.072,
+      "meanValueEdge": -0.036,
+      "meanPackageSize": 1.609,
+      "meanOptions": 1.985,
+      "bySeason": {
+        "2021": 21.358,
+        "2022": -3.341,
+        "2023": 14.431,
+        "2024": -12.712,
+        "2025": -6.977
+      }
+    },
+    "edge_close": {
+      "label": "Finder with the model's \"close\" band only (UI fairness \"Model's close\")",
+      "coverage": 0.377,
+      "myGain": {
+        "n": 1131,
+        "mean": 9.697,
+        "lo": 4.932,
+        "hi": 14.462
+      },
+      "theirGain": {
+        "n": 1131,
+        "mean": -29.465,
+        "lo": -34.193,
+        "hi": -24.737
+      },
+      "myGainPositive": 0.537,
+      "theirGainNonNegative": 0.355,
+      "bothGain": 0.109,
+      "netForBoth": {
+        "n": 1131,
+        "mean": -19.768,
+        "lo": -24.233,
+        "hi": -15.303
+      },
+      "corrPredictedVsRealised": 0.084,
+      "meanPredicted": 15.906,
+      "meanValueEdge": 0.114,
+      "meanPackageSize": 1.477,
+      "meanOptions": 2.098,
+      "bySeason": {
+        "2021": 21.072,
+        "2022": 17.523,
+        "2023": 6.127,
+        "2024": -2.702,
+        "2025": 5.453
+      }
+    },
+    "two_max": {
+      "label": "Finder with packages of at most 2 assets",
+      "coverage": 0.201,
+      "myGain": {
+        "n": 602,
+        "mean": 7.945,
+        "lo": 1.573,
+        "hi": 14.317
+      },
+      "theirGain": {
+        "n": 602,
+        "mean": -16.949,
+        "lo": -23.273,
+        "hi": -10.625
+      },
+      "myGainPositive": 0.523,
+      "theirGainNonNegative": 0.407,
+      "bothGain": 0.138,
+      "netForBoth": {
+        "n": 602,
+        "mean": -9.004,
+        "lo": -15.026,
+        "hi": -2.982
+      },
+      "corrPredictedVsRealised": 0.015,
+      "meanPredicted": 14.152,
+      "meanValueEdge": -0.007,
+      "meanPackageSize": 1.377,
+      "meanOptions": 1.746,
+      "bySeason": {
+        "2021": 24.644,
+        "2022": 11.231,
+        "2023": 7.328,
+        "2024": -2.458,
+        "2025": -1.183
+      }
+    },
+    "mutual_filter": {
+      "label": "Their roster known: their expected lineup may not fall (≥ 0), top by my gain",
+      "coverage": 0.069,
+      "myGain": {
+        "n": 208,
+        "mean": 5.639,
+        "lo": -6.194,
+        "hi": 17.471
+      },
+      "theirGain": {
+        "n": 208,
+        "mean": 3.937,
+        "lo": -7.363,
+        "hi": 15.237
+      },
+      "myGainPositive": 0.529,
+      "theirGainNonNegative": 0.49,
+      "bothGain": 0.173,
+      "netForBoth": {
+        "n": 208,
+        "mean": 9.576,
+        "lo": -2.539,
+        "hi": 21.691
+      },
+      "corrPredictedVsRealised": 0.089,
+      "corrTheirPredictedVsRealised": 0.177,
+      "meanTheirPredicted": 16.527,
+      "meanPredicted": 15.206,
+      "meanValueEdge": -0.013,
+      "meanPackageSize": 1.649,
+      "meanOptions": 1.957,
+      "bySeason": {
+        "2021": 29.143,
+        "2022": 4.178,
+        "2023": 20.82,
+        "2024": -5.079,
+        "2025": -20.736
+      }
+    },
+    "mutual_sum": {
+      "label": "Their roster known: rank by my + their expected gain (mine must still improve)",
+      "coverage": 0.212,
+      "myGain": {
+        "n": 635,
+        "mean": 6.507,
+        "lo": 0.206,
+        "hi": 12.808
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -12.232,
+        "lo": -18.535,
+        "hi": -5.929
+      },
+      "myGainPositive": 0.521,
+      "theirGainNonNegative": 0.419,
+      "bothGain": 0.137,
+      "netForBoth": {
+        "n": 635,
+        "mean": -5.725,
+        "lo": -11.799,
+        "hi": 0.348
+      },
+      "corrPredictedVsRealised": 0.073,
+      "corrTheirPredictedVsRealised": 0.187,
+      "meanTheirPredicted": -6.648,
+      "meanPredicted": 12.659,
+      "meanValueEdge": -0.011,
+      "meanPackageSize": 1.507,
+      "meanOptions": 1.973,
+      "bySeason": {
+        "2021": 14.441,
+        "2022": 10.174,
+        "2023": 9.833,
+        "2024": -2.102,
+        "2025": -1.964
+      }
+    },
+    "mutual_min": {
+      "label": "Their roster known: rank by the smaller of the two gains (mine must still improve)",
+      "coverage": 0.212,
+      "myGain": {
+        "n": 635,
+        "mean": 5.892,
+        "lo": -0.432,
+        "hi": 12.216
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -13.55,
+        "lo": -19.874,
+        "hi": -7.227
+      },
+      "myGainPositive": 0.524,
+      "theirGainNonNegative": 0.42,
+      "bothGain": 0.14,
+      "netForBoth": {
+        "n": 635,
+        "mean": -7.659,
+        "lo": -13.573,
+        "hi": -1.744
+      },
+      "corrPredictedVsRealised": 0.062,
+      "corrTheirPredictedVsRealised": 0.197,
+      "meanTheirPredicted": -6.148,
+      "meanPredicted": 10.957,
+      "meanValueEdge": -0.013,
+      "meanPackageSize": 1.557,
+      "meanOptions": 1.969,
+      "bySeason": {
+        "2021": 13.196,
+        "2022": 14.288,
+        "2023": 2.237,
+        "2024": -3.304,
+        "2025": 0.804
+      }
+    },
+    "pen05": {
+      "label": "Finder with a size penalty (0.5 pts/wk per extra asset)",
+      "coverage": 0.212,
+      "myGain": {
+        "n": 635,
+        "mean": 6.392,
+        "lo": 0.143,
+        "hi": 12.64
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -19.123,
+        "lo": -25.207,
+        "hi": -13.039
+      },
+      "myGainPositive": 0.518,
+      "theirGainNonNegative": 0.394,
+      "bothGain": 0.126,
+      "netForBoth": {
+        "n": 635,
+        "mean": -12.731,
+        "lo": -18.76,
+        "hi": -6.702
+      },
+      "corrPredictedVsRealised": 0.01,
+      "meanPredicted": 14.23,
+      "meanValueEdge": -0.007,
+      "meanPackageSize": 1.435,
+      "meanOptions": 1.97,
+      "bySeason": {
+        "2021": 22.468,
+        "2022": 4.932,
+        "2023": 9.318,
+        "2024": -3.367,
+        "2025": -1.82
+      }
+    }
+  },
+  "timingMs": {
+    "p50": 5.204,
+    "p95": 10.74,
+    "max": 27.633
+  },
+  "paired": {
+    "finder_any": {
+      "label": "finder − finder_any, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": -0.219,
+        "lo": -2.636,
+        "hi": 2.197
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -0.058,
+        "lo": -2.479,
+        "hi": 2.362
+      }
+    },
+    "lineup_value": {
+      "label": "finder − lineup_value, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": -1.517,
+        "lo": -3.87,
+        "hi": 0.835
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": 1.901,
+        "lo": -0.389,
+        "hi": 4.192
+      }
+    },
+    "most_even": {
+      "label": "finder − most_even, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": 4.971,
+        "lo": -0.473,
+        "hi": 10.415
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": 2.657,
+        "lo": -2.936,
+        "hi": 8.25
+      }
+    },
+    "random_fair": {
+      "label": "finder − random_fair, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": 13.435,
+        "lo": 7.847,
+        "hi": 19.022
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": 4.44,
+        "lo": -1.297,
+        "hi": 10.178
+      }
+    },
+    "not_minimal": {
+      "label": "finder − not_minimal, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": 0,
+        "lo": 0,
+        "hi": 0
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": 0,
+        "lo": 0,
+        "hi": 0
+      }
+    },
+    "edge10": {
+      "label": "finder − edge10, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": -6.15,
+        "lo": -9.746,
+        "hi": -2.554
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": 2.499,
+        "lo": -0.709,
+        "hi": 5.707
+      }
+    },
+    "edge0": {
+      "label": "finder − edge0, same (team, target) pairs",
+      "myGain": {
+        "n": 522,
+        "mean": 5.731,
+        "lo": 1.677,
+        "hi": 9.784
+      },
+      "theirGain": {
+        "n": 522,
+        "mean": -0.779,
+        "lo": -4.415,
+        "hi": 2.856
+      }
+    },
+    "edge_close": {
+      "label": "finder − edge_close, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": -6.095,
+        "lo": -10.722,
+        "hi": -1.468
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": 7.109,
+        "lo": 2.875,
+        "hi": 11.343
+      }
+    },
+    "two_max": {
+      "label": "finder − two_max, same (team, target) pairs",
+      "myGain": {
+        "n": 602,
+        "mean": 0.956,
+        "lo": -0.778,
+        "hi": 2.689
+      },
+      "theirGain": {
+        "n": 602,
+        "mean": -2.576,
+        "lo": -3.978,
+        "hi": -1.174
+      }
+    },
+    "mutual_filter": {
+      "label": "finder − mutual_filter, same (team, target) pairs",
+      "myGain": {
+        "n": 208,
+        "mean": 2.849,
+        "lo": -2.619,
+        "hi": 8.316
+      },
+      "theirGain": {
+        "n": 208,
+        "mean": -10.301,
+        "lo": -16.784,
+        "hi": -3.817
+      }
+    },
+    "mutual_sum": {
+      "label": "finder − mutual_sum, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": -0.154,
+        "lo": -3.112,
+        "hi": 2.804
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -6.453,
+        "lo": -9.582,
+        "hi": -3.324
+      }
+    },
+    "mutual_min": {
+      "label": "finder − mutual_min, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": 0.461,
+        "lo": -3.199,
+        "hi": 4.121
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": -5.135,
+        "lo": -8.861,
+        "hi": -1.409
+      }
+    },
+    "pen05": {
+      "label": "finder − pen05, same (team, target) pairs",
+      "myGain": {
+        "n": 635,
+        "mean": -0.039,
+        "lo": -1.873,
+        "hi": 1.795
+      },
+      "theirGain": {
+        "n": 635,
+        "mean": 0.438,
+        "lo": -1.342,
+        "hi": 2.217
+      }
+    }
+  },
+  "replication": {
+    "seed": 99,
+    "summary": {
+      "finder": {
+        "label": "Finder (app): top option by expected lineup points (minimal, maxEdge 5%)",
+        "coverage": 0.225,
+        "myGain": {
+          "n": 676,
+          "mean": 6.592,
+          "lo": 0.803,
+          "hi": 12.381
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": -20.055,
+          "lo": -26.154,
+          "hi": -13.955
+        },
+        "myGainPositive": 0.506,
+        "theirGainNonNegative": 0.407,
+        "bothGain": 0.123,
+        "netForBoth": {
+          "n": 676,
+          "mean": -13.463,
+          "lo": -19.062,
+          "hi": -7.863
+        },
+        "corrPredictedVsRealised": 0.024,
+        "meanPredicted": 13.719,
+        "meanValueEdge": -0.003,
+        "meanPackageSize": 1.54,
+        "meanOptions": 1.891,
+        "bySeason": {
+          "2021": 4.061,
+          "2022": -0.592,
+          "2023": 5.933,
+          "2024": -8.577,
+          "2025": 24.372
+        }
+      },
+      "most_even": {
+        "label": "Value only: the most evenly valued fair package (no roster view)",
+        "coverage": 0.887,
+        "myGain": {
+          "n": 2662,
+          "mean": -17.21,
+          "lo": -20.296,
+          "hi": -14.124
+        },
+        "theirGain": {
+          "n": 2662,
+          "mean": -16.532,
+          "lo": -19.765,
+          "hi": -13.299
+        },
+        "myGainPositive": 0.408,
+        "theirGainNonNegative": 0.418,
+        "bothGain": 0.095,
+        "netForBoth": {
+          "n": 2662,
+          "mean": -33.742,
+          "lo": -36.868,
+          "hi": -30.616
+        },
+        "corrPredictedVsRealised": 0.239,
+        "meanPredicted": -18.386,
+        "meanValueEdge": -0.009,
+        "meanPackageSize": 1.824,
+        "meanOptions": 2.695,
+        "bySeason": {
+          "2021": -26.493,
+          "2022": -10.276,
+          "2023": -9.119,
+          "2024": -22.908,
+          "2025": -16.849
+        }
+      },
+      "random_fair": {
+        "label": "A random fair minimal package (no roster view)",
+        "coverage": 0.887,
+        "myGain": {
+          "n": 2662,
+          "mean": -17.246,
+          "lo": -20.335,
+          "hi": -14.156
+        },
+        "theirGain": {
+          "n": 2662,
+          "mean": -18.636,
+          "lo": -21.874,
+          "hi": -15.398
+        },
+        "myGainPositive": 0.403,
+        "theirGainNonNegative": 0.42,
+        "bothGain": 0.099,
+        "netForBoth": {
+          "n": 2662,
+          "mean": -35.882,
+          "lo": -39.173,
+          "hi": -32.59
+        },
+        "corrPredictedVsRealised": 0.229,
+        "meanPredicted": -18.953,
+        "meanValueEdge": -0.016,
+        "meanPackageSize": 1.865,
+        "meanOptions": 5.512,
+        "bySeason": {
+          "2021": -25.84,
+          "2022": -17.986,
+          "2023": -9.696,
+          "2024": -21.737,
+          "2025": -10.722
+        }
+      },
+      "edge10": {
+        "label": "Finder with maxEdge 10% (I may take more value)",
+        "coverage": 0.277,
+        "myGain": {
+          "n": 831,
+          "mean": 6.746,
+          "lo": 1.414,
+          "hi": 12.078
+        },
+        "theirGain": {
+          "n": 831,
+          "mean": -24.329,
+          "lo": -30.105,
+          "hi": -18.552
+        },
+        "myGainPositive": 0.502,
+        "theirGainNonNegative": 0.383,
+        "bothGain": 0.105,
+        "netForBoth": {
+          "n": 831,
+          "mean": -17.583,
+          "lo": -22.541,
+          "hi": -12.624
+        },
+        "corrPredictedVsRealised": 0.005,
+        "meanPredicted": 14.104,
+        "meanValueEdge": 0.034,
+        "meanPackageSize": 1.546,
+        "meanOptions": 1.981,
+        "bySeason": {
+          "2021": 1.343,
+          "2022": 5.421,
+          "2023": 7.961,
+          "2024": -3.442,
+          "2025": 18.406
+        }
+      },
+      "edge0": {
+        "label": "Finder with maxEdge 0% (I never receive more value)",
+        "coverage": 0.182,
+        "myGain": {
+          "n": 546,
+          "mean": 1.626,
+          "lo": -5.236,
+          "hi": 8.488
+        },
+        "theirGain": {
+          "n": 546,
+          "mean": -17.572,
+          "lo": -24.747,
+          "hi": -10.397
+        },
+        "myGainPositive": 0.485,
+        "theirGainNonNegative": 0.414,
+        "bothGain": 0.126,
+        "netForBoth": {
+          "n": 546,
+          "mean": -15.946,
+          "lo": -22.67,
+          "hi": -9.222
+        },
+        "corrPredictedVsRealised": 0.015,
+        "meanPredicted": 13.619,
+        "meanValueEdge": -0.037,
+        "meanPackageSize": 1.636,
+        "meanOptions": 1.905,
+        "bySeason": {
+          "2021": -8.217,
+          "2022": -14.397,
+          "2023": 10.011,
+          "2024": -4.495,
+          "2025": 19.737
+        }
+      },
+      "two_max": {
+        "label": "Finder with packages of at most 2 assets",
+        "coverage": 0.211,
+        "myGain": {
+          "n": 634,
+          "mean": 6.946,
+          "lo": 0.871,
+          "hi": 13.022
+        },
+        "theirGain": {
+          "n": 634,
+          "mean": -19.169,
+          "lo": -25.513,
+          "hi": -12.826
+        },
+        "myGainPositive": 0.508,
+        "theirGainNonNegative": 0.402,
+        "bothGain": 0.121,
+        "netForBoth": {
+          "n": 634,
+          "mean": -12.223,
+          "lo": -17.947,
+          "hi": -6.499
+        },
+        "corrPredictedVsRealised": 0.029,
+        "meanPredicted": 13.509,
+        "meanValueEdge": -0.008,
+        "meanPackageSize": 1.356,
+        "meanOptions": 1.696,
+        "bySeason": {
+          "2021": 0.406,
+          "2022": 2.937,
+          "2023": 5.862,
+          "2024": -5.802,
+          "2025": 23.721
+        }
+      },
+      "mutual_sum": {
+        "label": "Their roster known: rank by my + their expected gain (mine must still improve)",
+        "coverage": 0.225,
+        "myGain": {
+          "n": 676,
+          "mean": 4.97,
+          "lo": -1.134,
+          "hi": 11.074
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": -14.147,
+          "lo": -20.475,
+          "hi": -7.819
+        },
+        "myGainPositive": 0.507,
+        "theirGainNonNegative": 0.433,
+        "bothGain": 0.124,
+        "netForBoth": {
+          "n": 676,
+          "mean": -9.177,
+          "lo": -14.853,
+          "hi": -3.502
+        },
+        "corrPredictedVsRealised": -0.006,
+        "corrTheirPredictedVsRealised": 0.135,
+        "meanTheirPredicted": -6.288,
+        "meanPredicted": 12.036,
+        "meanValueEdge": -0.011,
+        "meanPackageSize": 1.5,
+        "meanOptions": 1.885,
+        "bySeason": {
+          "2021": -9.953,
+          "2022": -2.037,
+          "2023": 2.125,
+          "2024": 1.12,
+          "2025": 26.515
+        }
+      },
+      "mutual_min": {
+        "label": "Their roster known: rank by the smaller of the two gains (mine must still improve)",
+        "coverage": 0.225,
+        "myGain": {
+          "n": 676,
+          "mean": 1.954,
+          "lo": -4.23,
+          "hi": 8.139
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": -12.672,
+          "lo": -18.93,
+          "hi": -6.414
+        },
+        "myGainPositive": 0.482,
+        "theirGainNonNegative": 0.442,
+        "bothGain": 0.118,
+        "netForBoth": {
+          "n": 676,
+          "mean": -10.718,
+          "lo": -16.458,
+          "hi": -4.978
+        },
+        "corrPredictedVsRealised": 0.014,
+        "corrTheirPredictedVsRealised": 0.144,
+        "meanTheirPredicted": -5.999,
+        "meanPredicted": 10.648,
+        "meanValueEdge": -0.013,
+        "meanPackageSize": 1.537,
+        "meanOptions": 1.889,
+        "bySeason": {
+          "2021": -13.502,
+          "2022": -5.337,
+          "2023": 2.534,
+          "2024": -3.415,
+          "2025": 22.399
+        }
+      }
+    },
+    "paired": {
+      "most_even": {
+        "label": "finder − most_even, same (team, target) pairs",
+        "myGain": {
+          "n": 676,
+          "mean": 15.012,
+          "lo": 9.876,
+          "hi": 20.148
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": -2.139,
+          "lo": -7.489,
+          "hi": 3.21
+        }
+      },
+      "random_fair": {
+        "label": "finder − random_fair, same (team, target) pairs",
+        "myGain": {
+          "n": 676,
+          "mean": 11.479,
+          "lo": 6.215,
+          "hi": 16.744
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": 2.088,
+          "lo": -3.705,
+          "hi": 7.881
+        }
+      },
+      "edge10": {
+        "label": "finder − edge10, same (team, target) pairs",
+        "myGain": {
+          "n": 676,
+          "mean": -0.238,
+          "lo": -2.617,
+          "hi": 2.142
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": 1.307,
+          "lo": -1.459,
+          "hi": 4.073
+        }
+      },
+      "edge0": {
+        "label": "finder − edge0, same (team, target) pairs",
+        "myGain": {
+          "n": 546,
+          "mean": 6.509,
+          "lo": 2.863,
+          "hi": 10.154
+        },
+        "theirGain": {
+          "n": 546,
+          "mean": -3.263,
+          "lo": -6.945,
+          "hi": 0.42
+        }
+      },
+      "two_max": {
+        "label": "finder − two_max, same (team, target) pairs",
+        "myGain": {
+          "n": 634,
+          "mean": 2.101,
+          "lo": 0.298,
+          "hi": 3.904
+        },
+        "theirGain": {
+          "n": 634,
+          "mean": -2.072,
+          "lo": -4.042,
+          "hi": -0.103
+        }
+      },
+      "mutual_sum": {
+        "label": "finder − mutual_sum, same (team, target) pairs",
+        "myGain": {
+          "n": 676,
+          "mean": 1.622,
+          "lo": -1.56,
+          "hi": 4.804
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": -5.907,
+          "lo": -9.363,
+          "hi": -2.452
+        }
+      },
+      "mutual_min": {
+        "label": "finder − mutual_min, same (team, target) pairs",
+        "myGain": {
+          "n": 676,
+          "mean": 4.638,
+          "lo": 0.957,
+          "hi": 8.318
+        },
+        "theirGain": {
+          "n": 676,
+          "mean": -7.382,
+          "lo": -11.012,
+          "hi": -3.753
+        }
+      }
+    }
+  },
+  "currentData": {
+    "label": "CURRENT DATA (2026-10-03-19640cbc) — model 2.3.0",
+    "method": "Every preset × redraft/dynasty: a 15-round value snake draft (dynasty: 2 generic picks per team); random (team, target among the other team's 8 most valuable) requests; every option re-checked with analyzeTrade (fair, no throw-in), gain, roster membership and the diversity cap, under all three fairness presets.",
+    "sets": [
+      {
+        "preset": "preset_10_1qb_half",
+        "mode": "redraft",
+        "teams": 10,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.667,
+          "balanced": 0.75,
+          "close": 0.8
+        },
+        "meanTopGain": 1.293,
+        "unit": "expected pts/week",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -0.515,
+          "rankedForBoth": 0.313,
+          "n": 40
+        },
+        "ms": {
+          "p50": 18.295,
+          "p95": 32.82,
+          "max": 47.464
+        }
+      },
+      {
+        "preset": "preset_10_1qb_half",
+        "mode": "dynasty",
+        "teams": 10,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.617,
+          "balanced": 0.633,
+          "close": 0.667
+        },
+        "meanTopGain": 611.639,
+        "unit": "starting-lineup value",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -807.914,
+          "rankedForBoth": -376.189,
+          "n": 37
+        },
+        "ms": {
+          "p50": 27.117,
+          "p95": 47.068,
+          "max": 65.401
+        }
+      },
+      {
+        "preset": "preset_12_1qb_ppr",
+        "mode": "redraft",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.5,
+          "balanced": 0.6,
+          "close": 0.7
+        },
+        "meanTopGain": 2.004,
+        "unit": "expected pts/week",
+        "theirGainOfTop": {
+          "rankedForMeOnly": 0.188,
+          "rankedForBoth": 0.881,
+          "n": 30
+        },
+        "ms": {
+          "p50": 15.282,
+          "p95": 23.422,
+          "max": 32.974
+        }
+      },
+      {
+        "preset": "preset_12_1qb_ppr",
+        "mode": "dynasty",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.75,
+          "balanced": 0.783,
+          "close": 0.783
+        },
+        "meanTopGain": 1134.615,
+        "unit": "starting-lineup value",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -1078.151,
+          "rankedForBoth": -501.562,
+          "n": 45
+        },
+        "ms": {
+          "p50": 26.991,
+          "p95": 41.726,
+          "max": 47.344
+        }
+      },
+      {
+        "preset": "preset_12_sf_ppr",
+        "mode": "redraft",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.6,
+          "balanced": 0.7,
+          "close": 0.8
+        },
+        "meanTopGain": 2.02,
+        "unit": "expected pts/week",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -1.146,
+          "rankedForBoth": 0.186,
+          "n": 36
+        },
+        "ms": {
+          "p50": 17.135,
+          "p95": 28.059,
+          "max": 44.364
+        }
+      },
+      {
+        "preset": "preset_12_sf_ppr",
+        "mode": "dynasty",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.85,
+          "balanced": 0.85,
+          "close": 0.85
+        },
+        "meanTopGain": 1658.756,
+        "unit": "starting-lineup value",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -1753.117,
+          "rankedForBoth": -775.039,
+          "n": 51
+        },
+        "ms": {
+          "p50": 35.094,
+          "p95": 54.339,
+          "max": 67.014
+        }
+      },
+      {
+        "preset": "preset_12_sf_half",
+        "mode": "redraft",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.7,
+          "balanced": 0.717,
+          "close": 0.85
+        },
+        "meanTopGain": 2.364,
+        "unit": "expected pts/week",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -0.473,
+          "rankedForBoth": 1.317,
+          "n": 42
+        },
+        "ms": {
+          "p50": 17.44,
+          "p95": 29.772,
+          "max": 30.932
+        }
+      },
+      {
+        "preset": "preset_12_sf_half",
+        "mode": "dynasty",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.867,
+          "balanced": 0.867,
+          "close": 0.867
+        },
+        "meanTopGain": 1531.768,
+        "unit": "starting-lineup value",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -2129.584,
+          "rankedForBoth": -666.135,
+          "n": 52
+        },
+        "ms": {
+          "p50": 32.805,
+          "p95": 50.94,
+          "max": 58.933
+        }
+      },
+      {
+        "preset": "preset_14_sf_ppr",
+        "mode": "redraft",
+        "teams": 14,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.683,
+          "balanced": 0.783,
+          "close": 0.883
+        },
+        "meanTopGain": 2.31,
+        "unit": "expected pts/week",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -0.788,
+          "rankedForBoth": 0.965,
+          "n": 41
+        },
+        "ms": {
+          "p50": 17.929,
+          "p95": 31.119,
+          "max": 39.49
+        }
+      },
+      {
+        "preset": "preset_14_sf_ppr",
+        "mode": "dynasty",
+        "teams": 14,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.85,
+          "balanced": 0.85,
+          "close": 0.85
+        },
+        "meanTopGain": 2037.369,
+        "unit": "starting-lineup value",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -2674.46,
+          "rankedForBoth": -1395.625,
+          "n": 51
+        },
+        "ms": {
+          "p50": 32.553,
+          "p95": 45.247,
+          "max": 46.069
+        }
+      },
+      {
+        "preset": "preset_dyn_12_1qb",
+        "mode": "redraft",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.633,
+          "balanced": 0.7,
+          "close": 0.933
+        },
+        "meanTopGain": 2.406,
+        "unit": "expected pts/week",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -0.995,
+          "rankedForBoth": 1.643,
+          "n": 38
+        },
+        "ms": {
+          "p50": 19.932,
+          "p95": 31.198,
+          "max": 34.445
+        }
+      },
+      {
+        "preset": "preset_dyn_12_1qb",
+        "mode": "dynasty",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.95,
+          "balanced": 0.95,
+          "close": 0.95
+        },
+        "meanTopGain": 1571.735,
+        "unit": "starting-lineup value",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -2397.224,
+          "rankedForBoth": -905.861,
+          "n": 57
+        },
+        "ms": {
+          "p50": 35.632,
+          "p95": 53.061,
+          "max": 67.008
+        }
+      },
+      {
+        "preset": "preset_dyn_12_sf",
+        "mode": "redraft",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.55,
+          "balanced": 0.733,
+          "close": 0.9
+        },
+        "meanTopGain": 2.069,
+        "unit": "expected pts/week",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -2.538,
+          "rankedForBoth": -0.174,
+          "n": 33
+        },
+        "ms": {
+          "p50": 24.403,
+          "p95": 44.405,
+          "max": 49.043
+        }
+      },
+      {
+        "preset": "preset_dyn_12_sf",
+        "mode": "dynasty",
+        "teams": 12,
+        "requests": 60,
+        "coverage": {
+          "strict": 0.867,
+          "balanced": 0.867,
+          "close": 0.867
+        },
+        "meanTopGain": 2235.411,
+        "unit": "starting-lineup value",
+        "theirGainOfTop": {
+          "rankedForMeOnly": -2763.59,
+          "rankedForBoth": -1268.637,
+          "n": 52
+        },
+        "ms": {
+          "p50": 42.02,
+          "p95": 71,
+          "max": 86.255
+        }
+      }
+    ],
+    "violations": 0,
+    "violationExamples": []
+  }
+}

@@ -70,3 +70,25 @@ test('stored teams with a bad shape are ignored', async () => {
   await S.initTeams();
   assert.deepEqual(S.allTeams().map((t) => t.id), ['t1']);
 });
+
+test('opponent rosters (Sleeper "also save the other teams"): added once, refreshed in place, kept out of my teams', async () => {
+  await S.initTeams();
+  const L = league('lgS');
+  S.createTeam({ name: 'Mine', ids: ['M1'] }, L);
+  const first = S.upsertOpponents([
+    { name: 'Rival A', ids: ['A1', 'A2'], source: 'sleeper', sleeper_league: '123', sleeper_roster_id: 2 },
+    { name: 'Rival B', ids: ['B1'], source: 'sleeper', sleeper_league: '123', sleeper_roster_id: 3 },
+  ], L);
+  assert.deepEqual(first, { added: 2, updated: 0 });
+  const again = S.upsertOpponents([{ name: 'Rival A (renamed)', ids: ['A1', 'A3'], source: 'sleeper', sleeper_league: '123', sleeper_roster_id: 2 }], L);
+  assert.deepEqual(again, { added: 0, updated: 1 });
+  const opp = S.opponentsFor(L);
+  assert.equal(opp.length, 2);
+  assert.deepEqual(opp.find((t) => t.sleeper_roster_id === 2).ids, ['A1', 'A3'], 'refreshed in place');
+  assert.ok(opp.every((t) => t.opponent === true));
+  assert.deepEqual(S.teamsFor(L).map((t) => t.name), ['Mine'], 'opponents are not my teams');
+  assert.ok(!S.allTeams().some((t) => t.opponent), 'nor in the team picker');
+  assert.equal(S.activeTeam(L).name, 'Mine', 'an import of opponents never changes the active team');
+  assert.equal(S.opponentsFor(league('other')).length, 0);
+  assert.equal(JSON.parse(store.get('ffta.teams')).filter((t) => t.opponent).length, 2, 'persisted');
+});

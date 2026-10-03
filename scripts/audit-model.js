@@ -39,7 +39,7 @@ if (args.includes('--freeze') || (args.includes('--snapshot-before') && !fs.exis
     console.log(`Froze dataset ${current} → ${rel(FROZEN)}${previous && previous !== current ? ` (replaced ${previous})` : ''}`);
   } catch (e) { console.error(`  ${e.message}`); process.exit(1); }
 }
-const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12'].some(want);
+const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12', 'e14'].some(want);
 const bench = needBench ? await loadBenchmark({ rebuild: args.includes('--rebuild') }) : null;
 if (want('e1')) { console.log('E1 preseason redraft…'); write('e1-preseason-redraft', { label: 'REAL HISTORICAL DATA', oppRates: measureOppRates(bench), ...preseasonRedraft(bench) }); }
 if (want('e2')) { console.log('E2 in-season ROS…'); write('e2-inseason-ros', { label: 'REAL HISTORICAL DATA', ...inSeasonROS(bench) }); }
@@ -63,6 +63,20 @@ if (want('e9') || want('e10')) {
 }
 if (want('e11')) { const { availabilityShape } = await import('./audit/lineup.js'); console.log('E11 availability by rank…'); write('e11-availability-shape', availabilityShape(bench)); }
 if (want('e12')) { const { rosterSpecific } = await import('./audit/roster-value.js'); console.log('E12 roster-specific values (~30 s)…'); write('e12-roster-values', rosterSpecific(bench)); }
+if (want('e14')) {
+  const { loadConfig } = await import('../server/lib/config.js');
+  const { tradeFinderBacktest } = await import('./audit/trade-finder.js');
+  console.log('E14 trade finder backtest (~1–2 min)…');
+  const { tradeFinderCurrent } = await import('./audit/trade-finder.js');
+  const { loadFrozenDataset } = await import('./audit/current.js');
+  const res = tradeFinderBacktest(bench, loadConfig().model);
+  // Replication on an independent seed (other leagues, other requests) for the decisions taken from E14.
+  const rep = tradeFinderBacktest(bench, loadConfig().model, { seed: 99, only: ['finder', 'random_fair', 'most_even', 'edge0', 'edge10', 'two_max', 'mutual_sum', 'mutual_min'] });
+  res.replication = { seed: 99, summary: rep.summary, paired: rep.paired };
+  const live = loadFrozenDataset();
+  res.currentData = live ? tradeFinderCurrent(live.ds, loadConfig()) : { skipped: true, reason: 'No dataset — run `npm run sync` first.' };
+  write('e14-trade-finder', res);
+}
 if (want('e13')) {
   const { listArchive, loadArchiveDay } = await import('../server/archive.js');
   const { archiveBacktest } = await import('./audit/archive-backtest.js');
@@ -151,6 +165,11 @@ if (!setupOnly) {
   if (e9) { for (const [m, v] of Object.entries(e9.preseason?.summary || {})) rows.push(['E9 preseason weights', e9.label, m, 'spearman (season points)', v.rho]); for (const [m, v] of Object.entries(e9.inSeason?.overall || {})) rows.push(['E9 in-season weights', e9.label, m, 'MAE (rest-of-season points)', v.mae]); }
   if (e10) { rows.push(['E10 ± calibration', e10.labels, 'app ± range', 'share of season outcomes inside ±1', e10.player.shareInsideAppRange]); rows.push(['E10 ± calibration', e10.labels, 'signal disagreement', 'spearman with outcome error', e10.player.spearmanDisagreementVsError]); for (const [m, v] of Object.entries(e10.trades?.models || {})) rows.push(['E10 win-probability models', e10.labels, m, 'test log-likelihood per trade', v.testLogLikPerTrade]); }
   if (e12) { for (const [m, v] of Object.entries(e12.margin || {})) rows.push(['E12 roster-specific values', e12.labels, m, 'corr(predicted margin, realised outcome)', v.corr]); for (const [m, v] of Object.entries(e12.ownGain || {})) rows.push(['E12 roster-specific values', e12.labels, m, 'corr(predicted own change, own realised gain)', v]); }
+  const e14 = rd('e14-trade-finder');
+  if (e14) {
+    for (const [m, v] of Object.entries(e14.summary || {})) { rows.push(['E14 trade finder', e14.labels, m, 'my realised season gain', v.myGain.mean]); rows.push(['E14 trade finder', e14.labels, m, 'their realised season gain', v.theirGain.mean]); rows.push(['E14 trade finder', e14.labels, m, 'coverage (share of requests with a package)', v.coverage]); }
+    for (const [m, v] of Object.entries(e14.paired || {})) { rows.push(['E14 trade finder (paired)', e14.labels, `finder − ${m}`, 'my gain difference, same requests', v.myGain.mean]); rows.push(['E14 trade finder (paired)', e14.labels, `finder − ${m}`, 'their gain difference, same requests', v.theirGain.mean]); }
+  }
   const mono = rd('cur-monotonicity'), pk = rd('cur-package-simulation');
   if (mono) rows.push(['Monotonicity', mono.label, 'current', 'failures', mono.failures]);
   if (pk) for (const [m, v] of Object.entries(pk.overall || {})) rows.push(['Package simulation', pk.label, m, 'corr(model diff, simulated lineup gain)', v]);
@@ -159,7 +178,7 @@ if (!setupOnly) {
   // the Model page (reports/audit/scorecard.json is served; the other audit files are not).
   if (rows.length > 1) {
     const { loadConfig } = await import('../server/lib/config.js');
-    const reportOf = { E1: 'e1-preseason-redraft', E1b: 'e1-preseason-redraft', E2: 'e2-inseason-ros', E3: 'e3-dynasty', E4: 'e4-rookie-curve', E5: 'e5-lineup-value', E6: 'e6-league-simulation', E7: 'e7-verdict-calibration', E8: 'e8-dynasty-spacing', E9: 'e9-signal-weights', E10: 'e10-uncertainty', E12: 'e12-roster-values', Monotonicity: 'cur-monotonicity', Package: 'cur-package-simulation' };
+    const reportOf = { E14: 'e14-trade-finder', E1: 'e1-preseason-redraft', E1b: 'e1-preseason-redraft', E2: 'e2-inseason-ros', E3: 'e3-dynasty', E4: 'e4-rookie-curve', E5: 'e5-lineup-value', E6: 'e6-league-simulation', E7: 'e7-verdict-calibration', E8: 'e8-dynasty-spacing', E9: 'e9-signal-weights', E10: 'e10-uncertainty', E12: 'e12-roster-values', Monotonicity: 'cur-monotonicity', Package: 'cur-package-simulation' };
     const fallback = { Monotonicity: 'Monotonicity checks on current data (e.g. more projected points or a younger age never lowers a value)', Package: 'Package-adjustment simulation on current data (does the adjustment track the simulated lineup gain of uneven trades?)' };
     const candidateLabels = (rep) => {
       const out = {};

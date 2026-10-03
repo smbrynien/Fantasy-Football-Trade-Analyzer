@@ -162,7 +162,7 @@ const AVAIL_FORMS = {
 };
 
 const DETAIL = 's04'; // candidate whose side totals are kept for the verdict calibration (E7)
-export { LEAGUE, SIGMA, predictTrade };
+export { LEAGUE, SIGMA, predictTrade, rng, candidateValues, draft, simulate, applyTrade, TEAMS };
 export const CANDIDATES = {
   current: { label: '2.1.2: σ = model table, healthy games, β .35, package 1/1', sigmaMult: 1, beta: 0.35, availability: false, pkg: { displacement_strength: 1, roster_slot_cost: 1, min_retained_fraction: 0.25 } },
   current_raw: { label: '2.1.2 without package adjustment (plain sums)', sigmaMult: 1, beta: 0.35, availability: false, pkg: null },

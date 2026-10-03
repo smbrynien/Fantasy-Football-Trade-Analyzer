@@ -109,7 +109,7 @@ function auditPanel() {
           h('td.bold.nowrap', {}, e.name),
           h('td.small', {}, String(e.description || '').replace(/^E\d+b?\s+/, '')),
           h('td.small.nowrap', { title: e.data_label }, evidenceKind(e.data_label)),
-          h('td.small', {}, hl ? [h('strong', {}, hl.model), lab ? h('span.muted', {}, ` (${lab})`) : null, ` — ${hl.metric} ${fmtMetric(hl.value)}${hl.tied ? ' (tied)' : ''}`] : h('span.muted', {}, 'Calibration (not a ranking) — see the results below')));
+          h('td.small', {}, hl ? [h('strong', {}, hl.model), lab ? h('span.muted', {}, ` (${lab})`) : null, ` — ${hl.metric} ${fmtMetric(hl.value)}${hl.tied ? ' (tied)' : ''}`] : h('span.muted', {}, 'Not ranked (calibration or strategy comparison) — see the results below')));
       }),
       (sc.pending || []).map((p) => h('tr', {}, h('td.bold', {}, p.name), h('td.small.muted', { colspan: 3 }, `Waiting for data: ${p.reason}`)))))));
     // Details: candidate × metric per experiment, folded.

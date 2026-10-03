@@ -4,7 +4,16 @@
 import { getAsset, COMPONENT_ORDER } from './engine.js';
 import { valueAtRank } from '../util/stats.js';
 
+// Value curves per valuation run: rebuilding and sorting ~2,500 values on every packageAdjustment call made each
+// analyzeTrade cost ~0.3 ms (the trade finder and "Even it out" score thousands of trades). Same numbers, cached.
+const curveCache = new WeakMap();
 function positionValueCurves(result) {
+  if (result.assets && curveCache.has(result.assets)) return curveCache.get(result.assets);
+  const curves = buildValueCurves(result);
+  if (result.assets) curveCache.set(result.assets, curves);
+  return curves;
+}
+function buildValueCurves(result) {
   const byPos = {};
   const all = [];
   for (const a of result.assets.values()) {

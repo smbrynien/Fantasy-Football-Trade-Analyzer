@@ -191,8 +191,25 @@ export async function persistTeams() {
   if (hasServer()) { try { await api.put('/api/teams', { teams: app.teams }); } catch { /* keep local */ } }
 }
 
-export function allTeams() { return app.teams; }
-export function teamsFor(profile = activeProfile()) { return app.teams.filter((t) => t.profileId === profile.id); }
+export function allTeams() { return app.teams.filter((t) => !t.opponent); }
+/** My saved teams in a league (opponents' rosters, saved for the trade finder, are kept apart). */
+export function teamsFor(profile = activeProfile()) { return app.teams.filter((t) => t.profileId === profile.id && !t.opponent); }
+/** Other teams of a league whose rosters are saved (e.g. every team of a Sleeper league) — the trade finder uses them. */
+export function opponentsFor(profile = activeProfile()) { return app.teams.filter((t) => t.profileId === profile.id && t.opponent); }
+/**
+ * Save the other teams of a league in one go (Sleeper import): a team already saved from the same Sleeper roster is
+ * updated in place (also "refresh from Sleeper"), a new one is added; nothing becomes the active team.
+ */
+export function upsertOpponents(list, profile = activeProfile()) {
+  let added = 0, updated = 0;
+  for (const o of list) {
+    const t = app.teams.find((x) => x.profileId === profile.id && x.opponent && x.sleeper_league === o.sleeper_league && x.sleeper_roster_id === o.sleeper_roster_id);
+    if (t) { Object.assign(t, o, { opponent: true, ids: [...o.ids], updated_at: now() }); updated++; }
+    else { app.teams.push({ ...o, id: newTeamId(), profileId: profile.id, opponent: true, ids: [...o.ids], updated_at: now() }); added++; }
+  }
+  persistTeams();
+  return { added, updated };
+}
 /** The league's active team: the one chosen last, else its first team, else none. */
 export function activeTeam(profile = activeProfile()) {
   const list = teamsFor(profile);

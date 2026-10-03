@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T15:38:32.616Z",
+  "generated_at": "2026-10-03T17:05:33.777Z",
   "model_version": "2.3.0",
   "note": "One row per experiment, candidate and metric (scorecard.csv). Full reports: reports/audit/*.json; method and conclusions: docs/MODEL_AUDIT.md.",
   "experiments": [
@@ -1429,6 +1429,394 @@
           "model": "expected",
           "metric": "corr(predicted own change, own realised gain)",
           "value": 0.547
+        }
+      ]
+    },
+    {
+      "name": "E14 trade finder",
+      "id": "E14",
+      "data_label": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+      "description": "E14 trade finder: do the suggested packages help the team making them, and are they fair to the other team? (E6 leagues, 12-team 1QB PPR)",
+      "candidates": {
+        "finder": "Finder (app): top option by expected lineup points (minimal, maxEdge 5%)",
+        "finder_any": "Finder: any of the options shown (mean over up to 5)",
+        "lineup_value": "Finder ranked by starting-lineup value instead of expected points",
+        "most_even": "Value only: the most evenly valued fair package (no roster view)",
+        "random_fair": "A random fair minimal package (no roster view)",
+        "not_minimal": "Finder without the no-throw-in rule (top by expected points)",
+        "edge10": "Finder with maxEdge 10% (I may take more value)",
+        "edge0": "Finder with maxEdge 0% (I never receive more value)",
+        "edge_close": "Finder with the model's \"close\" band only (UI fairness \"Model's close\")",
+        "two_max": "Finder with packages of at most 2 assets",
+        "mutual_filter": "Their roster known: their expected lineup may not fall (≥ 0), top by my gain",
+        "mutual_sum": "Their roster known: rank by my + their expected gain (mine must still improve)",
+        "mutual_min": "Their roster known: rank by the smaller of the two gains (mine must still improve)",
+        "pen05": "Finder with a size penalty (0.5 pts/wk per extra asset)"
+      },
+      "rows": [
+        {
+          "model": "finder",
+          "metric": "my realised season gain",
+          "value": 6.353
+        },
+        {
+          "model": "finder",
+          "metric": "their realised season gain",
+          "value": -18.685
+        },
+        {
+          "model": "finder",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.212
+        },
+        {
+          "model": "finder_any",
+          "metric": "my realised season gain",
+          "value": 6.572
+        },
+        {
+          "model": "finder_any",
+          "metric": "their realised season gain",
+          "value": -18.627
+        },
+        {
+          "model": "finder_any",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.212
+        },
+        {
+          "model": "lineup_value",
+          "metric": "my realised season gain",
+          "value": 7.87
+        },
+        {
+          "model": "lineup_value",
+          "metric": "their realised season gain",
+          "value": -20.586
+        },
+        {
+          "model": "lineup_value",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.212
+        },
+        {
+          "model": "most_even",
+          "metric": "my realised season gain",
+          "value": -16.473
+        },
+        {
+          "model": "most_even",
+          "metric": "their realised season gain",
+          "value": -16.292
+        },
+        {
+          "model": "most_even",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.885
+        },
+        {
+          "model": "random_fair",
+          "metric": "my realised season gain",
+          "value": -19.847
+        },
+        {
+          "model": "random_fair",
+          "metric": "their realised season gain",
+          "value": -18.415
+        },
+        {
+          "model": "random_fair",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.885
+        },
+        {
+          "model": "not_minimal",
+          "metric": "my realised season gain",
+          "value": 6.353
+        },
+        {
+          "model": "not_minimal",
+          "metric": "their realised season gain",
+          "value": -18.685
+        },
+        {
+          "model": "not_minimal",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.212
+        },
+        {
+          "model": "edge10",
+          "metric": "my realised season gain",
+          "value": 9.119
+        },
+        {
+          "model": "edge10",
+          "metric": "their realised season gain",
+          "value": -22.721
+        },
+        {
+          "model": "edge10",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.278
+        },
+        {
+          "model": "edge0",
+          "metric": "my realised season gain",
+          "value": 2.847
+        },
+        {
+          "model": "edge0",
+          "metric": "their realised season gain",
+          "value": -18.952
+        },
+        {
+          "model": "edge0",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.174
+        },
+        {
+          "model": "edge_close",
+          "metric": "my realised season gain",
+          "value": 9.697
+        },
+        {
+          "model": "edge_close",
+          "metric": "their realised season gain",
+          "value": -29.465
+        },
+        {
+          "model": "edge_close",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.377
+        },
+        {
+          "model": "two_max",
+          "metric": "my realised season gain",
+          "value": 7.945
+        },
+        {
+          "model": "two_max",
+          "metric": "their realised season gain",
+          "value": -16.949
+        },
+        {
+          "model": "two_max",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.201
+        },
+        {
+          "model": "mutual_filter",
+          "metric": "my realised season gain",
+          "value": 5.639
+        },
+        {
+          "model": "mutual_filter",
+          "metric": "their realised season gain",
+          "value": 3.937
+        },
+        {
+          "model": "mutual_filter",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.069
+        },
+        {
+          "model": "mutual_sum",
+          "metric": "my realised season gain",
+          "value": 6.507
+        },
+        {
+          "model": "mutual_sum",
+          "metric": "their realised season gain",
+          "value": -12.232
+        },
+        {
+          "model": "mutual_sum",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.212
+        },
+        {
+          "model": "mutual_min",
+          "metric": "my realised season gain",
+          "value": 5.892
+        },
+        {
+          "model": "mutual_min",
+          "metric": "their realised season gain",
+          "value": -13.55
+        },
+        {
+          "model": "mutual_min",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.212
+        },
+        {
+          "model": "pen05",
+          "metric": "my realised season gain",
+          "value": 6.392
+        },
+        {
+          "model": "pen05",
+          "metric": "their realised season gain",
+          "value": -19.123
+        },
+        {
+          "model": "pen05",
+          "metric": "coverage (share of requests with a package)",
+          "value": 0.212
+        }
+      ]
+    },
+    {
+      "name": "E14 trade finder (paired)",
+      "id": "E14",
+      "data_label": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+      "description": "E14 trade finder: do the suggested packages help the team making them, and are they fair to the other team? (E6 leagues, 12-team 1QB PPR)",
+      "candidates": {
+        "finder": "Finder (app): top option by expected lineup points (minimal, maxEdge 5%)",
+        "finder_any": "Finder: any of the options shown (mean over up to 5)",
+        "lineup_value": "Finder ranked by starting-lineup value instead of expected points",
+        "most_even": "Value only: the most evenly valued fair package (no roster view)",
+        "random_fair": "A random fair minimal package (no roster view)",
+        "not_minimal": "Finder without the no-throw-in rule (top by expected points)",
+        "edge10": "Finder with maxEdge 10% (I may take more value)",
+        "edge0": "Finder with maxEdge 0% (I never receive more value)",
+        "edge_close": "Finder with the model's \"close\" band only (UI fairness \"Model's close\")",
+        "two_max": "Finder with packages of at most 2 assets",
+        "mutual_filter": "Their roster known: their expected lineup may not fall (≥ 0), top by my gain",
+        "mutual_sum": "Their roster known: rank by my + their expected gain (mine must still improve)",
+        "mutual_min": "Their roster known: rank by the smaller of the two gains (mine must still improve)",
+        "pen05": "Finder with a size penalty (0.5 pts/wk per extra asset)"
+      },
+      "rows": [
+        {
+          "model": "finder − finder_any",
+          "metric": "my gain difference, same requests",
+          "value": -0.219
+        },
+        {
+          "model": "finder − finder_any",
+          "metric": "their gain difference, same requests",
+          "value": -0.058
+        },
+        {
+          "model": "finder − lineup_value",
+          "metric": "my gain difference, same requests",
+          "value": -1.517
+        },
+        {
+          "model": "finder − lineup_value",
+          "metric": "their gain difference, same requests",
+          "value": 1.901
+        },
+        {
+          "model": "finder − most_even",
+          "metric": "my gain difference, same requests",
+          "value": 4.971
+        },
+        {
+          "model": "finder − most_even",
+          "metric": "their gain difference, same requests",
+          "value": 2.657
+        },
+        {
+          "model": "finder − random_fair",
+          "metric": "my gain difference, same requests",
+          "value": 13.435
+        },
+        {
+          "model": "finder − random_fair",
+          "metric": "their gain difference, same requests",
+          "value": 4.44
+        },
+        {
+          "model": "finder − not_minimal",
+          "metric": "my gain difference, same requests",
+          "value": 0
+        },
+        {
+          "model": "finder − not_minimal",
+          "metric": "their gain difference, same requests",
+          "value": 0
+        },
+        {
+          "model": "finder − edge10",
+          "metric": "my gain difference, same requests",
+          "value": -6.15
+        },
+        {
+          "model": "finder − edge10",
+          "metric": "their gain difference, same requests",
+          "value": 2.499
+        },
+        {
+          "model": "finder − edge0",
+          "metric": "my gain difference, same requests",
+          "value": 5.731
+        },
+        {
+          "model": "finder − edge0",
+          "metric": "their gain difference, same requests",
+          "value": -0.779
+        },
+        {
+          "model": "finder − edge_close",
+          "metric": "my gain difference, same requests",
+          "value": -6.095
+        },
+        {
+          "model": "finder − edge_close",
+          "metric": "their gain difference, same requests",
+          "value": 7.109
+        },
+        {
+          "model": "finder − two_max",
+          "metric": "my gain difference, same requests",
+          "value": 0.956
+        },
+        {
+          "model": "finder − two_max",
+          "metric": "their gain difference, same requests",
+          "value": -2.576
+        },
+        {
+          "model": "finder − mutual_filter",
+          "metric": "my gain difference, same requests",
+          "value": 2.849
+        },
+        {
+          "model": "finder − mutual_filter",
+          "metric": "their gain difference, same requests",
+          "value": -10.301
+        },
+        {
+          "model": "finder − mutual_sum",
+          "metric": "my gain difference, same requests",
+          "value": -0.154
+        },
+        {
+          "model": "finder − mutual_sum",
+          "metric": "their gain difference, same requests",
+          "value": -6.453
+        },
+        {
+          "model": "finder − mutual_min",
+          "metric": "my gain difference, same requests",
+          "value": 0.461
+        },
+        {
+          "model": "finder − mutual_min",
+          "metric": "their gain difference, same requests",
+          "value": -5.135
+        },
+        {
+          "model": "finder − pen05",
+          "metric": "my gain difference, same requests",
+          "value": -0.039
+        },
+        {
+          "model": "finder − pen05",
+          "metric": "their gain difference, same requests",
+          "value": 0.438
         }
       ]
     },

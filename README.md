@@ -16,6 +16,10 @@ website's trade values — tuned to **your** league's scoring, roster and size.
 * Optional **My Team**: save as many teams as you like (each linked to a league's settings; search, paste, or Sleeper
   import) and every trade shows your starting lineup before → after (lineup value, expected lineup points per week —
   injuries and bench cover included — and who moves in/out), in "your team / their team" terms
+* **Trade finder** (My Team, and on the Trade page): search a player or pick you want and get a few packages from your
+  team that the model calls fair for both sides and that improve your lineup most — no throw-ins, a fairness setting,
+  "never offer" players. Import your Sleeper league with the other teams and it also ranks offers by what they do for
+  the other team. Backtested on 2021–2025 seasons (audit E14).
 * **Trade targets for your roster** (My Team): the positions where an upgrade would add the most expected lineup points
   per week, and the players in a value band you choose who would add the most — one click starts the trade
 * **Model audit scorecard** on the Model page: every audit experiment (backtests on real historical data, league
@@ -78,7 +82,7 @@ Other commands:
 | `npm run rebuild` | Rebuild dataset/values from cached data (no network) |
 | `npm run calibrate` | Re-derive aging curves, attrition, draft priors, rookie slot curve from historical data |
 | `npm run backtest` | Evaluate consensus rankings vs actual production → `reports/backtest.json` |
-| `npm run audit-model` | Full model audit: walk-forward backtests (E1–E4), hindsight-free lineup value (E5), historical league simulation of 5,000 trades (E6), verdict calibration (E7), dynasty value spacing (E8), signal weights on historical projection/ADP archives (E9), ± calibration (E10), availability by rank (E11), roster-specific values (E12), backtest from the app's daily signal archive (E13, after a season), correlations, ablations, stability, monotonicity, before/after → `reports/audit/` ([MODEL_AUDIT](docs/MODEL_AUDIT.md)); `scorecard.json` is shown on the Model page (`-- --only=scorecard` rebuilds it from existing reports). Before/after for a model change: `-- --freeze --snapshot-before --out=DIR` on the old model, `-- --only=compare --out=DIR` on the new one |
+| `npm run audit-model` | Full model audit: walk-forward backtests (E1–E4), hindsight-free lineup value (E5), historical league simulation of 5,000 trades (E6), verdict calibration (E7), dynasty value spacing (E8), signal weights on historical projection/ADP archives (E9), ± calibration (E10), availability by rank (E11), roster-specific values (E12), backtest from the app's daily signal archive (E13, after a season), trade finder backtest (E14), correlations, ablations, stability, monotonicity, before/after → `reports/audit/` ([MODEL_AUDIT](docs/MODEL_AUDIT.md)); `scorecard.json` is shown on the Model page (`-- --only=scorecard` rebuilds it from existing reports). Before/after for a model change: `-- --freeze --snapshot-before --out=DIR` on the old model, `-- --only=compare --out=DIR` on the new one |
 | `npm run package` | Build the ready-to-run ZIPs into `dist/` (what the release workflow publishes) |
 | `npm test` | Run the automated test suite (offline) |
 | `npm run lint` | Lint with ESLint (dev-only: uses a global ESLint 10 or fetches it via `npx`; nothing is added to the project) |
