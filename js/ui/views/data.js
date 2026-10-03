@@ -4,7 +4,7 @@ import { h, clear, fmtTime, timeAgo, fmtInt, statusIcon, toast, openModal, downl
 import { app, on, setDataset } from '../state.js';
 import { api, hasServer, loadDataset } from '../api.js';
 import { startSync, refreshStatus } from '../sync.js';
-import { toCSV } from '../../core/util/csv.js';
+import { toCSV, decodeImportBytes } from '../../core/util/csv.js';
 
 const SUBVIEWS = { sync: 'Sync dashboard', sources: 'Data sources / health', import: 'Manual import', quality: 'Data quality', snapshots: 'Snapshots' };
 
@@ -173,8 +173,9 @@ function importView(body) {
   function readFile(f) {
     if (!f) return;
     const rd = new FileReader();
-    rd.onload = () => { fileText = String(rd.result); fileName = f.name; mapping = null; drawLeft(); runPreview(); };
-    rd.readAsText(f);
+    rd.onload = () => { fileText = decodeImportBytes(rd.result); fileName = f.name; mapping = null; drawLeft(); runPreview(); };
+    rd.onerror = () => toast(`Could not read ${f.name}: ${rd.error?.message || 'unknown error'}`, 'bad');
+    rd.readAsArrayBuffer(f);
   }
 
   async function runPreview() {

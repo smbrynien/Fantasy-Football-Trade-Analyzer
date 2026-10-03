@@ -17,7 +17,9 @@ export class HttpError extends Error {
 
 export function createHttp({ userAgent, timeoutMs = 45000, retries = 2, onRequest } = {}) {
   const ua = userAgent || process.env.FFTA_USER_AGENT || 'FantasyFootballTradeAnalyzer/1.0 (personal use)';
-  const to = Number(process.env.FFTA_FETCH_TIMEOUT_MS) || timeoutMs;
+  // A negative/tiny/garbage FFTA_FETCH_TIMEOUT_MS made every request time out at once (BUG_AUDIT 2, R5): ≥ 1 s or default.
+  const envTo = Number(process.env.FFTA_FETCH_TIMEOUT_MS);
+  const to = Number.isFinite(envTo) && envTo >= 1000 ? envTo : timeoutMs;
   let bytes = 0, requests = 0;
 
   async function request(url, { as = 'json', headers = {}, retry = retries } = {}) {

@@ -1,9 +1,10 @@
 // Sync engine: runs source adapters independently (one failure never blocks the others), validates each batch,
 // stores raw + normalized data, then rebuilds the player DB, dataset, snapshot, default values and value history.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { P, DATA_DIR } from './lib/paths.js';
-import { readJSON, writeJSON, writeGz, writeGzJSON, pruneDir, ensureDir } from './lib/store.js';
+import { readJSON, writeJSON, updateJSON, writeGz, writeGzJSON, pruneDir, ensureDir } from './lib/store.js';
 import { createHttp } from './lib/http.js';
 import { loadConfig } from './lib/config.js';
 import { createAdapter } from '../adapters/index.js';
@@ -182,7 +183,11 @@ export async function runSync(opts = {}) {
       }
     };
     await Promise.all([worker(), worker(), worker()]);
-    await writeJSON(P.sourceStatus, statusAll, { pretty: true });
+    // Merge only the sources this run touched into the CURRENT file: writing the copy read at the start erased any
+    // status written meanwhile — e.g. a manual import committed during the sync showed "not imported" afterwards
+    // (BUG_AUDIT 2, SY6). updateJSON serializes with the import service's status writes.
+    const touched = Object.fromEntries(targets.filter((t) => results[t.id] && results[t.id].status !== 'skipped').map((t) => [t.id, statusAll[t.id]]));
+    Object.assign(statusAll, await updateJSON(P.sourceStatus, {}, (cur) => ({ ...cur, ...touched }), { pretty: true }));
 
     // ---------- rebuild ----------
     progress.phase = 'building';
@@ -241,8 +246,13 @@ async function rebuildNow(config, statusAll, state, log = () => {}) {
   log(`player DB: ${db.players.length} players ${JSON.stringify(db.summary)}`);
   const { dataset, report } = await buildDataset(config, { players: db.players, overrides: db.overrides, sourceStatus: statusAll, state });
   await writeJSON(P.dataset, dataset);
-  await writeGzJSON(path.join(P.snapshots, `${dataset.built_at.replace(/[:.]/g, '-')}__${dataset.data_version}.json.gz`), dataset);
-  await pruneDir(P.snapshots, SNAPSHOT_KEEP, (f) => f.endsWith('.json.gz'));
+  // One snapshot per data version: rebuilding identical inputs (rebuild, a sync with nothing new) used to add another
+  // copy each time, so duplicates pushed older distinct versions out of the 90 kept (BUG_AUDIT 2, SY5).
+  const existing = await fs.readdir(P.snapshots).catch(() => []);
+  if (!existing.some((f) => f.endsWith(`__${dataset.data_version}.json.gz`))) {
+    await writeGzJSON(path.join(P.snapshots, `${dataset.built_at.replace(/[:.]/g, '-')}__${dataset.data_version}.json.gz`), dataset);
+    await pruneDir(P.snapshots, SNAPSHOT_KEEP, (f) => f.endsWith('.json.gz'));
+  }
   try {
     await archiveSignals(dataset); // daily signal archive (never pruned) — the history projections/markets lack
   } catch (e) {

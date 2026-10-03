@@ -13,9 +13,16 @@ export function normalizeHeader(h) {
 }
 
 /** Parse uploaded text as CSV or JSON into {headers, records, warnings, format}. */
+/** Larger files are refused up front: no fantasy source has anywhere near this many players (BUG_AUDIT 2, I6). */
+export const MAX_IMPORT_ROWS = 20000;
+
 export function parseUpload(text, filename = '') {
   const trimmed = String(text || '').trim();
   if (!trimmed) return { headers: [], records: [], warnings: ['File is empty.'], format: 'empty' };
+  // A UTF-16 file (Excel "Unicode text") read as UTF-8 has a NUL between characters: say so instead of reporting
+  // unmapped columns (BUG_AUDIT 2, I8). The browser decodes UTF-16 itself (js/ui/views/data.js readImportFile).
+  if ((trimmed.slice(0, 400).match(/\u0000/g) || []).length > 20) return { headers: [], records: [], warnings: ['The file looks UTF-16 encoded ("Unicode text"). Save it as "CSV UTF-8" and try again.'], format: 'csv', error: true };
+  const tooMany = (n) => ({ headers: [], records: [], warnings: [`The file has ${n.toLocaleString()} rows; imports are limited to ${MAX_IMPORT_ROWS.toLocaleString()}. Split it or remove unneeded rows.`], format: 'csv', error: true });
   if (/\.json$/i.test(filename) || trimmed.startsWith('[') || trimmed.startsWith('{')) {
     let data;
     try { data = JSON.parse(trimmed); } catch (e) {
@@ -26,12 +33,15 @@ export function parseUpload(text, filename = '') {
       let arr = Array.isArray(data) ? data : Array.isArray(data.players) ? data.players : Array.isArray(data.data) ? data.data : null;
       if (!arr) return { headers: [], records: [], warnings: ['JSON must be an array of objects, or an object with a "players" array.'], format: 'json', error: true };
       arr = arr.filter((x) => x && typeof x === 'object');
+      if (arr.length > MAX_IMPORT_ROWS) return { ...tooMany(arr.length), format: 'json' };
       const headers = [...new Set(arr.flatMap((o) => Object.keys(o)))];
       const records = arr.map((o) => Object.fromEntries(headers.map((h) => [h, o[h] === undefined || o[h] === null ? null : typeof o[h] === 'object' ? JSON.stringify(o[h]) : String(o[h])])));
       return { headers, records, warnings: [], format: 'json' };
     }
   }
   try {
+    const lines = (trimmed.match(/\n/g) || []).length;
+    if (lines > MAX_IMPORT_ROWS) return tooMany(lines);
     const r = parseCSV(trimmed);
     return { ...r, format: 'csv' };
   } catch (e) {

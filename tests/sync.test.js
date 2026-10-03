@@ -190,3 +190,30 @@ test('stored batches exclude invalid values, outliers and duplicates; empty resp
   assert.equal(empty.verdict, 'quarantine');
   assert.ok(empty.issues.some((i) => i.code === 'no_records') && !empty.issues.some((i) => i.code === 'schema_changed'));
 });
+
+test('rebuilding identical inputs never adds a duplicate snapshot of the same data version (BUG_AUDIT 2, SY5)', async () => {
+  await rebuild();
+  const count = () => fs.readdirSync(P.snapshots).filter((f) => f.endsWith('.json.gz'));
+  const before = count();
+  await rebuild(); await rebuild();
+  const after = count();
+  assert.equal(after.length, before.length, `${before.length} → ${after.length}`);
+  const versions = after.map((f) => f.split('__')[1]);
+  assert.equal(new Set(versions).size, versions.length, 'one snapshot per data version');
+});
+
+test('a status written while a sync runs (e.g. a manual import) survives the sync (BUG_AUDIT 2, SY6)', async () => {
+  const { updateJSON } = await import('../server/lib/store.js');
+  const slowFactory = (source) => {
+    const impl = adapterFactory(source);
+    if (source.id !== 'good' || !impl) return impl;
+    return { fetchTradeValues: async () => { await new Promise((r) => setTimeout(r, 300)); return impl.fetchTradeValues(); } };
+  };
+  const run = runSync({ config: makeConfig(), state, adapterFactory: slowFactory, force: true, sources: ['good'] });
+  await new Promise((r) => setTimeout(r, 100)); // the sync has read the status file and is fetching
+  await updateJSON(P.sourceStatus, {}, (s) => ({ ...s, manual_test: { status: 'ok', method: 'manual', last_success: new Date().toISOString() } }), { pretty: true });
+  await run;
+  const status = read(P.sourceStatus);
+  assert.equal(status.manual_test?.status, 'ok', 'the import status written mid-sync is kept');
+  assert.equal(status.good.status, 'ok');
+});

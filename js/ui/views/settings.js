@@ -11,6 +11,13 @@ const SECTIONS = [['league', 'League'], ['scoring', 'Scoring'], ['roster', 'Rost
 
 function getPath(o, path) { return path.split('.').reduce((x, k) => (x === null || x === undefined ? undefined : x[k]), o); }
 function setPath(o, path, v) { const ks = path.split('.'); let x = o; for (const k of ks.slice(0, -1)) x = x[k] ||= {}; x[ks[ks.length - 1]] = v; }
+function unsetPath(o, path) {
+  const ks = path.split('.');
+  const chain = [o];
+  for (const k of ks.slice(0, -1)) { const next = chain[chain.length - 1]?.[k]; if (!next || typeof next !== 'object') return; chain.push(next); }
+  delete chain[chain.length - 1][ks[ks.length - 1]];
+  for (let i = chain.length - 1; i > 0; i--) if (!Object.keys(chain[i]).length) delete chain[i - 1][ks[i - 1]];
+}
 
 export function renderSettings(root, args) {
   // "Data Refresh" was a read-only table of freshness targets; the sync dashboard shows each source's target next to
@@ -38,10 +45,26 @@ export function renderSettings(root, args) {
     if (rerender) location.hash = `#/settings/${sec}`;
   }
   const modelVal = (path) => getPath(model, path);
-  const setModel = (path, v) => commit((p) => { p.overrides = p.overrides || {}; setPath(p.overrides, path, v); });
+  // A cleared field (null) means "back to the default": remove the override (and empty parents). Storing null made the
+  // engine read 0 — clearing "Bench value fraction" zeroed 77 values (BUG_AUDIT 2, E2).
+  const setModel = (path, v) => commit((p) => {
+    p.overrides = p.overrides || {};
+    if (v === null) { unsetPath(p.overrides, path); toast('Back to the default value.'); } else setPath(p.overrides, path, v);
+  });
 
   const numField = (label, value, onSet, { step = 'any', min, max, help } = {}) => h('label.field', { title: help || '' }, label,
-    h('input', { type: 'number', step, min, max, value: value ?? '', onchange: (e) => { const v = e.target.value === '' ? null : Number(e.target.value); if (v !== null && !Number.isFinite(v)) return; onSet(v); } }));
+    h('input', { type: 'number', step, min, max, value: value ?? '', onchange: (e) => {
+      let v = e.target.value === '' ? null : Number(e.target.value);
+      if (v !== null && !Number.isFinite(v)) return;
+      // min/max on the input are only hints: a typed -5 or 1e9 used to be stored as is (e.g. 1e9 dynasty horizon years
+      // ran the engine out of memory). Clamp and say so.
+      if (v !== null && ((min !== undefined && v < min) || (max !== undefined && v > max))) {
+        const c = Math.min(max ?? Infinity, Math.max(min ?? -Infinity, v));
+        toast(`${label || 'Value'}: ${v} is outside ${min ?? '−∞'}–${max ?? '∞'}; using ${c}.`, 'warn');
+        v = c; e.target.value = String(c);
+      }
+      onSet(v);
+    } }));
   const modelNum = (label, path, opts) => numField(label, modelVal(path), (v) => setModel(path, v), opts);
 
   // Basic vs advanced: most people only need the league itself; model parameters are calibrated defaults.
@@ -89,7 +112,9 @@ export function renderSettings(root, args) {
     rd.onload = () => {
       try {
         const p = JSON.parse(rd.result);
-        if (!p.roster || !p.teams) throw new Error('Not a league profile (missing teams/roster).');
+        if (!p || typeof p !== 'object' || Array.isArray(p) || !p.roster || !p.teams) throw new Error('Not a league profile (missing teams/roster).');
+        // A missing or non-text name showed as "undefined" / "[object Object]" in the league list (BUG_AUDIT 2, UI3).
+        p.name = typeof p.name === 'string' && p.name.trim() ? p.name.trim().slice(0, 80) : `Imported league (${f.name.replace(/\.[^.]+$/, '').slice(0, 40)})`;
         p.id = `user_${Date.now().toString(36)}`;
         p.builtin = false;
         const errs = validateLeague(buildLeague(p, app.config.leagueDefaults));

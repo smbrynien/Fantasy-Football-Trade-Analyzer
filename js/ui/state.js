@@ -71,7 +71,15 @@ export async function persistProfiles() {
   if (hasServer()) { try { await api.put('/api/profiles', { profiles: app.userProfiles }); } catch { /* keep local */ } }
 }
 
+// Several tabs share this browser's storage but each keeps the lists in memory: a stale tab used to write its old list
+// back and silently erase what another tab had just saved — a new league profile or team vanished from the browser and
+// the server copy (BUG_AUDIT 2, UI4). Every change now starts from the stored list, and other tabs follow changes via
+// the 'storage' event (watchOtherTabs).
+function freshProfiles() { app.userProfiles = load('profiles', app.userProfiles, Array.isArray).filter(isProfile); }
+function freshTeams() { app.teams = load('teams', app.teams, Array.isArray).filter(isTeam); }
+
 export function upsertUserProfile(p) {
+  freshProfiles();
   const copy = deepClone(p);
   delete copy.builtin;
   copy.updated_at = new Date().toISOString();
@@ -83,6 +91,7 @@ export function upsertUserProfile(p) {
 }
 
 export function deleteUserProfile(id) {
+  freshProfiles();
   app.userProfiles = app.userProfiles.filter((p) => p.id !== id);
   persistProfiles();
   if (app.profileId === id) setProfile(null);
@@ -201,6 +210,7 @@ export function opponentsFor(profile = activeProfile()) { return app.teams.filte
  * updated in place (also "refresh from Sleeper"), a new one is added; nothing becomes the active team.
  */
 export function upsertOpponents(list, profile = activeProfile()) {
+  freshTeams();
   let added = 0, updated = 0;
   for (const o of list) {
     const t = app.teams.find((x) => x.profileId === profile.id && x.opponent && x.sleeper_league === o.sleeper_league && x.sleeper_roster_id === o.sleeper_roster_id);
@@ -220,6 +230,7 @@ export function setActiveTeam(id, profile = activeProfile()) { save(`team.active
 
 export function createTeam({ name = 'My team', ids = [], ...meta } = {}, profile = activeProfile()) {
   const t = { ...meta, id: newTeamId(), name: String(name).slice(0, 80) || 'My team', profileId: profile.id, ids: [...ids], updated_at: now() };
+  freshTeams();
   app.teams.unshift(t);
   persistTeams();
   save(`team.active.${profile.id}`, t.id);
@@ -227,6 +238,7 @@ export function createTeam({ name = 'My team', ids = [], ...meta } = {}, profile
   return t;
 }
 export function updateTeam(id, patch) {
+  freshTeams();
   const t = app.teams.find((x) => x.id === id);
   if (!t) return null;
   Object.assign(t, patch, { updated_at: now() });
@@ -235,12 +247,14 @@ export function updateTeam(id, patch) {
   return t; // no 'team' event: the view that edits a roster redraws itself (a full re-render would drop search focus)
 }
 export function deleteTeam(id) {
+  freshTeams();
   app.teams = app.teams.filter((t) => t.id !== id);
   persistTeams();
   emit('team');
 }
 /** Move every team of one league profile to another (a built-in preset copied on its first edit takes its teams along). */
 export function relinkTeams(fromProfileId, toProfileId) {
+  freshTeams();
   let moved = 0;
   for (const t of app.teams) if (t.profileId === fromProfileId) { t.profileId = toProfileId; t.updated_at = now(); moved++; }
   if (!moved) return;
@@ -256,4 +270,14 @@ export function saveMyRoster(ids, meta = {}, profile = activeProfile()) {
   const t = activeTeam(profile);
   if (t) updateTeam(t.id, { ...meta, ids });
   else createTeam({ name: meta.team_name || 'My team', ...meta, ids }, profile);
+}
+
+/** Follow saved-team / profile changes made in another tab of this browser (the 'storage' event fires only there). */
+export function watchOtherTabs() {
+  if (typeof window === 'undefined' || app._watchingTabs) return;
+  app._watchingTabs = true;
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'ffta.teams') { freshTeams(); emit('team'); }
+    else if (e.key === 'ffta.profiles') { freshProfiles(); app.cache.clear(); emit('profiles'); }
+  });
 }

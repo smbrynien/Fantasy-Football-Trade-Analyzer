@@ -24,6 +24,9 @@ column aliases and a downloadable example CSV.
 2. Follow the source-specific steps (e.g. "Open the FantasyPros rankings page → choose scoring → export CSV").
 3. Set the format options (ranking type, QB format, value type, projection scope…).
 4. Choose a file (CSV/TSV/semicolon-separated, or JSON array / `{ "players": [...] }`), drag & drop, or paste text.
+   Files may be UTF-8 (with or without a byte-order mark), UTF-16 (Excel "Unicode text") or Windows-1252/Latin-1;
+   the encoding is detected. At most **20,000 rows** per import (split larger files). A file with no valid rows is
+   refused and nothing is changed.
 5. **Preview & validation** (nothing is saved yet):
    * detected column mapping (exact alias match, then whole-word match) — adjust with the dropdowns and re-validate
    * row errors (missing required values, non-numeric numbers)

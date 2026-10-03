@@ -111,3 +111,30 @@ test('static: the audit scorecard is served, other audit outputs are not', async
   assert.equal((await get('/reports/audit/values-v1.json')).status, 404);
   assert.equal((await get('/reports/audit/e6-league-simulation.json')).status, 404);
 });
+
+test('audit 2: parallel saved-trade writes are all kept; overrides and history reject garbage; other-format datasets are rebuilt', async () => {
+  const post = (body) => fetch(`http://127.0.0.1:${port}/api/trades`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const before = (await (await fetch(`http://127.0.0.1:${port}/api/trades`)).json()).trades.length;
+  const ids = (await Promise.all(Array.from({ length: 25 }, (_, i) => post({ a: [`X${i}`], b: [] }).then((r) => r.json())))).map((r) => r.id);
+  const after = (await (await fetch(`http://127.0.0.1:${port}/api/trades`)).json()).trades;
+  assert.equal(after.length, before + 25, 'R1: every parallel save is kept');
+  await Promise.all(ids.slice(0, 10).map((id) => fetch(`http://127.0.0.1:${port}/api/trades/${id}`, { method: 'DELETE' })));
+  assert.equal((await (await fetch(`http://127.0.0.1:${port}/api/trades`)).json()).trades.length, before + 15, 'parallel deletes all applied');
+  const ov = (body) => fetch(`http://127.0.0.1:${port}/api/overrides`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  for (const bad of [{ key: { a: 1 }, cid: 'P1' }, { key: 'k', cid: ['x'] }, { key: 'k', cid: 'P_does_not_exist' }, { key: '', ignore: true }]) assert.equal((await ov(bad)).status, 400, JSON.stringify(bad));
+  for (const k of ['__proto__', 'constructor', 'toString']) assert.equal((await (await fetch(`http://127.0.0.1:${port}/api/history?cid=${k}`)).json()).series, null, k);
+  // R7: a dataset in another schema is rebuilt, never served as current.
+  fs.mkdirSync(path.join(dataDir, 'calculated'), { recursive: true });
+  fs.writeFileSync(path.join(dataDir, 'calculated', 'dataset.json'), JSON.stringify({ schema_version: 99, players: [{ cid: 'X', name: 'Old format' }], picks: [] }));
+  const ds = await (await fetch(`http://127.0.0.1:${port}/api/dataset`)).json();
+  assert.equal(ds.schema_version, 1);
+  assert.ok(!ds.players.some((p) => p.name === 'Old format'));
+});
+
+test('audit 2: an import with no valid rows is refused and never marks the source as imported (I7)', async () => {
+  const commit = await fetch(`http://127.0.0.1:${port}/api/import/commit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ spec_id: 'ktc_values', text: 'name,position,value\n', filename: 'empty.csv' }) });
+  assert.equal(commit.status, 400);
+  assert.match((await commit.json()).error, /no valid rows/i);
+  const st = (await (await fetch(`http://127.0.0.1:${port}/api/status`)).json()).sources.find((s) => s.id === 'ktc');
+  assert.notEqual(st?.state, 'ok');
+});

@@ -13,12 +13,18 @@ export function loadConfig() {
       calibration[f.replace(/\.json$/, '').replace(/-/g, '_')] = readJSONSync(path.join(calDir, f));
     }
   }
+  // Required files: a missing one used to come back as null and crash much later with an unrelated message.
+  const required = (f) => {
+    const v = readJSONSync(path.join(CONFIG_DIR, f), null);
+    if (!v || typeof v !== 'object') throw new Error(`config/${f} is missing or empty. Restore it from the app download (or \`git checkout config/${f}\`).`);
+    return v;
+  };
   return {
-    sources: readJSONSync(path.join(CONFIG_DIR, 'sources.json')),
-    model: readJSONSync(path.join(CONFIG_DIR, 'model.json')),
-    leagueDefaults: readJSONSync(path.join(CONFIG_DIR, 'league-defaults.json')),
-    profiles: readJSONSync(path.join(CONFIG_DIR, 'profiles.json')),
-    importSpecs: readJSONSync(path.join(CONFIG_DIR, 'import-specs.json')),
+    sources: required('sources.json'),
+    model: required('model.json'),
+    leagueDefaults: required('league-defaults.json'),
+    profiles: required('profiles.json'),
+    importSpecs: required('import-specs.json'),
     calibration,
   };
 }

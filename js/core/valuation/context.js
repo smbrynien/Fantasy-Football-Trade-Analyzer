@@ -5,6 +5,7 @@
 import { scoreStats } from '../scoring.js';
 import { ageOn } from '../identity.js';
 import { weightedMean, mean, median, clamp } from '../util/stats.js';
+import { datasetAsOf } from '../settings.js';
 
 const PASS_KEYS = ['pass_att', 'pass_cmp', 'pass_inc', 'pass_yd', 'pass_td', 'pass_int', 'pass_2pt', 'pass_fd', 'pass_sack'];
 const RUSH_KEYS = ['rush_att', 'rush_yd', 'rush_td', 'rush_2pt', 'rush_fd'];
@@ -114,7 +115,7 @@ function playedWeek(wk) {
  * Per-player inputs. Returns Map cid → inputs.
  */
 export function derivePlayerInputs(dataset, league, scoring, phase, model, leagueRates) {
-  const asOf = dataset.state?.as_of ? new Date(dataset.state.as_of) : new Date(dataset.built_at || Date.now());
+  const asOf = datasetAsOf(dataset);
   const srcW = model.source_weights.projection || {};
   const prodCfg = model.redraft.production;
   const out = new Map();

@@ -153,3 +153,21 @@ test('CSV export neutralizes spreadsheet formulas but keeps numbers (BUG_AUDIT I
   assert.deepEqual([r2.pct, r2.neg, r2.f], ['+12.3%', '-1,234', '\'-A1+1'], 'signed numbers/percentages stay numbers; formulas do not');
   assert.equal(row.e, 'Ja\'Marr, "J"', 'quotes/commas round-trip');
 });
+
+test('import files: UTF-16 / Windows-1252 decoding, UTF-16 read as UTF-8 explained, row cap (BUG_AUDIT 2, I6/I8)', async () => {
+  const { decodeImportBytes } = await import('../js/core/util/csv.js');
+  const { parseUpload, MAX_IMPORT_ROWS } = await import('../js/core/import/mapper.js');
+  const text = 'name,position,value\nJosé Nuñez,RB,100\n';
+  const utf16le = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, 'utf16le')]);
+  const utf16be = Buffer.concat([Buffer.from([0xfe, 0xff]), Buffer.from(text, 'utf16le').swap16()]);
+  for (const [label, bytes] of [['utf-8', Buffer.from(text, 'utf8')], ['utf-8 BOM', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(text)])], ['utf-16le', utf16le], ['utf-16be', utf16be], ['latin1', Buffer.from(text, 'latin1')]]) {
+    assert.equal(decodeImportBytes(bytes), text, label);
+  }
+  const garbled = Buffer.from(text, 'utf16le').toString('utf8');
+  const r = parseUpload(garbled, 'x.csv');
+  assert.ok(r.error && /UTF-16/.test(r.warnings[0]));
+  const big = `name,position,value\n${Array.from({ length: MAX_IMPORT_ROWS + 5 }, (_, i) => `P ${i},WR,${i}`).join('\n')}`;
+  const b = parseUpload(big, 'big.csv');
+  assert.ok(b.error && /limited to/.test(b.warnings[0]));
+  assert.ok(!parseUpload(`name,position,value\n${Array.from({ length: 500 }, (_, i) => `P ${i},WR,${i}`).join('\n')}`, 'ok.csv').error);
+});

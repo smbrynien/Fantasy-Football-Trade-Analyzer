@@ -49,6 +49,7 @@ function dispersion(list) {
 // One player modal at a time: opening another (link, #/player/<id> navigation, back/forward) used to stack modals,
 // and Escape then closed all of them.
 let closeOpenPlayer = null;
+export function closePlayerModal() { if (closeOpenPlayer) closeOpenPlayer(); }
 
 export function openPlayer(cid) {
   if (closeOpenPlayer) closeOpenPlayer();
@@ -267,13 +268,13 @@ function sourceList(a, g) {
 function whyChanged(cid) {
   const box = h('div.mt', {}, h('h3', {}, 'Why did this value change?'));
   if (!hasServer()) { box.append(h('p.small.muted', {}, 'Requires the local server (snapshots are stored on disk).')); return box; }
-  const sel = h('select', {}, h('option', { value: '' }, 'Choose an earlier data snapshot…'));
+  const sel = h('select', { 'aria-label': 'Earlier data snapshot to compare with' }, h('option', { value: '' }, 'Choose an earlier data snapshot…'));
   const out = h('div.mt-s');
   box.append(h('div.flex', {}, sel), out);
   api.get('/api/snapshots').then((list) => {
     for (const s of list.slice(1, 60)) sel.append(h('option', { value: s.file }, `${fmtTime(s.built_at)} · ${s.data_version}`));
     if (list.length <= 1) out.append(h('p.small.muted', {}, 'Only one snapshot exists so far — sync again later to compare.'));
-  }).catch(() => {});
+  }).catch((e) => out.append(h('p.small.muted', {}, `Snapshots could not be loaded (${e.message}).`)));
   sel.addEventListener('change', async () => {
     clear(out);
     if (!sel.value) return;

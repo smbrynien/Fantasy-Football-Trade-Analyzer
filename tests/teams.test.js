@@ -92,3 +92,24 @@ test('opponent rosters (Sleeper "also save the other teams"): added once, refres
   assert.equal(S.opponentsFor(league('other')).length, 0);
   assert.equal(JSON.parse(store.get('ffta.teams')).filter((t) => t.opponent).length, 2, 'persisted');
 });
+
+test('another tab\'s saves are never overwritten by a stale tab (BUG_AUDIT 2, UI4)', async () => {
+  await S.initTeams();
+  const L = league('lgT');
+  S.createTeam({ name: 'This tab' }, L);
+  // Another tab (same browser storage) saves a team; this tab's in-memory list is now stale.
+  const other = JSON.parse(store.get('ffta.teams'));
+  store.set('ffta.teams', JSON.stringify([{ id: 'team_other', name: 'Other tab', profileId: 'lgT', ids: ['Z'], updated_at: '2026-10-03T00:00:00Z' }, ...other]));
+  S.createTeam({ name: 'This tab again' }, L);
+  assert.deepEqual(JSON.parse(store.get('ffta.teams')).map((t) => t.name).sort(), ['Other tab', 'This tab', 'This tab again']);
+  // Deleting here keeps the other tab's team; another tab's deletion is not undone by a later save here.
+  store.set('ffta.teams', JSON.stringify(JSON.parse(store.get('ffta.teams')).filter((t) => t.name !== 'This tab')));
+  S.updateTeam(S.teamsFor(L).find((t) => t.name === 'This tab again').id, { name: 'Renamed' });
+  assert.deepEqual(JSON.parse(store.get('ffta.teams')).map((t) => t.name).sort(), ['Other tab', 'Renamed']);
+  // Profiles behave the same.
+  S.app.userProfiles = [];
+  S.upsertUserProfile({ id: 'user_a', name: 'A' });
+  store.set('ffta.profiles', JSON.stringify([{ id: 'user_b', name: 'B' }, ...JSON.parse(store.get('ffta.profiles'))]));
+  S.upsertUserProfile({ id: 'user_c', name: 'C' });
+  assert.deepEqual(JSON.parse(store.get('ffta.profiles')).map((p) => p.id).sort(), ['user_a', 'user_b', 'user_c']);
+});

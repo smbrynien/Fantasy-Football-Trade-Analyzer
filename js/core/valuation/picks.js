@@ -13,6 +13,7 @@
 import { interp, isotonicDecreasing, mean, sd, weightedMean, clamp } from '../util/stats.js';
 import { fitValueFunction } from './mapping.js';
 import { parsePickLabel, pickAssetId, pickDisplayName } from '../pick-labels.js';
+import { datasetAsOf } from '../settings.js';
 
 export function upcomingRookieYear(asOf, model) {
   const d = asOf instanceof Date ? asOf : new Date(asOf);
@@ -43,7 +44,7 @@ export function runPicks(dataset, league, model, env, dyn) {
   const Tref = cfg.reference_teams;
   const rounds = clamp((league.dynasty && league.dynasty.rookie_rounds) || cfg.default_rounds, 1, cfg.max_rounds);
   const nYears = clamp((league.dynasty && league.dynasty.pick_years) || cfg.years_ahead, 1, 6);
-  const asOf = dataset.state?.as_of ? new Date(dataset.state.as_of) : new Date(dataset.built_at || Date.now());
+  const asOf = datasetAsOf(dataset);
   const upcoming = upcomingRookieYear(asOf, model);
   const seasons = Array.from({ length: nYears }, (_, i) => upcoming + i);
   const maxP = rounds * T;

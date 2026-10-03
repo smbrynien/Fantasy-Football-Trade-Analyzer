@@ -12,13 +12,20 @@ import path from 'node:path';
 import { P, DATA_DIR } from './lib/paths.js';
 import { readJSON, writeJSON } from './lib/store.js';
 import { PlayerStore, PlayerIndex } from '../js/core/identity.js';
-import { DATASET_SCHEMA_VERSION } from '../js/core/version.js';
+import { DATASET_SCHEMA_VERSION, NORMALIZED_SCHEMA_VERSION } from '../js/core/version.js';
 import { stableHash } from '../js/core/util/objects.js';
 import { TEAMS } from '../js/core/util/teams.js';
 
 
 export async function loadNormalized(sourceId, type) {
-  return readJSON(P.normalizedFile(sourceId, type), null);
+  const env = await readJSON(P.normalizedFile(sourceId, type), null);
+  // Schema versions used to be written and never read: a file in another envelope shape would have been read as if
+  // it were current (BUG_AUDIT 2, R7). Such a file is skipped (the source needs a re-sync) instead of misread.
+  if (env && env.schema_version !== undefined && env.schema_version !== NORMALIZED_SCHEMA_VERSION) {
+    console.warn(`  Skipping ${sourceId}/${type}.json: schema ${env.schema_version}, this version reads ${NORMALIZED_SCHEMA_VERSION}. Sync that source again.`);
+    return null;
+  }
+  return env;
 }
 
 async function listNormalized() {

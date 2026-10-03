@@ -1,7 +1,7 @@
 // Manual import service: preview (mapping, validation, identity report, overwrite impact) and commit.
 
 import { P } from './lib/paths.js';
-import { readJSON, writeJSON } from './lib/store.js';
+import { readJSON, writeJSON, updateJSON } from './lib/store.js';
 import { parseUpload, autoMapColumns, applyMapping, toNormalized, validateRows } from '../js/core/import/mapper.js';
 import { PlayerIndex } from '../js/core/identity.js';
 import { assessBatch } from '../js/core/quality.js';
@@ -93,6 +93,9 @@ export async function commitImport(config, body, rebuildFn) {
     seen.add(k);
     return true;
   }).map((r) => { const o = { ...r, as_of: now }; delete o._row; delete o.type; return o; });
+  // Nothing valid to store (e.g. a header-only file): refuse. It used to report success and mark the source as just
+  // imported with 0 records (BUG_AUDIT 2, I7).
+  if (!players.length && !pv._normalized.picks.length) throw Object.assign(new Error('The file has no valid rows to import — nothing was changed.'), { status: 400 });
   const writes = [];
   if (spec.record_type !== 'pick_market' && players.length) {
     const prev = await readJSON(P.normalizedFile(spec.source_id, spec.record_type), null);
@@ -110,9 +113,7 @@ export async function commitImport(config, body, rebuildFn) {
       meta: { spec: spec.id, options: opts, filename: body.filename || null }, quality: pv.quality, records,
     });
   }
-  const status = await readJSON(P.sourceStatus, {});
-  status[spec.source_id] = { ...(status[spec.source_id] || {}), last_attempt: now, last_success: now, status: 'ok', error: null, method: 'manual', records: Object.fromEntries(writes.map(([t, r]) => [t, r.length])) };
-  await writeJSON(P.sourceStatus, status, { pretty: true });
+  await updateJSON(P.sourceStatus, {}, (status) => ({ ...status, [spec.source_id]: { ...(status[spec.source_id] || {}), last_attempt: now, last_success: now, status: 'ok', error: null, method: 'manual', records: Object.fromEntries(writes.map(([t, r]) => [t, r.length])) } }), { pretty: true });
   const build = await rebuildFn();
   return { ok: true, imported: { players: Math.max(0, players.length - pv.identity.unmatched.length - pv.identity.ambiguous.length), stored: players.length, picks: pv._normalized.picks.length }, unmatched: pv.identity.unmatched.length, ambiguous: pv.identity.ambiguous.length, data_version: build?.dataset?.data_version };
 }
@@ -122,9 +123,7 @@ export async function clearManualSource(config, sourceId, rebuildFn) {
   if (!src || src.adapter !== 'manual') throw Object.assign(new Error('Only manual sources can be cleared'), { status: 400 });
   const fs = await import('node:fs/promises');
   await fs.rm(P.normalized(sourceId), { recursive: true, force: true });
-  const status = await readJSON(P.sourceStatus, {});
-  delete status[sourceId];
-  await writeJSON(P.sourceStatus, status, { pretty: true });
+  await updateJSON(P.sourceStatus, {}, (status) => { const next = { ...status }; delete next[sourceId]; return next; }, { pretty: true });
   await rebuildFn();
   return { ok: true };
 }

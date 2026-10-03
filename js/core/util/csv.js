@@ -116,3 +116,16 @@ export function toNumber(v) {
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
+
+/**
+ * Decode an uploaded file's bytes. Files were read as UTF-8 only: a UTF-16 file (Excel "Unicode text") became
+ * NUL-separated garbage and Latin-1/Windows-1252 accents became U+FFFD, so "José" could not be matched (BUG_AUDIT 2,
+ * I8). Order: byte-order mark (UTF-16 LE/BE, UTF-8), strict UTF-8, then Windows-1252.
+ */
+export function decodeImportBytes(bytes) {
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  if (u8[0] === 0xff && u8[1] === 0xfe) return new TextDecoder('utf-16le').decode(u8.subarray(2));
+  if (u8[0] === 0xfe && u8[1] === 0xff) return new TextDecoder('utf-16be').decode(u8.subarray(2));
+  if (u8[0] === 0xef && u8[1] === 0xbb && u8[2] === 0xbf) return new TextDecoder('utf-8').decode(u8.subarray(3));
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(u8); } catch { return new TextDecoder('windows-1252').decode(u8); }
+}

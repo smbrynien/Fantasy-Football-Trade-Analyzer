@@ -27,6 +27,25 @@ export async function writeFileAtomic(file, data) {
   }
 }
 
+/**
+ * Serialize read-modify-write updates of one file inside this process. Saving two trades at the same time used to
+ * read the same list twice and write it twice, so one of the saves vanished (20 parallel saves kept 3 — BUG_AUDIT 2,
+ * R1). `update(current) → next` runs only after every earlier update of the same file has been written.
+ */
+const fileLocks = new Map();
+export function updateJSON(file, fallback, update, opts) {
+  const prev = fileLocks.get(file) || Promise.resolve();
+  const run = prev.then(async () => {
+    const next = await update(await readJSON(file, structuredClone(fallback)));
+    await writeJSON(file, next, opts);
+    return next;
+  });
+  const settled = run.catch(() => {});
+  fileLocks.set(file, settled);
+  settled.then(() => { if (fileLocks.get(file) === settled) fileLocks.delete(file); });
+  return run;
+}
+
 export async function writeJSON(file, obj, { pretty = false } = {}) {
   await writeFileAtomic(file, JSON.stringify(obj, null, pretty ? 2 : 0));
 }
@@ -64,7 +83,10 @@ export async function readJSON(file, fallback = null) {
 }
 
 export function readJSONSync(file, fallback = null) {
-  try { return JSON.parse(fss.readFileSync(file, 'utf8')); } catch (e) { if (e.code === 'ENOENT') return fallback; throw e; }
+  let txt;
+  try { txt = fss.readFileSync(file, 'utf8'); } catch (e) { if (e.code === 'ENOENT') return fallback; throw e; }
+  // Name the file: a typo in config/model.json used to surface as a bare "Unexpected token" (BUG_AUDIT 2, R6).
+  try { return JSON.parse(txt); } catch (e) { throw new Error(`${path.basename(path.dirname(file))}/${path.basename(file)} is not valid JSON (${e.message}). Fix or restore the file.`); }
 }
 
 export async function writeGzJSON(file, obj) {

@@ -34,3 +34,33 @@ Concise list of meaningful fixes. Details, reproduction and verification: [BUG_A
 | SY3 Empty response called "format changed" | schema check on empty batch | `no_records` | same | quality.js |
 | SR1–SR3 Search duplicates, suffixes, team-code prefixes | merge without de-dup; suffix tokens; strict team filter | de-dup, drop suffixes, team-or-prefix | search.test (3) | js/ui/search.js |
 | O1 Raw "Failed to fetch" on server loss | network error shown verbatim | plain-language message | browser check | js/ui/sync.js |
+
+**Audit 2 (2026-10-03)** — details in [BUG_AUDIT.md](BUG_AUDIT.md) §A2.5.
+
+| Issue | Root cause | Fix | Regression test | Affected components |
+|---|---|---|---|---|
+| R1 Parallel trade saves lost saves (20 → 3) | read-modify-write of one JSON file without serialization | per-file `updateJSON` queue for trades, overrides, source status | server.test "audit 2: parallel saved-trade writes…" | server/lib/store.js, server/index.js |
+| E1 Non-list FLEX eligibility crashed every page | `sanitizeLeague` skipped `flex_eligibility` | list of real positions, else the default | robustness.test E1 | js/core/settings.js |
+| UI4 A second tab erased teams/profiles saved in the first | each tab wrote back its stale in-memory list | changes start from stored lists; `storage` event sync | teams.test "another tab's saves…" | js/ui/state.js, js/app.js |
+| E2 Clearing a model setting set it to 0 / crashed | form stored `null`; merged over the default untyped | cleared field removes the override; type-checked overrides | robustness.test E2 | js/core/settings.js, settings view |
+| E3 Extreme parameters hung, ran out of memory, went negative | no engine-side bounds; form limits only hints | `MODEL_BOUNDS`/`clampModel`; form clamps with a toast | robustness.test E3 | js/core/settings.js, settings view |
+| SY6 Sync erased a status written while it ran | whole status object written back | merge only fetched sources via `updateJSON` | sync.test "a status written while a sync runs…" | server/sync-engine.js, server/import-service.js |
+| I6 Large unknown-name imports froze the server | names re-normalized per record; no size limit | cached name keys, exact length-ratio skip; 20,000-row cap | ingestion.test (row cap) | js/core/identity.js, js/core/import/mapper.js |
+| UI6 Empty redraft after the season, unexplained | correct model, no empty state | banner explaining it + "Switch to Dynasty" | browser check | js/app.js |
+| R7 Other-schema data read as current | schema versions never read | rebuild/skip/refuse on mismatch | server.test (schema 99) | server/index.js, dataset-builder.js, js/ui/api.js |
+| SY5 Duplicate snapshots of one data version | snapshot written on every rebuild | skip when that version exists | sync.test SY5 | server/sync-engine.js |
+| I7 Import with no valid rows "succeeded" | no empty check | 400, nothing changed | server.test "audit 2: an import with no valid rows…" | server/import-service.js |
+| I8 UTF-16/Latin-1 files misread | file read as UTF-8 text | `decodeImportBytes` (BOM, UTF-8, Windows-1252) | ingestion.test (encodings) | js/core/util/csv.js, mapper.js, data view |
+| R2 `?cid=__proto__` returned an internal object | inherited key lookup | own keys only | server.test | server/index.js |
+| R3 Identity overrides accepted garbage | no body validation | string key + existing cid or ignore, else 400 | server.test | server/index.js |
+| R4 Invalid PORT → stack trace | unvalidated env | warning + default; same for auto-refresh hours | launch check | server/index.js |
+| R5 Negative fetch timeout broke all downloads | unvalidated env | used only if ≥ 1,000 ms | live request | server/lib/http.js |
+| R6 Broken/missing config gave unhelpful errors | bare parse error; `null` config | errors name the file and the restore step | launch check | server/lib/store.js, config.js |
+| D2 Malformed dataset date nulled pick seasons | `new Date(garbage)` used | `datasetAsOf` falls back to built_at/now | robustness.test D2 | js/core/settings.js, picks.js, context.js |
+| EX1 Trade CSV untraceable to settings | settings only in JSON export | `SETTINGS` row | browser check | trade view |
+| UI3 Imported profile named "undefined" | name not validated | trimmed name or "Imported league (file)" | browser check | settings view |
+| UI5 "removeChild" console error on re-render | change handler re-rendered mid-render | render guard (blur, defer nested) | browser check | js/app.js |
+| U3 Back left the player dialog open | route change ignored the dialog | close on other routes | browser check | js/app.js, player-modal.js |
+| UI7 Saved-trade delete: no confirm, no name, silent failure | — | confirm, `aria-label`, toast | browser check | trade view |
+| UI8 Empty trade saved; double-click saved twice | no guards | empty check, in-flight flag | browser check | trade view |
+| UI9 Snapshot picker unlabeled, errors silent | — | `aria-label`, error shown | browser check | player-modal.js |

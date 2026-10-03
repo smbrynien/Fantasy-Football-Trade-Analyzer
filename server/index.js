@@ -9,15 +9,23 @@ import zlib from 'node:zlib';
 import { spawn } from 'node:child_process';
 import { ROOT, P, DATA_DIR } from './lib/paths.js';
 import { loadEnv } from './lib/env.js';
-import { readJSON, writeJSON, readGzJSON, recoveredFiles } from './lib/store.js';
+import { readJSON, writeJSON, updateJSON, readGzJSON, recoveredFiles } from './lib/store.js';
 import { loadConfig } from './lib/config.js';
 import { runSync, rebuild, syncProgress, isSyncRunning } from './sync-engine.js';
 import { previewImport, commitImport, clearManualSource } from './import-service.js';
 import { toCSV } from '../js/core/util/csv.js';
-import { APP_VERSION } from '../js/core/version.js';
+import { APP_VERSION, DATASET_SCHEMA_VERSION } from '../js/core/version.js';
 
 loadEnv();
-const PORT = Number(process.env.PORT) || 5177;
+// PORT must be a TCP port: 99999 or -1 used to crash with a raw RangeError stack trace (BUG_AUDIT 2, R4).
+const PORT = (() => {
+  if (process.env.PORT === undefined || process.env.PORT === '') return 5177;
+  const n = Number(process.env.PORT);
+  if (Number.isInteger(n) && n >= 1 && n <= 65535) return n;
+  console.warn(`  PORT=${process.env.PORT} is not a valid port (1–65535); using 5177.`);
+  delete process.env.PORT; // fall back to the default with port search
+  return 5177;
+})();
 const HOST = process.env.HOST || '127.0.0.1';
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.md': 'text/markdown; charset=utf-8', '.csv': 'text/csv; charset=utf-8', '.webmanifest': 'application/manifest+json' };
@@ -124,13 +132,23 @@ route('POST', /^\/api\/sync$/, async (req) => {
   return { started: true };
 });
 route('POST', /^\/api\/rebuild$/, async () => { const b = await rebuild(); return { ok: true, data_version: b.dataset.data_version }; });
-route('GET', /^\/api\/dataset$/, async () => { const d = await readJSON(P.dataset, null); if (!d) throw Object.assign(new Error('No dataset yet — run a sync first.'), { status: 404 }); return d; });
+route('GET', /^\/api\/dataset$/, async () => {
+  let d = await readJSON(P.dataset, null);
+  if (!d) throw Object.assign(new Error('No dataset yet — run a sync first.'), { status: 404 });
+  // A dataset written by another app version (other schema) is rebuilt from the normalized data, never served as if
+  // it were current (BUG_AUDIT 2, R7).
+  if (d.schema_version !== DATASET_SCHEMA_VERSION) {
+    try { d = (await rebuild()).dataset; } catch (e) { throw Object.assign(new Error(`The cached data uses format ${d.schema_version} and could not be rebuilt (${e.message}). Run Sync All.`), { status: 409 }); }
+  }
+  return d;
+});
 route('GET', /^\/api\/quality$/, async () => (await readJSON(P.quality, null)) || { sources: [], identity: {}, generated_at: null });
 route('GET', /^\/api\/history$/, async (req, url) => {
   const h = await readJSON(P.history, { entries: [], series: {} });
   const cid = url.searchParams.get('cid');
   if (!cid) return { entries: h.entries, players: Object.keys(h.series).length };
-  return { entries: h.entries, series: h.series[cid] || null };
+  // own keys only: ?cid=__proto__ returned Object.prototype as a "series" (BUG_AUDIT 2, R2)
+  return { entries: h.entries, series: Object.hasOwn(h.series, cid) ? h.series[cid] : null };
 });
 route('GET', /^\/api\/snapshots$/, async () => {
   let files = [];
@@ -170,26 +188,28 @@ route('PUT', /^\/api\/teams$/, async (req) => {
 route('GET', /^\/api\/trades$/, async () => (await readJSON(P.trades, { trades: [] })));
 route('POST', /^\/api\/trades$/, async (req) => {
   const body = await readBody(req);
-  const t = await readJSON(P.trades, { trades: [] });
   // Server-assigned fields win: a client-supplied id could collide or be undeletable (DELETE only matches \w+).
   const entry = { ...body, id: `t_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, saved_at: new Date().toISOString() };
-  t.trades = [entry, ...t.trades].slice(0, 500);
-  await writeJSON(P.trades, t);
+  // Serialized read-modify-write: parallel saves used to overwrite each other (BUG_AUDIT 2, R1).
+  await updateJSON(P.trades, { trades: [] }, (t) => ({ ...t, trades: [entry, ...(Array.isArray(t.trades) ? t.trades : [])].slice(0, 500) }));
   return { ok: true, id: entry.id };
 });
 route('DELETE', /^\/api\/trades\/([\w]+)$/, async (req, url, m) => {
-  const t = await readJSON(P.trades, { trades: [] });
-  t.trades = t.trades.filter((x) => x.id !== m[1]);
-  await writeJSON(P.trades, t);
+  await updateJSON(P.trades, { trades: [] }, (t) => ({ ...t, trades: (Array.isArray(t.trades) ? t.trades : []).filter((x) => x.id !== m[1]) }));
   return { ok: true };
 });
 route('GET', /^\/api\/overrides$/, async () => readJSON(P.playerOverrides, {}));
 route('POST', /^\/api\/overrides$/, async (req) => {
   const body = await readBody(req);
-  if (!body.key || !(body.cid || body.ignore)) throw Object.assign(new Error('key and cid (or ignore) are required'), { status: 400 });
-  const o = await readJSON(P.playerOverrides, {});
-  o[body.key] = body.ignore ? 'IGNORE' : body.cid;
-  await writeJSON(P.playerOverrides, o, { pretty: true });
+  // Strings only: an object key was stored as "[object Object]" and an array cid as a list (BUG_AUDIT 2, R3).
+  const str = (x) => typeof x === 'string' && x.length > 0 && x.length <= 300;
+  if (!str(body.key) || !(body.ignore === true || str(body.cid))) throw Object.assign(new Error('key (string) and cid (string) or ignore: true are required'), { status: 400 });
+  if (!body.ignore) {
+    const players = await readJSON(P.players, null);
+    const known = Array.isArray(players) && players.some((p) => p && p.cid === body.cid);
+    if (!known) throw Object.assign(new Error(`Unknown player id ${body.cid}`), { status: 400 });
+  }
+  await updateJSON(P.playerOverrides, {}, (o) => ({ ...o, [body.key]: body.ignore ? 'IGNORE' : body.cid }), { pretty: true });
   const b = await rebuild();
   return { ok: true, data_version: b.dataset.data_version };
 });
@@ -248,7 +268,12 @@ const server = http.createServer(async (req, res) => {
 const OPEN_BROWSER = process.argv.includes('--open') || process.env.FFTA_OPEN === '1';
 const AUTO_SYNC = !process.argv.includes('--no-auto-sync') && process.env.FFTA_NO_AUTOSYNC !== '1';
 // Refresh automatically on launch when the cached data is older than this (0 = never).
-const AUTO_REFRESH_HOURS = Number(process.env.FFTA_AUTO_REFRESH_HOURS ?? 12);
+const AUTO_REFRESH_HOURS = (() => {
+  const n = Number(process.env.FFTA_AUTO_REFRESH_HOURS ?? 12);
+  if (Number.isFinite(n) && n >= 0) return n;
+  console.warn(`  FFTA_AUTO_REFRESH_HOURS=${process.env.FFTA_AUTO_REFRESH_HOURS} is not a number of hours; using 12.`);
+  return 12;
+})();
 
 function openBrowser(url) {
   const [cmd, args] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '""', url]]

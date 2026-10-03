@@ -2,7 +2,7 @@
 
 import { h, clear, timeAgo, toast } from './ui/dom.js';
 import { detectServer, hasServer, loadConfig, loadDataset } from './ui/api.js';
-import { app, on, initProfiles, initTeams, setMode, setProfile, allProfiles, activeProfile, setDataset } from './ui/state.js';
+import { app, on, initProfiles, initTeams, watchOtherTabs, setMode, setProfile, allProfiles, activeProfile, setDataset, getValuations } from './ui/state.js';
 import { refreshStatus, startSync, resumeIfRunning } from './ui/sync.js';
 import { renderTrade } from './ui/views/trade.js';
 import { renderTeam } from './ui/views/team.js';
@@ -12,7 +12,7 @@ import { renderRookies } from './ui/views/rookies.js';
 import { renderData } from './ui/views/data.js';
 import { renderSettings } from './ui/views/settings.js';
 import { renderModel } from './ui/views/model.js';
-import { openPlayer } from './ui/views/player-modal.js';
+import { openPlayer, closePlayerModal } from './ui/views/player-modal.js';
 import { renderHelp } from './ui/views/help.js';
 
 // A link to Rookies & Picks while in redraft used to show the Trade page under the #/rookies address, unexplained.
@@ -35,7 +35,8 @@ function route() {
   const [name, ...rest] = hash.split('/');
   let view = VIEWS[name] ? name : 'trade';
   if (view === 'rookies' && app.mode !== 'dynasty') view = 'rookiesInRedraft';
-  if (name === 'player' && rest[0]) { openPlayer(decodeURIComponent(rest[0])); }
+  if (name === 'player' && rest[0]) openPlayer(decodeURIComponent(rest[0]));
+  else closePlayerModal(); // Back/forward to another page used to leave the player dialog open over it (BUG_AUDIT 2, U3)
   current = { view, args: rest };
   document.querySelectorAll('#tabs a').forEach((a) => a.classList.toggle('active', a.dataset.view === view));
   // A shared trade link carries its mode (#/trade?m=dynasty&a=…): switch first so the ids resolve in the right engine.
@@ -44,7 +45,22 @@ function route() {
   render();
 }
 
+// Re-entrancy guard: removing a focused input during clear() fires its blur/change handler, and a handler that saves a
+// setting re-renders — the nested render emptied the view under the outer loop ("removeChild … no longer a child",
+// BUG_AUDIT 2, UI5). The focused field is blurred first (its change is committed), and a render requested meanwhile
+// runs right after the current one.
+let rendering = false, renderAgain = false;
 function render() {
+  if (rendering) { renderAgain = true; return; }
+  rendering = true;
+  try {
+    if (viewEl.contains(document.activeElement)) document.activeElement.blur();
+    renderNow();
+  } finally { rendering = false; }
+  if (renderAgain) { renderAgain = false; render(); }
+}
+
+function renderNow() {
   if (cleanup) { try { cleanup(); } catch { /* ignore */ } cleanup = null; }
   clear(viewEl);
   if (!app.config) return;
@@ -133,9 +149,25 @@ function renderBanner() {
     if (stale.length) msgs.push(`Stale sources (using last good data): ${stale.join(', ')}.`);
     for (const sub of app.dataset.meta?.substitutions || []) if (sub.used) msgs.push(`Using ${sub.used} for ${sub.type} because ${sub.preferred || 'the preferred source'} is unavailable.`);
   }
+  // Redraft values the rest of THIS season (after it, the next one): between the end of the regular season and the
+  // first rankings/projections for the next season no player has a redraft value, and every redraft page was empty
+  // without saying why (BUG_AUDIT 2, UI6).
+  let action = null;
+  if (app.dataset && app.mode === 'redraft') {
+    const r = getValuations();
+    const valued = r ? [...r.assets.values()].filter((a) => a.kind === 'player' && a.value > 0).length : 0;
+    if (r && valued === 0) {
+      msgs.unshift(r.phase.phase === 'in_season'
+        ? 'No player has a redraft value with the current data (no projections, rankings or market values were found).'
+        : `No redraft values yet: redraft values the next season (${r.phase.season + (r.phase.phase === 'preseason' ? 0 : 1)}), and none of the sources has published rankings or projections for it. Dynasty values work now; redraft fills in when the sources publish (Sync All to check).`);
+      cls = '';
+      action = h('button.btn.btn-sm', { style: { marginLeft: '.5rem' }, onclick: () => setMode('dynasty') }, 'Switch to Dynasty');
+    }
+  }
   b.hidden = !msgs.length;
   b.className = `banner ${cls}`;
   b.textContent = msgs.join(' ');
+  if (action) b.append(action);
 }
 
 async function boot() {
@@ -149,6 +181,7 @@ async function boot() {
   }
   await initProfiles();
   await initTeams();
+  watchOtherTabs();
   try { setDataset(await loadDataset()); } catch (e) { toast(`Could not load cached dataset: ${e.message}`, 'bad'); }
   await refreshStatus();
 

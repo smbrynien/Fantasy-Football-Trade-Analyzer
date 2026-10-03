@@ -1,5 +1,292 @@
 # Bug audit and reliability review
 
+Two adversarial audits of the whole application. **Audit 2** (2026-10-03, below) ran against `2647190` (model 2.3.0,
+after My Team saved teams, trade targets, the audit scorecard and the trade finder); **Audit 1** (2026-10-02, against
+`e1312c6`, model 2.1.1) follows it unchanged. Every bug listed was **reproduced** before it was fixed; theoretical
+findings are kept apart (§A2.10). Compact list: [BUG_FIX_HISTORY.md](BUG_FIX_HISTORY.md).
+
+---
+
+# Audit 2 — 2026-10-03
+
+## A2.1 Testing scope
+
+Everything, with emphasis on what changed since audit 1 (saved teams and opponents, trade targets, trade finder,
+counteroffers, audit scorecard, daily archive) and on audit 1's thin areas (multi-tab editing, release-style startup):
+server/API (races, hostile bodies, env vars, config files, schema versions), storage, sync and rebuild (idempotency,
+concurrency with imports), manual import (encodings, sizes, empty files), identity (performance and equivalence on real
+data), valuation engine (hostile league/profile settings, null and extreme model overrides, dates/season states,
+monotonicity, explanations), trade engine and finder (properties, odd rosters), UI state (multi-tab, league/mode
+switching with a trade, back/forward/refresh, rapid clicking, sync during a trade, postseason), accessibility, exports.
+
+## A2.2 Environment
+
+Linux container, Node 22.22.0, Chromium (Playwright 1.56.1, global), ESLint 10 (global). Real data: full syncs on
+2026-10-03 (10/10 sources, 2,206 players, NFL week 4); a frozen copy (`2026-10-03-19640cbc`) for before/after value
+diffs; isolated data directories (`FFTA_DATA_DIR`) for destructive tests; the synthetic fixture. Firefox/Safari are not
+available here (not tested).
+
+## A2.3 Baseline (before any change)
+
+| Check | Result |
+|---|---|
+| `npm test` | 165/165 pass |
+| `npm run lint` | clean |
+| `npm run test:e2e` | all checks pass (1360/721/390 px) |
+| `audit-model --only=current` (live data) | monotonicity 75 checks, 2 failures (Harold Fannin, Kenyon Sadiq: young TEs whose peak lies beyond the 5-season horizon — the documented model limitation, not a bug) |
+| Full value snapshot (24,920 assets: 7 presets × 2 modes × actual/forced-preseason) | saved for the before/after diff |
+| Console errors in the E2E run | none |
+
+## A2.4 Tests performed (matrix)
+
+| Area | How | Result |
+|---|---|---|
+| Server: concurrency | 20–25 parallel saved-trade POSTs / DELETEs | **R1** (3 of 20 kept) fixed |
+| Server: hostile input | prototype keys in queries, object/array identity overrides, unknown player ids, sync bodies of the wrong type | R2, R3 fixed; sync bodies harmless |
+| Startup / env / config | PORT 99999/-1/abc/0, HOST bogus, timeout/refresh env garbage, malformed and missing `config/*.json` | R4, R5, R6 fixed |
+| Backwards compatibility | dataset / normalized files with another `schema_version` | R7 fixed (rebuild / skip / refuse) |
+| League settings fuzz | 18 hostile + 30 random leagues × 2 modes through valuations, trade analysis, Even it out, combinations, lineups, expected points, trade targets, trade finder, counteroffers | **E1** fixed; then 96 sets, 0 problems |
+| Model overrides | all 243 numeric parameters = null; 28 editable ones = −5 / 0 / 1e9 | **E2**, **E3** fixed; then 0 crashes, 0 non-finite, 0 empty |
+| Dates / season states | garbage as_of, week 99/−3, off/pre/post, year rollover | D2 fixed; postseason → UI6 |
+| Picks | 11 odd ids, 8 labels; single-slot ranges = exact slots; future discounting | no defect (one model observation, §A2.10) |
+| Trade properties | 1,800 random trades × 3 leagues × 2 modes: order, swap antisymmetry, finiteness, non-negative sides, adding an asset never lowers its side, share-link round trip | no defect |
+| League-setting monotonicity | 1QB→SF QB values, TEP 0/0.5/1, teams 10/12/14 scarcity, standard/half/PPR | all in the expected direction |
+| Explanations | components sum to value, value inside its range: 12,425 assets | 0 mismatches |
+| Roster helpers | duplicate ids, unknown ids, picks in redraft, 16–200-asset rosters | no defect; speed fine to 60 assets |
+| Sync / rebuild | 3 identical rebuilds; status written during a sync | SY5, **SY6** fixed |
+| Manual import | numbers/objects as text, bad mappings, UTF-16, Latin-1, header-only, nested/scalar JSON, NUL bytes, 500–60,000 rows | **I6**, I7, I8 fixed |
+| Identity | old vs new matcher on a full real rebuild | byte-identical players + identity report |
+| Export | trade CSV/JSON, player CSVs | EX1 fixed |
+| Multi-tab | two tabs creating teams and league profiles | **UI4** fixed |
+| State transitions | league switch with a trade, dynasty picks → redraft, back/forward/refresh with a player open, 20 rapid mode switches, clearing/typing out-of-range settings | UI5, U3, E2/E3 (form) fixed; rest OK |
+| Postseason | redraft with `season_type: post` | **UI6** fixed |
+| Rapid interaction / concurrency | 5 rapid Sync clicks with a trade built | one sync, trade kept, no errors |
+| Accessibility | names/labels/duplicate ids on 12 routes × 2 modes | UI7/UI9 labels fixed (other hits were collapsed sections) |
+| Destructive actions | saved-trade delete, team/profile delete, clear import | UI7 fixed |
+
+## A2.5 Bugs discovered and fixed
+
+Format: ID · Severity · Area — description; reproduce; expected / actual; root cause; files; fix; regression test;
+verification.
+
+### R1 · High · Server/persistence — Saving trades at the same time lost saves
+* **Reproduce:** 20 parallel `POST /api/trades`. **Expected** 20 saved; **actual** 3 (also parallel DELETEs, identity overrides).
+* **Root cause:** read-modify-write of one JSON file without serialization; every request read the same list.
+* **Files:** `server/lib/store.js`, `server/index.js`. **Fix:** `updateJSON(file, fallback, update)` serializes
+  updates per file (promise chain) — used by trade save/delete, overrides, source status.
+* **Test:** `server.test.js` "audit 2: parallel saved-trade writes…" (fails on the old code: 3 of 26). **Verified.**
+
+### E1 · High · Engine/settings — FLEX eligibility that is not a list crashed every page
+* **Reproduce:** a profile (stored, imported, server copy) with `flex_eligibility: { FLEX: 5 }` or `"RB"`.
+  **Actual:** `positions is not iterable` / `ok.map is not a function` in every valuation. Same class as audit 1's L1.
+* **Root cause:** `sanitizeLeague` cleaned teams/roster/scoring but not `flex_eligibility`.
+* **Files:** `js/core/settings.js`. **Fix:** eligibility = list of real positions, else the default.
+* **Test:** `robustness.test.js` E1 (7 shapes × 2 modes, lineups and expected points). **Verified:** league fuzz 0/96.
+
+### UI4 · High · Persistence — A second tab erased teams and league profiles saved in the first
+* **Reproduce:** open the app in two tabs; tab A creates a team (or "Save as…" profile), then tab B does.
+  **Actual:** A's item vanished from browser storage **and** the server copy.
+* **Root cause:** each tab keeps the lists in memory and wrote its stale list back.
+* **Files:** `js/ui/state.js`, `js/app.js`. **Fix:** every change starts from the stored list (`freshTeams`/
+  `freshProfiles`); other tabs follow via the `storage` event and re-render.
+* **Test:** `teams.test.js` "another tab's saves…" (fails on the old code). **Verified** in Chromium with two tabs.
+
+### E2 · Medium · Settings/engine — Clearing a model setting silently set it to 0 (or crashed)
+* **Reproduce:** Settings → Redraft Model → clear "Bench value fraction". **Actual:** the override became `null`,
+  read as 0: 77 values zeroed; clearing "horizon" moved dynasty values up to 109%; a `null` weight table crashed
+  every page; the field then showed blank, looking like the default.
+* **Root cause:** the number field stored `null`; `deepMerge` copied it over the default; no type check.
+* **Files:** `js/core/settings.js` (`sanitizeOverrides`), `js/ui/views/settings.js` (`unsetPath`).
+  **Fix:** a cleared field removes the override (back to the default, with a toast); the engine drops override leaves
+  whose type does not match the default (null, text, arrays where numbers belong, prototype keys).
+* **Test:** `robustness.test.js` E2. **Verified:** null fuzz over all 243 parameters → 0 crashes/non-finite/empty;
+  in Chromium: set 0.5 → `{bench_value_fraction: 0.5}`, clear → `{}` and the field shows 0.35.
+
+### E3 · Medium · Engine/settings — Extreme parameters hung, crashed or produced negative values
+* **Reproduce:** a stored profile with `dynasty.horizon_years` 1e9 (out of memory after 10 min, 8 GB), 0 (hang),
+  −5 (crash); negative pick discount/class strength/value scale → negative values; typing −5 or 1e9 in the form was
+  stored as is (input `min`/`max` are only hints).
+* **Root cause:** no engine-side bounds; the form did not enforce its own limits.
+* **Files:** `js/core/settings.js` (`MODEL_BOUNDS`, `clampModel`, overrides ≥ 0), `js/ui/views/settings.js` (clamp
+  with a toast). Every default lies inside the bounds.
+* **Test:** `robustness.test.js` E3 (8 parameters × 3 values, < 5 s each). **Verified:** ≈300 ms per case; in Chromium
+  typing 7 for a 0–1 field stores 1.
+
+### SY6 · Medium · Sync/import — A status written during a sync was erased by the sync
+* **Reproduce:** commit a manual import (or clear one) while a sync runs. **Actual:** the import's status entry vanished
+  (Data page "not imported" though the data is stored).
+* **Root cause:** the sync wrote back the whole status object it had read at the start.
+* **Files:** `server/sync-engine.js`, `server/import-service.js`. **Fix:** the sync merges only the sources it fetched
+  into the current file; all status writes go through `updateJSON`.
+* **Test:** `sync.test.js` "a status written while a sync runs…" (fails on the old code). **Verified.**
+
+### I6 · Medium · Import/identity — Large imports of unknown names froze the whole app
+* **Reproduce:** preview a CSV of 5,000 unknown names: 44 s; 60,000 rows: the (single-threaded) server stopped
+  answering for over 5 minutes.
+* **Root cause:** fuzzy matching re-normalized all ~5,800 player names and ran the conflict check for every record
+  (~9 ms per unmatched row); no size limit.
+* **Files:** `js/core/identity.js`, `js/core/import/mapper.js`. **Fix:** names normalized once per index (kept current on
+  `add`), pairs skipped when the length ratio is < 0.7 — an exact bound (Jaro-Winkler cannot reach the 0.94 threshold),
+  conflict check only for near-matches; imports limited to 20,000 rows with a clear message.
+* **Test:** `ingestion.test.js` (row cap); identity suite unchanged. **Verified:** 5,000 rows 2.8 s (16× faster); a full
+  real-data rebuild with the old and the new matcher gives byte-identical players and identity reports.
+
+### UI6 · Medium · UX/dates — Redraft was empty with no explanation after the regular season
+* **Reproduce:** NFL state `season_type: post` (January) or an early offseason. **Actual:** Players "0 players", trade
+  search "No matches", nothing says why.
+* **Root cause:** correct model behaviour (redraft then values the next season, which has no rankings/projections yet)
+  with no empty state.
+* **Files:** `js/app.js` (banner). **Fix:** banner "No redraft values yet: redraft values the next season (2027) …"
+  with "Switch to Dynasty"; a different message if it happens in season.
+* **Verified** in Chromium on a postseason copy of the data (screenshot reviewed).
+
+### R7 · Low · Compatibility — Data in another schema version would be read as current
+* Schema versions were written and never read (audit 1 noted it). **Fix:** `/api/dataset` rebuilds a dataset of another
+  schema from the normalized data (409 with a message if it cannot); normalized files of another schema are skipped
+  with a warning (the source needs a re-sync); static hosting refuses with a message. `server/index.js`,
+  `server/dataset-builder.js`, `js/ui/api.js`. **Test:** `server.test.js` (a schema-99 dataset is rebuilt).
+
+### SY5 · Low · Sync — Identical rebuilds piled up duplicate snapshots
+* 3 rebuilds of the same data → 3 snapshots of one data version; duplicates pushed distinct versions out of the 90
+  kept. **Fix:** skip when a snapshot of that data version exists (`server/sync-engine.js`). **Test:** `sync.test.js`
+  (fails on the old code).
+
+### I7 · Low · Import — An import with no valid rows "succeeded"
+* A header-only file reported success and marked the source as just imported with 0 records. **Fix:** 400 "The file has
+  no valid rows to import — nothing was changed." (`server/import-service.js`). **Test:** `server.test.js`.
+
+### I8 · Low · Import — UTF-16 and Latin-1 files were misread
+* Excel "Unicode text" (UTF-16) gave "Required column(s) not mapped"; Latin-1 accents became U+FFFD so "José" could not
+  match. **Fix:** `decodeImportBytes` (byte-order mark, strict UTF-8, Windows-1252) in the import page; a UTF-16 file read
+  as UTF-8 elsewhere gets an explicit message. `js/core/util/csv.js`, `js/core/import/mapper.js`, `js/ui/views/data.js`.
+  **Test:** `ingestion.test.js` (5 encodings).
+
+### R2 · Low · Server — `?cid=__proto__` returned an internal object
+* `/api/history?cid=__proto__` returned `Object.prototype` as a series. **Fix:** own keys only. **Test:** `server.test.js`.
+
+### R3 · Low · Server — Identity overrides accepted garbage
+* `{key: {…}, cid: [...]}` was stored as `"[object Object]": ["x"]` (ignored later, but reported OK). **Fix:** string key,
+  string cid of an existing player (or `ignore: true`), else 400. **Test:** `server.test.js`.
+
+### R4 · Low · Startup — An invalid PORT crashed with a stack trace
+* `PORT=99999`/`-1` → raw `RangeError`. **Fix:** warning + default port with port search; `FFTA_AUTO_REFRESH_HOURS`
+  garbage → 12 with a warning. `server/index.js`. **Verified** by launching with each value.
+
+### R5 · Low · Sync — A negative timeout setting made every download fail
+* `FFTA_FETCH_TIMEOUT_MS=-5` → "Timed out after -5 ms" for every request. **Fix:** used only if ≥ 1,000 ms
+  (`server/lib/http.js`). **Verified** with a live request.
+
+### R6 · Low · Config — Broken or missing config files gave unhelpful errors
+* A typo in `config/model.json` → bare "Unexpected token"; a missing file → `null` and an unrelated crash later.
+  **Fix:** both errors name the file and how to restore it (`server/lib/store.js`, `server/lib/config.js`). **Verified.**
+
+### D2 · Low · Engine/dates — A malformed dataset date nulled every pick season
+* `state.as_of: "garbage"` → pick seasons `[null, null, null]`. **Fix:** `datasetAsOf` (first valid of as_of, built_at,
+  now) in `picks.js` and `context.js`. **Test:** `robustness.test.js` D2.
+
+### EX1 · Low · Export — The trade CSV could not be traced to its settings
+* Only the JSON carried model/data version and league. **Fix:** a `SETTINGS` row (mode, league, model, data, settings
+  hash, export time) in the CSV (`js/ui/views/trade.js`).
+
+### UI3 · Low · Settings — An imported profile without a name showed "undefined"
+* **Fix:** text name or "Imported league (<file>)"; non-object JSON refused clearly (`js/ui/views/settings.js`).
+
+### UI5 · Low · UI — Re-entrant rendering logged "removeChild … no longer a child"
+* Removing a focused settings field during a re-render fired its change handler, which re-rendered mid-clear.
+  **Fix:** render guard (blur first, defer nested renders) in `js/app.js`. **Verified:** console clean in the same flow.
+
+### U3 · Low · Navigation — Back left the player dialog open over another page
+* **Fix:** any route other than `#/player/<id>` closes it (`js/app.js`, `player-modal.js closePlayerModal`).
+  **Verified:** back/forward/reload → no stray dialog.
+
+### UI7 · Low · UI/accessibility — Deleting a saved trade
+* One click, no confirmation, a "✕" with no accessible name, failures swallowed. **Fix:** confirm, `aria-label`, toast on
+  failure (`js/ui/views/trade.js`).
+
+### UI8 · Low · UI — Saving an empty trade; double-click saved twice
+* **Fix:** "Add assets to the trade first"; a second click while saving is ignored (`js/ui/views/trade.js`).
+
+### UI9 · Low · Accessibility — Snapshot picker unlabeled; load failures silent
+* "Why did this value change?" select had no label and an empty list on error. **Fix:** `aria-label`, error message
+  (`js/ui/views/player-modal.js`).
+
+## A2.6 Severity summary
+
+25 bugs found and fixed (all pre-existing; none introduced by this audit's fixes survived — two interim mistakes in my
+own fixes were caught by the tests before release: an override check that accepted unknown players when no player
+database exists, and the first draft of `updateJSON`).
+
+| Severity | Count | IDs |
+|---|---|---|
+| High | 3 | R1, E1, UI4 |
+| Medium | 5 | E2, E3, SY6, I6, UI6 |
+| Low | 17 | R2–R7, D2, SY5, I7, I8, EX1, UI3, UI5, U3, UI7, UI8, UI9 |
+
+Most important root causes: **shared mutable state without serialization** (one JSON file per list, whole-list writes
+from several requests or tabs — R1, SY6, UI4), **validation only in the form** (settings that bypass it: E1–E3, audit
+1's L1 again), **`null` meaning 0 in arithmetic** (E2), **missing size/time bounds** (E3, I6), and **empty states that
+are correct but unexplained** (UI6, I7).
+
+## A2.7 Regression tests added
+
+`tests/robustness.test.js` (new, 4: E1, E2, E3, D2), `server.test.js` +2 (R1/R2/R3/R7, I7), `sync.test.js` +2 (SY5, SY6),
+`ingestion.test.js` +1 (I6 cap, I8), `teams.test.js` +1 (UI4). Unit tests 165 → 175. The targeted tests were checked to
+fail on the pre-fix code (R1: 3 of 26 kept; SY5, SY6, UI4 fail; robustness fails to load without `sanitizeOverrides`).
+
+## A2.8 Value integrity
+
+No valuation formula or default changed (`model_version` stays 2.3.0): the full before/after diff on the frozen data is
+**0 of 24,920 values**; `audit-model --only=compare` identical (Spearman 1, median change 0); monotonicity unchanged
+(75 checks, the same 2 horizon cases).
+
+## A2.9 Remaining / known issues (not fixed)
+
+| Issue | Severity | Status |
+|---|---|---|
+| Young TEs (Fannin, Sadiq) worth less when 2 years younger: their peak lies beyond the 5-season horizon | Low (model) | Known — documented limitation; longer horizons tested worse (MODEL_AUDIT E3) |
+| A future pick's ± can be smaller than the upcoming year's (fewer value parts → less disagreement outweighs the future-year term) | Low (model) | Known — a formula choice; changing it changes σ and dynasty verdicts (needs a model audit) |
+| An open player dialog is not refreshed when a background sync finishes | Low | Known (audit 1) |
+| Rosters of ~200 assets make the trade finder/targets take seconds | Low | Won't fix — real rosters are ≤ 60 (finder < 250 ms) |
+| A cleared scoring or weight field means 0 (not "default") | Info | Intended: 0 points / weight 0 are meaningful |
+| Five rapid Sync clicks send two requests | Info | Harmless — the server starts one sync and reports the other as already running |
+
+## A2.10 Not reproduced / theoretical
+
+* A team or profile deleted while the server is unreachable could reappear at the next start (the start-up merge is a
+  union of browser and server lists). Reasoned from the code, not reproduced; deletions with the server running are
+  written to both.
+
+## A2.11 External limitations / not tested
+
+Firefox and Safari (not installed); real phones (desktop-only app); a live Sleeper league (the "also save the other
+teams" import path is unit-tested, the fetch is unchanged); a real NFL postseason/offseason response (simulated
+states); the release ZIP launchers on Windows/macOS; screen readers (structure only).
+
+## A2.12 Final results
+
+| Check | Result |
+|---|---|
+| `npm test` | 175/175 pass |
+| `npm run lint` | clean |
+| `npm run test:e2e` | all checks pass (1360/721/390 px) |
+| Clean clone (no data) | 175/175, lint clean, first launch 10/10 sources, 18 route renders clean (§A2.13) |
+| Value diff vs baseline | 0 / 24,920 |
+| Fresh data | Sync All from the UI with a trade built: 10/10 ok, trade and values refreshed, no console errors |
+
+## A2.13 Clean build and fresh data
+
+* **Clean clone:** the tracked files (plus the new test file) copied to an empty directory with **no `data/`** folder.
+  `npm test` 175/175, `npm run lint` clean. First `npm start` printed "First launch: downloading football data…" and
+  "Data ready: 10 sources updated". A Playwright crawl of all 9 routes at 1360 px and 390 px (18 renders) found no
+  horizontal overflow and **no console errors or failed requests**.
+* **Fresh data:** Sync All from the Data page with a trade built in the main checkout: 10/10 sources ok, the trade kept
+  its assets and was re-valued, the data pill showed "just now", no console errors.
+* There is no build step (vanilla ES modules), so "clean build" means a clean install and first run.
+
+---
+
+# Audit 1 — 2026-10-02
+
 Adversarial audit of the whole application (server, sync, import, identity, valuation, trade engine, UI), run on
 2026-10-02 against commit `e1312c6` (model 2.1.1). Every bug listed here was **reproduced** before it was fixed;
 speculative findings are kept separate (§10). A compact list of fixes is in [BUG_FIX_HISTORY.md](BUG_FIX_HISTORY.md).

@@ -81,6 +81,7 @@ export class PlayerIndex {
 
   add(p) {
     this.players.set(p.cid, p);
+    if (this._keys) this._keys.set(p.cid, nameKey(p.name)); // keep the fuzzy-match name cache current
     for (const [t, v] of Object.entries(p.ids || {})) {
       if (!this.byId[t]) this.byId[t] = new Map();
       this.byId[t].set(String(v), p.cid);
@@ -151,12 +152,19 @@ export class PlayerIndex {
       // 3. Conservative fuzzy match: same position, high similarity, unique.
       const key = nameKey(rec.name);
       const scored = [];
+      // Every unmatched record used to re-normalize all ~5,800 player names and run the conflict check on each:
+      // ~9 ms per row, so a 5,000-row import of unknown names blocked the server for 44 s (BUG_AUDIT 2, I6). Names are
+      // normalized once per index, and pairs whose length ratio is < 0.7 are skipped — Jaro-Winkler cannot reach 0.94
+      // for them (JW ≤ 0.6·jaro + 0.4 and jaro ≤ (1 + 2·ratio)/3 … ≥ 0.9 needs ratio ≥ 0.7). Same results, same order.
+      if (!this._keys) this._keys = new Map([...this.players.values()].map((p) => [p.cid, nameKey(p.name)]));
       for (const p of this.players.values()) {
-        if (!positionsCompatible(position, p) || !position) continue;
+        if (!position || !positionsCompatible(position, p)) continue;
         if (team && team !== 'FA' && p.team && p.team !== team) continue;
-        if (identityConflict(rec, p)) continue;
-        const s = jaroWinkler(key, nameKey(p.name));
-        if (s >= 0.94) scored.push({ p, s });
+        const pk = this._keys.get(p.cid) ?? nameKey(p.name);
+        if (!pk || Math.min(pk.length, key.length) / Math.max(pk.length, key.length) < 0.7) continue;
+        const s = jaroWinkler(key, pk);
+        if (s < 0.94 || identityConflict(rec, p)) continue;
+        scored.push({ p, s });
       }
       scored.sort((a, b) => b.s - a.s);
       if (scored.length === 1 || (scored.length > 1 && scored[0].s - scored[1].s > 0.03)) {

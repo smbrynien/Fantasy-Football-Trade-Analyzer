@@ -595,7 +595,15 @@ export function renderTrade(root) {
 
   function kpi(k, v, s, cls) { return h('div.kpi', {}, h('div.k', {}, k), h('div.v', { class: cls || '' }, v), h('div.s', {}, s)); }
 
+  let saving = false;
   async function saveTrade(ana) {
+    // Nothing to save, or a second click while the first save is still in flight (it stored the trade twice).
+    if (!trade.a.length && !trade.b.length) { toast('Add assets to the trade first.', 'warn'); return; }
+    if (saving) return;
+    saving = true;
+    try { await saveTradeNow(ana); } finally { saving = false; }
+  }
+  async function saveTradeNow(ana) {
     const entry = {
       mode: app.mode, profile: activeProfile().name, a: trade.a, b: trade.b,
       names: { a: ana.sides[0].assets.map((x) => x.name), b: ana.sides[1].assets.map((x) => x.name) },
@@ -617,6 +625,9 @@ export function renderTrade(root) {
     const rows = [];
     for (const [i, s] of ana.sides.entries()) for (const a of s.assets) rows.push({ side: i ? 'B receives' : 'A receives', asset: a.name, position: a.position, team: a.team || '', age: a.age ? a.age.toFixed(1) : '', value: Math.round(a.value), range_low: Math.round(a.range[0]), range_high: Math.round(a.range[1]), confidence: a.confidence || '', ...Object.fromEntries(Object.entries(a.components).map(([k, v]) => [`c_${k}`, Math.round(v)])) });
     rows.push({ side: 'TOTAL A (adjusted)', value: Math.round(ana.sides[0].adjusted) }, { side: 'TOTAL B (adjusted)', value: Math.round(ana.sides[1].adjusted) }, { side: 'DIFFERENCE', value: Math.round(ana.diff), asset: fmtPct(ana.pct) });
+    // Which settings produced these numbers (the CSV alone could not be traced back; the JSON carries the full audit).
+    const au = ana.audit || {};
+    rows.push({ side: 'SETTINGS', asset: `${app.mode} · ${activeProfile().name} · model ${au.model_version} · data ${au.data_version} · settings ${au.settings_hash} · exported ${new Date().toISOString()}` });
     const cols = [...new Set(rows.flatMap((r) => Object.keys(r)))];
     download(`trade-${app.mode}-${new Date().toISOString().slice(0, 10)}.csv`, toCSV(rows, cols), 'text/csv');
     download(`trade-${app.mode}-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(ana, null, 2), 'application/json');
@@ -640,9 +651,12 @@ export function renderTrade(root) {
         h('td.num.nowrap', {}, Number.isFinite(t.totals?.diff) ? leadText(t.totals.diff) : '—'), h('td.num.bold.nowrap', {}, now === null ? '—' : leadText(now)),
         h('td.nowrap', {}, h('button.btn.btn-xs', { onclick: () => { trade.a = [...t.a]; trade.b = [...t.b]; rerender(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Load'), ' ',
           h('button.btn.btn-xs', { onclick: () => explainChange(t) }, 'Why changed?'), ' ',
-          h('button.btn.btn-xs.btn-danger', { onclick: async () => {
+          // Confirm, name the button, and report a failed delete (it was one click with no undo and errors were swallowed,
+          // BUG_AUDIT 2, UI7).
+          h('button.btn.btn-xs.btn-danger', { 'aria-label': `Delete saved trade from ${fmtTime(t.saved_at)}`, title: 'Delete this saved trade', onclick: async () => {
+            if (!confirm(`Delete the saved trade from ${fmtTime(t.saved_at)}?`)) return;
             if (String(t.id).startsWith('l_')) save('trades', localTrades().filter((x) => x.id !== t.id));
-            else if (hasServer()) await api.del(`/api/trades/${t.id}`).catch(() => {});
+            else if (hasServer()) { try { await api.del(`/api/trades/${t.id}`); } catch (e) { toast(`Could not delete the saved trade: ${e.message}`, 'bad'); } }
             drawHistory();
           } }, '✕'))));
     }

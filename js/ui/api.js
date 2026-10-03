@@ -1,6 +1,8 @@
 // API client. When the local server is not reachable (e.g. the app is hosted by any static server) the app falls
 // back to static files and runs read-only: valuations and the trade calculator still work from the cached dataset.
 
+import { DATASET_SCHEMA_VERSION } from '../core/version.js';
+
 let serverAvailable = null;
 
 async function req(method, path, body) {
@@ -47,10 +49,14 @@ export async function loadConfig() {
 }
 
 export async function loadDataset() {
+  let ds;
   try {
-    return hasServer() ? await api.get('/api/dataset') : await staticJSON('data/calculated/dataset.json');
+    ds = hasServer() ? await api.get('/api/dataset') : await staticJSON('data/calculated/dataset.json');
   } catch (e) {
     if (e.status === 404 || /404/.test(e.message)) return null;
     throw e;
   }
+  // Static hosting (no server to rebuild): refuse data in another format instead of misreading it (BUG_AUDIT 2, R7).
+  if (ds && ds.schema_version !== DATASET_SCHEMA_VERSION) throw new Error(`the cached data uses format ${ds.schema_version}, this version reads ${DATASET_SCHEMA_VERSION} — start the app and run Sync All`);
+  return ds;
 }
