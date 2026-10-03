@@ -1,37 +1,37 @@
 {
-  "label": "CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",
+  "label": "CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",
   "rows": [
     {
       "mode": "redraft",
       "removed": "fantasycalc",
       "spearman": 0.998,
-      "medianAbsPctChange": 0.011,
-      "p90AbsPctChange": 0.038,
-      "maxAbsPctChange": 0.093
+      "medianAbsPctChange": 0.016,
+      "p90AbsPctChange": 0.062,
+      "maxAbsPctChange": 0.191
     },
     {
       "mode": "redraft",
       "removed": "fantasypros_ecr",
-      "spearman": 0.989,
-      "medianAbsPctChange": 0.036,
-      "p90AbsPctChange": 0.103,
-      "maxAbsPctChange": 0.312
+      "spearman": 0.985,
+      "medianAbsPctChange": 0.062,
+      "p90AbsPctChange": 0.211,
+      "maxAbsPctChange": 0.665
     },
     {
       "mode": "redraft",
       "removed": "sleeper_projections",
-      "spearman": 0.978,
-      "medianAbsPctChange": 0.088,
-      "p90AbsPctChange": 0.18,
-      "maxAbsPctChange": 0.236
+      "spearman": 0.969,
+      "medianAbsPctChange": 0.157,
+      "p90AbsPctChange": 0.346,
+      "maxAbsPctChange": 0.511
     },
     {
       "mode": "redraft",
       "removed": "espn",
-      "spearman": 0.993,
-      "medianAbsPctChange": 0.036,
-      "p90AbsPctChange": 0.092,
-      "maxAbsPctChange": 0.245
+      "spearman": 0.992,
+      "medianAbsPctChange": 0.06,
+      "p90AbsPctChange": 0.149,
+      "maxAbsPctChange": 0.415
     },
     {
       "mode": "redraft",
@@ -45,57 +45,57 @@
       "mode": "redraft",
       "removed": "fantasycalc+dynastyprocess_values",
       "spearman": 0.998,
-      "medianAbsPctChange": 0.011,
-      "p90AbsPctChange": 0.038,
-      "maxAbsPctChange": 0.093
+      "medianAbsPctChange": 0.016,
+      "p90AbsPctChange": 0.062,
+      "maxAbsPctChange": 0.191
     },
     {
       "mode": "redraft",
       "removed": "sleeper_projections+espn",
-      "spearman": 0.949,
-      "medianAbsPctChange": 0.101,
-      "p90AbsPctChange": 0.275,
-      "maxAbsPctChange": 1.65
+      "spearman": 0.948,
+      "medianAbsPctChange": 0.175,
+      "p90AbsPctChange": 1,
+      "maxAbsPctChange": 1
     },
     {
       "mode": "redraft",
       "removed": "fantasypros_ecr+fantasycalc",
-      "spearman": 0.981,
-      "medianAbsPctChange": 0.065,
-      "p90AbsPctChange": 0.161,
-      "maxAbsPctChange": 0.402
+      "spearman": 0.977,
+      "medianAbsPctChange": 0.106,
+      "p90AbsPctChange": 0.287,
+      "maxAbsPctChange": 0.767
     },
     {
       "mode": "dynasty",
       "removed": "fantasycalc",
-      "spearman": 0.991,
-      "medianAbsPctChange": 0.032,
+      "spearman": 0.992,
+      "medianAbsPctChange": 0.034,
       "p90AbsPctChange": 0.115,
-      "maxAbsPctChange": 0.313
+      "maxAbsPctChange": 0.268
     },
     {
       "mode": "dynasty",
       "removed": "fantasypros_ecr",
       "spearman": 0.983,
-      "medianAbsPctChange": 0.049,
-      "p90AbsPctChange": 0.15,
-      "maxAbsPctChange": 0.322
+      "medianAbsPctChange": 0.05,
+      "p90AbsPctChange": 0.156,
+      "maxAbsPctChange": 0.308
     },
     {
       "mode": "dynasty",
       "removed": "sleeper_projections",
       "spearman": 0.997,
-      "medianAbsPctChange": 0.066,
-      "p90AbsPctChange": 0.105,
-      "maxAbsPctChange": 0.301
+      "medianAbsPctChange": 0.059,
+      "p90AbsPctChange": 0.109,
+      "maxAbsPctChange": 0.302
     },
     {
       "mode": "dynasty",
       "removed": "espn",
-      "spearman": 0.992,
-      "medianAbsPctChange": 0.026,
-      "p90AbsPctChange": 0.093,
-      "maxAbsPctChange": 0.297
+      "spearman": 0.991,
+      "medianAbsPctChange": 0.028,
+      "p90AbsPctChange": 0.105,
+      "maxAbsPctChange": 0.269
     },
     {
       "mode": "dynasty",
@@ -108,26 +108,26 @@
     {
       "mode": "dynasty",
       "removed": "fantasycalc+dynastyprocess_values",
-      "spearman": 0.991,
-      "medianAbsPctChange": 0.032,
+      "spearman": 0.992,
+      "medianAbsPctChange": 0.034,
       "p90AbsPctChange": 0.115,
-      "maxAbsPctChange": 0.313
+      "maxAbsPctChange": 0.268
     },
     {
       "mode": "dynasty",
       "removed": "sleeper_projections+espn",
-      "spearman": 0.986,
-      "medianAbsPctChange": 0.083,
-      "p90AbsPctChange": 0.182,
+      "spearman": 0.985,
+      "medianAbsPctChange": 0.071,
+      "p90AbsPctChange": 0.184,
       "maxAbsPctChange": 1
     },
     {
       "mode": "dynasty",
       "removed": "fantasypros_ecr+fantasycalc",
-      "spearman": 0.933,
-      "medianAbsPctChange": 0.148,
-      "p90AbsPctChange": 0.403,
-      "maxAbsPctChange": 0.896
+      "spearman": 0.934,
+      "medianAbsPctChange": 0.146,
+      "p90AbsPctChange": 0.421,
+      "maxAbsPctChange": 0.924
     }
   ]
 }

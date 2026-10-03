@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Automated model audit: `npm run audit-model` → reports/audit/*.json (+ CSV)
-//   --only=e1,e2,e3,e4,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
+//   --only=e1,…,e8,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
+//   E1–E4 (2.0.0 audit): preseason/in-season/dynasty backtests, rookie curve. E5–E8 (2026-10-03 audit): hindsight-free
+//   lineup value (σ), historical league simulation (trades, package), verdict calibration, dynasty value spacing.
 //   --freeze            copy the synced dataset to data/benchmark/dataset-frozen.json (the data before/after runs use)
 //   --snapshot-before   save current-model values on the frozen dataset as the 'before' baseline (values-v1.json);
 //                       freezes first if no frozen dataset exists
@@ -34,12 +36,23 @@ if (args.includes('--freeze') || (args.includes('--snapshot-before') && !fs.exis
     console.log(`Froze dataset ${current} → ${rel(FROZEN)}${previous && previous !== current ? ` (replaced ${previous})` : ''}`);
   } catch (e) { console.error(`  ${e.message}`); process.exit(1); }
 }
-const needBench = ['e1', 'e2', 'e3', 'e4'].some(want);
+const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8'].some(want);
 const bench = needBench ? await loadBenchmark({ rebuild: args.includes('--rebuild') }) : null;
 if (want('e1')) { console.log('E1 preseason redraft…'); write('e1-preseason-redraft', { label: 'REAL HISTORICAL DATA', oppRates: measureOppRates(bench), ...preseasonRedraft(bench) }); }
 if (want('e2')) { console.log('E2 in-season ROS…'); write('e2-inseason-ros', { label: 'REAL HISTORICAL DATA', ...inSeasonROS(bench) }); }
 if (want('e3')) { console.log('E3 dynasty…'); const hist = await loadSeasons(2006, 2025); write('e3-dynasty', { label: 'REAL HISTORICAL DATA', ...dynasty(bench, hist) }); }
 if (want('e4')) { console.log('E4 rookie curve…'); write('e4-rookie-curve', { label: 'REAL HISTORICAL DATA', ...rookieCurve(bench) }); }
+if (want('e5')) { const { lineupValue } = await import('./audit/lineup.js'); console.log('E5 hindsight-free lineup value…'); write('e5-lineup-value', { label: 'REAL HISTORICAL DATA', ...lineupValue(bench) }); }
+if (want('e6') || want('e7')) {
+  const { leagueSimulation } = await import('./audit/league.js');
+  const { tradeCalibration } = await import('./audit/calibration.js');
+  console.log('E6 historical league simulation (5,000 trades, ~40 s)…');
+  const sim = leagueSimulation(bench, { tradesPerSeason: 1000 });
+  const { tradeRows, ...e6 } = sim;
+  if (want('e6')) write('e6-league-simulation', e6);
+  if (want('e7')) { console.log('E7 trade verdict calibration…'); write('e7-verdict-calibration', { label: sim.labels, ...tradeCalibration(tradeRows) }); }
+}
+if (want('e8')) { const { dynastyShape } = await import('./audit/dynasty-shape.js'); console.log('E8 dynasty value spacing…'); const hist = await loadSeasons(2006, 2025); write('e8-dynasty-spacing', { label: 'REAL HISTORICAL DATA', ...dynastyShape(bench, hist, { mults: [0, 0.5, 1, 1.25] }) }); }
 if (want('current')) {
   const { currentDataAudit } = await import('./audit/current.js');
   console.log('Current-data analyses…');
@@ -94,6 +107,12 @@ if (!setupOnly) {
     for (const k of Object.keys(e3.results?.[0]?.variants || {})) rows.push(['E3 dynasty', e3.label, `fundamental ${k}`, 'spearman', Math.round(1000 * e3.results.reduce((a, r) => a + r.variants[k], 0) / e3.results.length) / 1000]);
   }
   if (e4) for (const [m, v] of Object.entries(e4.families || {})) { rows.push(['E4 rookie slot curve', e4.label, m, 'LOO MAE', v.looMAE]); if (v.looBias !== undefined) rows.push(['E4 rookie slot curve', e4.label, m, 'LOO bias', v.looBias]); }
+  const e5 = rd('e5-lineup-value'), e6 = rd('e6-league-simulation'), e7 = rd('e7-verdict-calibration'), e8 = rd('e8-dynasty-spacing');
+  if (e5) for (const [m, v] of Object.entries(e5.preseason?.candidates || {})) { rows.push(['E5 lineup value (preseason)', e5.label, m, 'tier loss (log ratio²)', v.loss]); for (const t of v.ratio) rows.push(['E5 lineup value (preseason)', e5.label, m, `value ratio ranks ${t.tier}`, t.ratio]); }
+  if (e5) for (const s of e5.inSeason || []) for (const [m, v] of Object.entries(s.candidates)) rows.push([`E5 lineup value (from week ${s.startWeek})`, e5.label, m, 'tier loss (log ratio²)', v.loss]);
+  if (e6) for (const [m, v] of Object.entries(e6.summary || {})) { rows.push(['E6 league simulation', e6.labels, m, 'corr(predicted margin, realised outcome)', v.all.corr]); rows.push(['E6 league simulation', e6.labels, m, 'corr, uneven player counts', v.unevenCount.corr]); }
+  if (e7) for (const b of e7.byMargin || []) rows.push(['E7 verdict calibration', e7.label, `margin ${b.margin}`, 'share won by favoured side', b.hitRate]);
+  if (e8) for (const [m, v] of Object.entries(e8.results || {})) rows.push(['E8 dynasty spacing', e8.label, m, 'tier loss (log ratio²)', v.loss]);
   const mono = rd('cur-monotonicity'), pk = rd('cur-package-simulation');
   if (mono) rows.push(['Monotonicity', mono.label, 'current', 'failures', mono.failures]);
   if (pk) for (const [m, v] of Object.entries(pk.overall || {})) rows.push(['Package simulation', pk.label, m, 'corr(model diff, simulated lineup gain)', v]);

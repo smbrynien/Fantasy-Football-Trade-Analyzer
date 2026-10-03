@@ -5,7 +5,7 @@ import { app, getValuations, load, save, activeProfile, playerData, isPlainObjec
 import { analyzeTrade } from '../../core/valuation/trade.js';
 import { balanceSuggestions, comboSuggestions } from '../../core/valuation/balance.js';
 import { compareCounteroffers, addVariant, sameTrade, variantLabel, MAX_VARIANTS } from '../../core/counteroffers.js';
-import { leadText, verdictHeadline, marketCheck, tradeFromHash, tradeHash, sideNames, relabel, mid } from '../trade-helpers.js';
+import { leadText, verdictHeadline, marketCheck, outcomeText, tradeFromHash, tradeHash, sideNames, relabel, mid } from '../trade-helpers.js';
 import { rosterImpact } from '../../core/roster.js';
 import { pointsPerGame } from './team.js';
 import { COMPONENT_LABELS } from '../../core/valuation/engine.js';
@@ -237,7 +237,8 @@ export function renderTrade(root) {
           h('button.btn.btn-sm.btn-danger', { onclick: () => { trade.a = []; trade.b = []; rerender(); } }, 'Clear'))),
       h('div.verdict-head', { class: ana.assessment.level },
         h('div.verdict-label', {}, head.label),
-        h('div.verdict-sub', {}, head.sub)),
+        h('div.verdict-sub', {}, head.sub),
+        outcomeText(ana, n) ? h('div.verdict-odds', {}, outcomeText(ana, n)) : null),
       h('div.bars.mt', {}, bar(n.a === 'A' ? 'Team A' : n.a, A, 'a'), bar(n.b === 'B' ? 'Team B' : n.b, B, 'b')),
       (A.package.total || B.package.total) ? h('p.tiny.muted', {}, 'Totals include the package adjustment (see below).') : null,
       mkt ? h('p.small.market-check', { class: mkt.cls }, h('strong', {}, 'Market check: '), mkt.text) : null,
@@ -510,6 +511,7 @@ export function renderTrade(root) {
       `Totals${A.package.total || B.package.total ? ' (after package adjustment)' : ''}: A ${fmtValue(A.adjusted)} · B ${fmtValue(B.adjusted)}`,
       `Verdict: ${head.label} — ${head.sub}`,
       mkt ? `Market check: ${mkt.text}` : null,
+      outcomeText(ana),
       `(FF Trade Analyzer · model ${ana.audit.model_version} · data ${ana.audit.data_version})`,
     ].filter(Boolean).join('\n');
   }

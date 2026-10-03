@@ -1,8 +1,8 @@
 # Valuation Model (common framework + redraft)
 
-Model version: see `model_version` in [`config/model.json`](../config/model.json) (2.0.0 after the
-[model audit](MODEL_AUDIT.md); 2.1.0 adds the ADP corroboration rule). Every parameter mentioned here is configurable there or in **Settings** (per league
-profile, stored as `overrides`).
+Model version: see `model_version` in [`config/model.json`](../config/model.json) — **2.2.0** after the second
+[model audit](MODEL_AUDIT.md) (2026-10-03; the first, 2.0.0, is [MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md)). Every
+parameter mentioned here is configurable there or in **Settings** (per league profile, stored as `overrides`).
 
 Code: `js/core/valuation/` — `engine.js` (orchestration), `context.js` (inputs), `replacement.js` (scarcity),
 `mapping.js` + `blend.js` (normalization/blending), `redraft.js`, `dynasty.js`, `picks.js`, `confidence.js`, `trade.js`.
@@ -41,10 +41,20 @@ gently (players who collapse leave the data), so the decline is now steeper — 
 for picks, how past rookie classes turned out by draft slot, and the strength of the current class. Unknown slots are
 averaged; picks in later years are discounted.
 
-**How is uncertainty handled?** Twice. (1) Outcome uncertainty is part of the value itself: a player who might beat
-the replacement player has some value even if his average forecast doesn't — measured from how far real seasons
-landed from forecasts. (2) The **±** next to each value shows how much the sources disagree. Trades are judged by the
-difference *relative* to that uncertainty ("close", "modest edge", "clear"), never by a raw number alone.
+**What does a value number mean?** Values are *points above replacement*, rescaled so the best players are near
+10,000. The scale is cardinal, not just an order: 8,000 is about twice the expected lineup surplus of 4,000 in that
+league. But two 4,000 players are not one 8,000 player in a trade — you can start only so many — which is what the
+package adjustment handles. Values are estimates: the **±** shows how much the sources disagree, and the numbers are
+rounded to 10 (the last digits mean little).
+
+**How is uncertainty handled?** Three ways. (1) A little *option value* is part of the value: a player whose role
+could grow is worth slightly more than his average forecast, because you can start him if it happens. In 2.2.0 this
+is much smaller than before — tests on real seasons showed that only a player's lasting role uncertainty helps you;
+week-to-week randomness and missed games don't, and counting them made bench players look too valuable next to stars.
+(2) The **±** next to each value shows how much the sources disagree. Trades are judged by the difference *relative*
+to that uncertainty ("close", "leans", "clearly ahead"), never by a raw number alone. (3) In redraft the trade view
+also says how often trades with that margin actually worked out over a season in historical league simulations — even
+a "clear" edge goes the other way about 3 times in 10, because a fantasy season is noisy.
 
 ## 1. One currency: surplus points in YOUR league
 
@@ -63,15 +73,20 @@ remaining eligible players. For each position:
 * **waiver** = first unrostered player (bench spots allocated to QB/RB/WR/TE in proportion to starters),
 * **displacement** = the average team's worst starter (rank ≈ starters − teams/2), used by package adjustments.
 
-Surplus is **expected surplus** (v2): rest-of-season points are uncertain, X ~ Normal(projected points, σ), and
+Surplus is **expected surplus**: rest-of-season points are uncertain, X ~ Normal(projected points, σ), and
 
 `surplus = E[max(0, X − replacement)] + bench_value_fraction × (E[max(0, X − waiver)] − E[max(0, X − replacement)])`
 
-with σ = SD-per-game × remaining games (`redraft.uncertainty.sd_per_game`, measured from 2018–2025 forecast errors:
-in season QB 5.5, RB 4.4, WR 4.3, TE 3.8; preseason 4.9/4.2/3.8/3.1). v1 used the deterministic
-`max(0, pts − replacement) + β·band`, which undervalued every tier by ~14 points because it ignored the chance of
-beating replacement (audit §5, E1b). A zero projection (ruled out) has no option value. Setting the SD to 0 restores the
-deterministic formula. Bench players are worth something (depth), starters much more. This is where positional scarcity, superflex QB
+with σ = SD-per-game × remaining games (`redraft.uncertainty.sd_per_game`). **2.2.0: in season QB 2.2, RB 1.8,
+WR 1.7, TE 1.5; preseason 2.0/1.7/1.5/1.2** — 0.4 × the 2.0–2.1 table (5.5/4.4/4.3/3.8 and 4.9/4.2/3.8/3.1). The old table
+was the *total* forecast-error SD (weekly noise and missed games included) and was validated against a target with
+hindsight (`max(0, season points − replacement)` assumes you knew whom to start). Measured against what players
+actually added to lineups when start decisions were made before each week (audit E5), it over-valued ranks 13–72
+relative to the top 12 by 24–57% preseason and up to 2–4× deep in season; 0.4× was best preseason and far better in
+season, and predicted the outcomes of 5,000 simulated historical trades better in all five seasons (E6). Only the
+option value of a player's persistent rate is real: you cannot sit a player before his bad weeks. A zero projection
+(ruled out) has no option value; σ = 0 restores the deterministic formula. Bench players are worth something (depth),
+starters much more. This is where positional scarcity, superflex QB
 scarcity, TE premium and league depth come from — no generic positional multipliers.
 
 ### Scale
@@ -87,7 +102,7 @@ Values display rounded to 10 with an approximate fair-value range.
 | Signal | Inputs | Conversion |
 |---|---|---|
 | **Projection** | ROS projections from each projection source (Sleeper/Rotowire weekly, ESPN weekly, manual), summed over the remaining weeks (completed games excluded) | Re-scored with your scoring (TE premium, first downs, bonuses) → weighted mean of points → surplus |
-| **Production** | Weekly actual stats (nflverse; Sleeper fallback) scored with your settings, blended 75/25 with **opportunity-based expected points** (targets/carries/attempts × league-average points per opportunity at the position), regressed toward last season's PPG with 2 pseudo-games (players without a last season: ≥3 games required, regressed to the positional median), × remaining games × **availability** (QB .80, RB .77, WR .83, TE .82) × strength-of-schedule, minus injury games | surplus |
+| **Production** | Weekly actual stats (nflverse; Sleeper fallback) scored with your settings, blended 75/25 with **opportunity-based expected points** (targets/carries/attempts × league-average points per opportunity at the position), regressed toward last season's PPG with 2 pseudo-games (players without a last season: ≥3 games required, regressed to the positional median), × remaining games × **availability** (QB .80, RB .77, WR .83, TE .82), minus injury games. Strength of schedule: weight 0 since 2.2.0 (see below) | surplus |
 | **Consensus** | ROS/redraft expert rankings (FantasyPros ECR, manual rankings) | **Positional-rank mapping**: k-th RB by experts → value of the k-th RB on your league's curve |
 | **Market** | Redraft trade values in the best-matching format (FantasyCalc, manual): same QB format required (a source with only 1QB lists is **not used** in Superflex/2QB leagues and vice versa — shown on the player's Market & sources tab), then closest PPR, team count and **TE premium** (a list's `tep` vs your `bonus_rec_te`) | Positional-rank mapping |
 | **ADP** | Redraft ADP (Sleeper, FFC, ESPN, manual) in the matching scoring/QB format | Overall-rank mapping. **Corroborating only** (2.1.0): a player whose only usable signal is ADP gets no value (N/A) |
@@ -130,6 +145,21 @@ status (Sleeper, else ESPN) for IR/PUP/NFI/Suspended. Expected games lost: Out 1
 IR/PUP/NFI 5, Suspended 3 (configurable). Players on a long-term list who are **absent** from in-season weekly
 projections are treated as projected for zero (the projection sources ruled them out) rather than "missing".
 
+### Strength of schedule (off since 2.2.0)
+
+`redraft.production.sos_strength` scaled the production signal by remaining opponents' fantasy points allowed. In the
+walk-forward in-season test (E2, 20 checkpoint-seasons 2021–2024) the production forecast *without* it was at least as
+accurate in 17 of 20 and better overall (ρ .459 vs .453, MAE 35.6 vs 35.7). The projections it is blended with are
+already built on weekly matchups, so a separate multiplier double counts. The default is 0 (configurable; the detail
+is still shown in the player view).
+
+### Availability (unchanged, and a tested non-change)
+
+Production is scaled by measured availability; projections are not, because weekly projection sources already omit
+players ruled out. The audit tested also scaling projections by availability (players on average play 80–88% of
+remaining games): in the historical league simulation it predicted trade outcomes *worse* (E6 correlation .527 vs .549),
+because availability differs far more by depth tier (stars ≈ .87–.90) than by position. Rejected.
+
 ### Not modelled separately (deliberately)
 
 Offensive environment, QB situation, coaching changes and depth-chart role are captured by projection and market
@@ -153,10 +183,19 @@ This is not a statistical confidence interval and is labelled as such.
 * Totals, absolute and % difference, per-component differences, each signal compared separately (market vs model).
 * Uncertainty: `σ_diff = √(Σσ_A² + Σσ_B²)` (independence assumed). Interpretation by `z = |diff|/σ_diff`:
   < 1 "close", 1–2 "modest edge", > 2 "clear" — never "good/bad trade" from raw numbers alone.
+* **How often it works out** (2.2.0, redraft only, display only): `P = 1 / (1 + e^(−1.5·|margin|))`, margin =
+  difference / larger side (`trade_outcome.redraft_logit_slope`). Fitted on 5,000 random trades in historical league
+  simulations (E7, 2020–2025 seasons, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68%
+  of the time; the verdict levels (with typical ±10% asset ranges) won 53% ("close"), 58% ("modest edge") and 71%
+  ("clear"). It describes season-long luck; it does not change any value. Dynasty outcomes cannot be validated, so
+  dynasty trades don't show it.
 * **Package adjustment** for the side receiving more players: each extra (lowest-valued) player is charged
   `strength × min(its value, value of the average team's worst starter at that position) + cost × value of the last
   rostered player`, keeping at least `min_retained_fraction` of its value. Picks are exempt. Redraft strength 1.0;
-  dynasty 0.6 (rosters evolve, future value is partly liquid). The arithmetic is shown on screen.
+  dynasty 0.6 (rosters evolve, future value is partly liquid). The arithmetic is shown on screen. Tested against real
+  outcomes in 2.2.0's audit (E6): with it, predicted margins tracked realised season outcomes better than plain sums in
+  every season (corr .542 vs .523; uneven trades .540 vs .522); strengths 0.5–1.5 and a doubled roster-slot cost were
+  within ±.006 — kept.
 * Dynasty extras: value-weighted age; win-now vs future split.
 * Every calculation carries model version, data version, settings hash, league and source timestamps; saved trades
   can be re-checked later ("Why changed?").
@@ -186,6 +225,7 @@ is in [MODEL_AUDIT.md](MODEL_AUDIT.md); candidate models are compared in [MODEL_
 | 2.0.0 | audit: expected surplus; consensus-dominant redraft weights; production x .25 / k 2 / availability / median prior with ≥3 games; trend display-only; DP player values weight 0; dynasty weights .25/.35/.40/0, aging power 2, prior k 20, evidence gate; least-squares exponential rookie slot curve; top-12 scale anchor |
 | 2.1.0 | redraft: ADP is corroborating only (`redraft.adp_requires_corroboration`); ADP-only players are N/A instead of being valued from deep ADP ranks. No other value changes (verified on the frozen 2026-10-02 dataset: all 7 presets × both modes × in-season/preseason, only ADP-only assets removed) |
 | 2.1.2 | picks: each season's slot curve made non-increasing (isotonic) — future classes inverted at round boundaries; impossible picks (drafted class, > 5 years out, round > league rounds, slot outside 1..teams) are unavailable. 0 player values changed; only future-class picks next to former inversions moved (frozen 2026-10-02 dataset, all presets). Identity: contradicting birth date/age/draft year blocks a name match (no real-data change) |
+| 2.2.0 | second audit (docs/MODEL_AUDIT.md): redraft option-value σ × 0.4 (E5/E6); schedule strength 0 (E2); dynasty counts only the remaining games of the current season (later seasons discounted from now, partial final season keeps a 5-season horizon) and injuries as expected games lost (shared redraft table; out for the season = rest of the season), replacing the flat 35%-of-a-season IR rule; calibration shape constraints (aging curves unimodal and still declining past the data, exit hazard monotone in age) fixed two age-monotonicity failures; trade view shows the historical outcome frequency (redraft). Frozen 2026-10-03 data: redraft top-10 within ±1%, median change 0.7%, deep/bench players down (e.g. 12-team 1QB #150 972 → 447); dynasty Spearman 0.999, median change 2.9% |
 | 2.1.1 | market list selection: lists in the wrong QB format are excluded (were used silently when a source had nothing else) and reported in `meta.excluded_market_lists`; TE-premium lists matched to the league's `bonus_rec_te` (always preferred `tep: 0` before). No value change on current data (no source lacks a format; no TEP lists): verified 0 changes across all presets/modes/phases |
 
 `model_version` (config/model.json) changes whenever formulas/defaults change; `data_version` identifies the data

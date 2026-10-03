@@ -41,24 +41,24 @@ E2 in-season ROS,REAL HISTORICAL DATA,currentBlend,MAE,35.47
 E2 in-season ROS,REAL HISTORICAL DATA,fittedBlend,spearman,0.512
 E2 in-season ROS,REAL HISTORICAL DATA,fittedBlend,MAE,34.485
 E3 dynasty,REAL HISTORICAL DATA,ecr,spearman,0.581
-E3 dynasty,REAL HISTORICAL DATA,fundamental,spearman,0.502
-E3 dynasty,REAL HISTORICAL DATA,noAgeCurve,spearman,0.475
-E3 dynasty,REAL HISTORICAL DATA,noAttrition,spearman,0.497
-E3 dynasty,REAL HISTORICAL DATA,noDraftPrior,spearman,0.479
-E3 dynasty,REAL HISTORICAL DATA,deterministicSurplus,spearman,0.489
-E3 dynasty,REAL HISTORICAL DATA,year1Only,spearman,0.468
-E3 dynasty,REAL HISTORICAL DATA,blend_ecr25,spearman,0.542
-E3 dynasty,REAL HISTORICAL DATA,blend_ecr50,spearman,0.571
-E3 dynasty,REAL HISTORICAL DATA,blend_ecr75,spearman,0.583
-E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1,spearman,0.502
-E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1.5,spearman,0.509
-E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g2,spearman,0.505
-E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1,spearman,0.509
-E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1.5,spearman,0.509
-E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g2,spearman,0.506
-E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1,spearman,0.506
-E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1.5,spearman,0.504
-E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g2,spearman,0.499
+E3 dynasty,REAL HISTORICAL DATA,fundamental,spearman,0.508
+E3 dynasty,REAL HISTORICAL DATA,noAgeCurve,spearman,0.484
+E3 dynasty,REAL HISTORICAL DATA,noAttrition,spearman,0.508
+E3 dynasty,REAL HISTORICAL DATA,noDraftPrior,spearman,0.483
+E3 dynasty,REAL HISTORICAL DATA,deterministicSurplus,spearman,0.494
+E3 dynasty,REAL HISTORICAL DATA,year1Only,spearman,0.469
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr25,spearman,0.544
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr50,spearman,0.573
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr75,spearman,0.582
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1,spearman,0.508
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1.5,spearman,0.517
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g2,spearman,0.518
+E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1,spearman,0.521
+E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1.5,spearman,0.521
+E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g2,spearman,0.518
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1,spearman,0.518
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1.5,spearman,0.517
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g2,spearman,0.509
 E4 rookie slot curve,REAL HISTORICAL DATA,isotonicAverage,LOO MAE,40.707
 E4 rookie slot curve,REAL HISTORICAL DATA,isotonicAverage,LOO bias,0
 E4 rookie slot curve,REAL HISTORICAL DATA,exponential,LOO MAE,34.121
@@ -73,6 +73,85 @@ E4 rookie slot curve,REAL HISTORICAL DATA,exponentialLS,LOO MAE,37.899
 E4 rookie slot curve,REAL HISTORICAL DATA,exponentialLS,LOO bias,-5.236
 E4 rookie slot curve,REAL HISTORICAL DATA,linearLS,LOO MAE,36.732
 E4 rookie slot curve,REAL HISTORICAL DATA,linearLS,LOO bias,-10.052
-Monotonicity,"CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",current,failures,0
-Package simulation,"CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",raw,"corr(model diff, simulated lineup gain)",0.634
-Package simulation,"CURRENT DATA (2026-10-02-77e3c35d, dataset-frozen.json) — model 2.0.0",packageAdjusted,"corr(model diff, simulated lineup gain)",0.657
+E5 lineup value (preseason),REAL HISTORICAL DATA,det,tier loss (log ratio²),0.132
+E5 lineup value (preseason),REAL HISTORICAL DATA,det,value ratio ranks 1-6,0.991
+E5 lineup value (preseason),REAL HISTORICAL DATA,det,value ratio ranks 7-12,1.014
+E5 lineup value (preseason),REAL HISTORICAL DATA,det,value ratio ranks 13-24,1.091
+E5 lineup value (preseason),REAL HISTORICAL DATA,det,value ratio ranks 25-36,0.947
+E5 lineup value (preseason),REAL HISTORICAL DATA,det,value ratio ranks 37-72,0.706
+E5 lineup value (preseason),REAL HISTORICAL DATA,model,tier loss (log ratio²),0.306
+E5 lineup value (preseason),REAL HISTORICAL DATA,model,value ratio ranks 1-6,0.961
+E5 lineup value (preseason),REAL HISTORICAL DATA,model,value ratio ranks 7-12,1.063
+E5 lineup value (preseason),REAL HISTORICAL DATA,model,value ratio ranks 13-24,1.282
+E5 lineup value (preseason),REAL HISTORICAL DATA,model,value ratio ranks 25-36,1.2
+E5 lineup value (preseason),REAL HISTORICAL DATA,model,value ratio ranks 37-72,1.574
+E5 lineup value (preseason),REAL HISTORICAL DATA,v22,tier loss (log ratio²),0.02
+E5 lineup value (preseason),REAL HISTORICAL DATA,v22,value ratio ranks 1-6,0.984
+E5 lineup value (preseason),REAL HISTORICAL DATA,v22,value ratio ranks 7-12,1.026
+E5 lineup value (preseason),REAL HISTORICAL DATA,v22,value ratio ranks 13-24,1.138
+E5 lineup value (preseason),REAL HISTORICAL DATA,v22,value ratio ranks 25-36,0.978
+E5 lineup value (preseason),REAL HISTORICAL DATA,v22,value ratio ranks 37-72,0.953
+E5 lineup value (preseason),REAL HISTORICAL DATA,fit,tier loss (log ratio²),0.073
+E5 lineup value (preseason),REAL HISTORICAL DATA,fit,value ratio ranks 1-6,0.989
+E5 lineup value (preseason),REAL HISTORICAL DATA,fit,value ratio ranks 7-12,1.018
+E5 lineup value (preseason),REAL HISTORICAL DATA,fit,value ratio ranks 13-24,1.102
+E5 lineup value (preseason),REAL HISTORICAL DATA,fit,value ratio ranks 25-36,0.955
+E5 lineup value (preseason),REAL HISTORICAL DATA,fit,value ratio ranks 37-72,0.781
+E5 lineup value (preseason),REAL HISTORICAL DATA,rate,tier loss (log ratio²),0.075
+E5 lineup value (preseason),REAL HISTORICAL DATA,rate,value ratio ranks 1-6,0.978
+E5 lineup value (preseason),REAL HISTORICAL DATA,rate,value ratio ranks 7-12,1.035
+E5 lineup value (preseason),REAL HISTORICAL DATA,rate,value ratio ranks 13-24,1.163
+E5 lineup value (preseason),REAL HISTORICAL DATA,rate,value ratio ranks 25-36,1.032
+E5 lineup value (preseason),REAL HISTORICAL DATA,rate,value ratio ranks 37-72,1.25
+E5 lineup value (from week 5),REAL HISTORICAL DATA,det,tier loss (log ratio²),0.249
+E5 lineup value (from week 5),REAL HISTORICAL DATA,model,tier loss (log ratio²),0.579
+E5 lineup value (from week 5),REAL HISTORICAL DATA,v22,tier loss (log ratio²),0.16
+E5 lineup value (from week 5),REAL HISTORICAL DATA,fit,tier loss (log ratio²),0.249
+E5 lineup value (from week 5),REAL HISTORICAL DATA,rate,tier loss (log ratio²),0.28
+E5 lineup value (from week 9),REAL HISTORICAL DATA,det,tier loss (log ratio²),0.388
+E5 lineup value (from week 9),REAL HISTORICAL DATA,model,tier loss (log ratio²),1.81
+E5 lineup value (from week 9),REAL HISTORICAL DATA,v22,tier loss (log ratio²),0.665
+E5 lineup value (from week 9),REAL HISTORICAL DATA,fit,tier loss (log ratio²),0.388
+E5 lineup value (from week 9),REAL HISTORICAL DATA,rate,tier loss (log ratio²),1.022
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,current,"corr(predicted margin, realised outcome)",0.542
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,current,"corr, uneven player counts",0.54
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,current_raw,"corr(predicted margin, realised outcome)",0.523
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,current_raw,"corr, uneven player counts",0.522
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04,"corr(predicted margin, realised outcome)",0.549
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04,"corr, uneven player counts",0.547
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail,"corr(predicted margin, realised outcome)",0.527
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail,"corr, uneven player counts",0.527
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s0_avail,"corr(predicted margin, realised outcome)",0.527
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s0_avail,"corr, uneven player counts",0.527
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_raw,"corr(predicted margin, realised outcome)",0.522
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_raw,"corr, uneven player counts",0.523
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_b0,"corr(predicted margin, realised outcome)",0.529
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_b0,"corr, uneven player counts",0.53
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_b07,"corr(predicted margin, realised outcome)",0.521
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_b07,"corr, uneven player counts",0.521
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_pk05,"corr(predicted margin, realised outcome)",0.53
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_pk05,"corr, uneven player counts",0.531
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_pk15,"corr(predicted margin, realised outcome)",0.521
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_pk15,"corr, uneven player counts",0.52
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_slot2,"corr(predicted margin, realised outcome)",0.526
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s04_avail_slot2,"corr, uneven player counts",0.526
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s1_avail,"corr(predicted margin, realised outcome)",0.521
+E6 league simulation,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,s1_avail,"corr, uneven player counts",0.52
+E7 verdict calibration,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,margin 0-5%,share won by favoured side,0.551
+E7 verdict calibration,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,margin 5-10%,share won by favoured side,0.53
+E7 verdict calibration,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,margin 10-20%,share won by favoured side,0.571
+E7 verdict calibration,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,margin 20-30%,share won by favoured side,0.552
+E7 verdict calibration,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,margin 30-50%,share won by favoured side,0.636
+E7 verdict calibration,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,margin 50-75%,share won by favoured side,0.724
+E7 verdict calibration,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,margin 75-100%,share won by favoured side,0.799
+E8 dynasty spacing,REAL HISTORICAL DATA,ecr_on_curve_cv0,tier loss (log ratio²),13.416
+E8 dynasty spacing,REAL HISTORICAL DATA,fundamental_cv0,tier loss (log ratio²),2.694
+E8 dynasty spacing,REAL HISTORICAL DATA,ecr_on_curve_cv0.5,tier loss (log ratio²),1.399
+E8 dynasty spacing,REAL HISTORICAL DATA,fundamental_cv0.5,tier loss (log ratio²),0.522
+E8 dynasty spacing,REAL HISTORICAL DATA,ecr_on_curve_cv1,tier loss (log ratio²),0.043
+E8 dynasty spacing,REAL HISTORICAL DATA,fundamental_cv1,tier loss (log ratio²),0.016
+E8 dynasty spacing,REAL HISTORICAL DATA,ecr_on_curve_cv1.25,tier loss (log ratio²),0.015
+E8 dynasty spacing,REAL HISTORICAL DATA,fundamental_cv1.25,tier loss (log ratio²),0.053
+Monotonicity,"CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",current,failures,1
+Package simulation,"CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",raw,"corr(model diff, simulated lineup gain)",0.677
+Package simulation,"CURRENT DATA (2026-10-03-db0b55b5, dataset-frozen.json) — model 2.2.0",packageAdjusted,"corr(model diff, simulated lineup gain)",0.699

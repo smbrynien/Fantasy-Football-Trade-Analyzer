@@ -353,6 +353,7 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
 .verdict-head.clear { border-left-color: var(--bad); }
 .verdict-label { font-size: 1.35rem; font-weight: 800; line-height: 1.25; }
 .verdict-sub { color: var(--muted); font-size: .92rem; margin-top: .15rem; }
+.verdict-odds { color: var(--muted); font-size: .8rem; margin-top: .3rem; }
 .market-check { margin: .6rem 0 0; padding: .45rem .7rem; border-radius: 6px; background: var(--panel-2); }
 .market-check.disagree { background: var(--warn-soft); }
 .lineup-impact { padding: .6rem .75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); display: grid; gap: .3rem; }

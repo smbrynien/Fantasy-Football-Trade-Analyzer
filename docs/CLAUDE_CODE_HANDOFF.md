@@ -2,8 +2,8 @@
 
 > **Read this first in any new session.** It records the *actual* state of the repository as inspected on
 > **2026-10-03**. Originally written at commit `464841f` ("Model audit and valuation model 2.0.0"); last updated in
-> the 2026-10-03 session (counteroffer table + two-asset combinations, usability Tier 2 items 1–2; model 2.1.2
-> unchanged) — see §38 for the git state.
+> the 2026-10-03 session: counteroffer table + two-asset combinations (usability Tier 2 items 1–2), then the
+> **second model audit → model 2.2.0** (docs/MODEL_AUDIT.md) — see §38 for the git state.
 > The code is the source of truth. Verify anything here before acting on it, and **update this file** when the
 > project's state changes (see §42 "Maintaining this handoff").
 >
@@ -54,30 +54,34 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 ## 2. Current project status
 
 ```text
-Overall Status:  Working, tested. Model 2.1.2 (2.0.0 audit model + ADP corroboration rule + market list
-                 format rules + monotone pick curves). ALL known bugs (§19 #1–#13) FIXED. Lint runs in CI.
+Overall Status:  Working, tested. Model 2.2.0 (second model audit 2026-10-03: redraft option-value σ × 0.4,
+                 SoS off, dynasty current-season share + games-lost injuries, calibration shape constraints,
+                 trade outcome frequency). ALL known bugs (§19 #1–#15) FIXED. Lint runs in CI.
 Bug audit:       Adversarial reliability audit DONE (2026-10-02): 32 bugs fixed (1 Critical, 13 High, 8 Medium,
                  10 Low) — docs/BUG_AUDIT.md (matrix, root causes, remaining issues) and docs/BUG_FIX_HISTORY.md.
 
-Redraft:         Implemented. Expected-surplus valuation, consensus-dominant weights. Since 2.1.0 ADP only
-                 corroborates: ADP-only players are N/A (FA ≥100 in 12-team 1QB: 63 → 3, all with consensus).
+Redraft:         Implemented. Expected-surplus valuation (σ 0.4× the 2.1.x table since 2.2.0), consensus-dominant
+                 weights. Since 2.1.0 ADP only corroborates: ADP-only players are N/A.
 Dynasty:         Implemented. Multi-year fundamental (aging power 2, attrition, draft priors, evidence gate)
-                 blended with consensus/market.
+                 blended with consensus/market; in season only the remaining games of this season count (2.2.0).
 Rookie Picks:    Implemented. Market + historical LS-exponential slot curve + current class; unknown, bucketed and
                  ranged slots; future-year discount.
-Trade Analyzer:  Implemented. Additive values + package adjustment + z-score verdict + audit record.
+Trade Analyzer:  Implemented. Additive values + package adjustment + z-score verdict + historical outcome
+                 frequency (redraft, 2.2.0) + audit record.
 Data Sync:       Implemented. 10 automated adapters, validation/quarantine, failover, snapshots, history.
 Manual Import:   Implemented. 7 templates, column auto-mapping, identity report, overwrite confirmation.
 Player Database: Implemented. 17 external ID systems, never merges ambiguous players, manual overrides.
-Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool works on fresh clones: `--freeze`,
-                 `--out=DIR`, before/after skipped with instructions on data mismatch (bug #2 fixed).
+Model Audit:     TWO audits. 2.0.0 (docs/MODEL_AUDIT_2.0.0.md) and the second, 2026-10-03 → 2.2.0
+                 (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md): E1–E4 reproduced exactly; new E5 hindsight-free
+                 lineup value, E6 historical league simulation (5,000 trades), E7 verdict calibration, E8 dynasty
+                 spacing. `npm run audit-model` runs all (~2 min after the benchmark download).
 UX Audit:        DONE (2026-10-03): docs/USABILITY_AUDIT.md (friction log F-01–F-44, findings, before/after) and
                  docs/FEATURE_AUDIT.md (opportunity matrix, Tier 1/2/3/Do-Not-Build). Tier 1 implemented: verdict-
                  first trade result, "Even it out"/value matches, share link/text, Model − Market column, grouped
                  settings, a11y fixes; plus My Team (optional roster → lineup impact, "Which side is you?",
                  roster quick-add). Tier 2 items 1–2 DONE (2026-10-03): counteroffer table ("+ Compare") and
                  two-asset combination matches ("Two assets together"). Asset values unchanged.
-Testing:         130/130 node:test tests pass (≈7 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
+Testing:         137/137 node:test tests pass (≈7 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
                  (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions: lint → tests → build → publish ZIPs on every push to main (lint step added in
@@ -98,10 +102,10 @@ install is needed — **zero dependencies** (there is no `node_modules`, no lock
 | `npm run sync -- --failed` | Retry only failed/partial/quarantined sources | inferred |
 | `npm run sync -- --source fantasycalc,espn` | Sync specific sources | documented |
 | `npm run rebuild` | Rebuild player DB/dataset/values from cached normalized data (no network) | inferred |
-| `npm test` | `node --test tests/*.test.js` — 130 tests, offline | **yes, 130/130** (2026-10-03) |
+| `npm test` | `node --test tests/*.test.js` — 137 tests, offline | **yes, 137/137** (2026-10-03) |
 | `npm run lint` | `npx --yes eslint@10 .` with `eslint.config.mjs` (uses a global ESLint 10 if present, else the npx cache; never `node_modules`). **CI runs it before the tests; a lint error blocks the release** | **yes, clean** |
 | `npm run test:e2e` | `tests/e2e/smoke.mjs`: server on a random port + temp `FFTA_DATA_DIR` with the synthetic fixture; Chromium at 1360, 721 and 390 px: layout (no sideways page scroll, Sync and all tabs on screen), trade 1-for-1 with verdict, every main route, player Trends with a seeded two-model history (marker, broken line, within-model change), no console errors. Skips (exit 0) without Playwright | **yes, pass; skip path and failure path (exit 1) checked** |
-| `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,e2,e3,e4,current,compare`, `--rebuild`, `--freeze`, `--snapshot-before`, `--out=DIR`). `--freeze`/`--snapshot-before` without `--only` do only that (no backtests) | yes (fresh clone, mismatch and full before/after workflow; §17 item 10) |
+| `npm run audit-model` | Full model audit → `reports/audit/` (`--only=e1,…,e8,current,compare`, `--rebuild`, `--freeze`, `--snapshot-before`, `--out=DIR`). `--freeze`/`--snapshot-before` without `--only` do only that (no backtests) | yes (fresh clone, mismatch and full before/after workflow; §17 item 10) |
 | `npm run calibrate` | Re-derive `config/calibration/*.json` from nflverse 2006–2025 (downloads ~60 MB to `scripts/.cache/`) | ran earlier in project |
 | `npm run backtest` | ECR vs realised production → `reports/backtest.json` (shown on the Model page) | ran earlier in project |
 | `npm run package` | Build release ZIPs into `dist/` (`scripts/package-release.sh`) | CI runs it |
@@ -151,8 +155,10 @@ js/ui/           Vanilla ES-module UI: app.js (router), state.js, api.js, dom.js
   views/           trade, team (My Team), players, compare, rookies, data, settings, model, help, player-modal
 config/          sources.json, model.json (model_version + every parameter), league-defaults.json,
                  profiles.json (7 presets), import-specs.json (7 templates), calibration/*.json (6 files)
-scripts/         sync.js (CLI), calibrate.js, backtest.js, audit-model.js + audit/{benchmark,backtests,current,compare}.js,
-                 lib/history-data.js (downloads/caches historical CSVs), package-release.sh
+scripts/         sync.js (CLI), calibrate.js, backtest.js, audit-model.js + audit/{benchmark,backtests,current,compare}.js
+                 and (2.2.0 audit) audit/{lineup (E5), league (E6), calibration (E7), dynasty-shape (E8)}.js,
+                 lib/history-data.js (downloads/caches historical CSVs), lib/calibration-shape.js (monotone hazard,
+                 unimodal aging curves — shared by calibrate.js and the backtest refits), package-release.sh
 tests/           node:test suites + fixtures/make-dataset.js (SYNTHETIC players "Test RB 1" …)
 docs/            design, model, audit, sources, import, troubleshooting docs (+ img/ screenshots)
 reports/         backtest.json (served to the Model page); audit/ (audit outputs, committed, ~940 KB)
@@ -318,7 +324,7 @@ Planned (not implemented): Yahoo, FantasyPros API (`.env.example` placeholders o
 * **Weaknesses:** name-only sources (FFC, manual imports) depend on name/team matching; fuzzy matches need
   review; no automatic retirement detection.
 
-## 11. Current redraft model (model 2.1.1) — `js/core/valuation/redraft.js`
+## 11. Current redraft model (model 2.2.0) — `js/core/valuation/redraft.js`
 
 Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your** scoring:
 
@@ -331,14 +337,17 @@ Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your**
   `rate = (gp·blend + 2·prior)/(gp + 2)`, prior = last-season PPG if ≥4 games, else positional **median** PPG, and
   then **≥3 games are required** (`min_games_without_history`);
   `prodROS = rate × max(0, remGames − gamesLost) × availability_pos × SoS` (availability QB .80, RB .77, WR .83,
-  TE .82; SoS = 1 + 0.5·reliability·(opponent FPA ratio − 1), reliability = weeks observed/8);
+  TE .82; SoS = 1 + s·reliability·(opponent FPA ratio − 1), **s = `sos_strength` = 0 since 2.2.0** — E2: no gain in
+  17 of 20 checkpoints; projections already include matchups. Projections are NOT availability-scaled: tested in E6
+  and rejected);
   `gamesLost`: Out 1, Doubtful .8, Questionable .25, IR/PUP/NFI 5, Suspended 3 (or all remaining games if
   zero-projected). Free agents (`team === 'FA'`) get no production signal.
 * **League structure** (`replacement.js`) from `basePoints = weightedMean(projection w1, prodROS w α)`:
   starters = teams × slots, FLEX/SF filled greedily by points; `r` = mean of last starter and first non-starter;
   `w` = first unrostered (bench split pro rata to starters); displacement = rank `s − teams/2`.
-* **Surplus (expected, v2):** σ_pos = `sd_per_game[phase][pos] × gamesLeft` (gamesLeft = median team remaining
-  games, or 17 preseason; in-season SD/game QB 5.5, RB 4.4, WR 4.3, TE 3.8, K/DEF 3.0; preseason 4.9/4.2/3.8/3.1/3/3)
+* **Surplus (expected):** σ_pos = `sd_per_game[phase][pos] × gamesLeft` (gamesLeft = median team remaining
+  games, or 17 preseason; **2.2.0** in-season SD/game QB 2.2, RB 1.8, WR 1.7, TE 1.5, K/DEF 1.2; preseason
+  2.0/1.7/1.5/1.2/1.2/1.2 = 0.4 × the 2.1.x table — audit E5/E6: the old σ over-valued depth relative to stars)
   `S(pts) = ES(pts,σ;r) + 0.35·max(0, ES(pts,σ;w) − ES(pts,σ;r))`, `ES(μ,σ;r) = (μ−r)Φ(z)+σφ(z)`, z=(μ−r)/σ;
   `S(0) = 0`.
 * **Curves:** per position, sorted S of the pool. **Consensus** (FP ROS/redraft ECR, manual rankings) and
@@ -375,13 +384,19 @@ Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your**
   valued from draft slot).
 * **Years t = 1..5:** `μ_t = (1−π)·μ1·(A(age_t)/A(age_0))^2 + π·prior_t` (π = prior share; `aging_power` 2);
   `σ_t = μ_t·√(cv1² + (t−1)g²)` (+0.2 rookie cv); survival `S_t = Π(1 − hazard(age))`; season points
-  X ~ N(μ_t·17·avail, σ_t·17·avail); `F = Σ δ^{t−1}·S_t·[ES(X; r) + 0.35·band]`,
+  X ~ N(μ_t·17·avail, σ_t·17·avail); `F = Σ δ^{e_t}·S_t·share_t·[ES(X; r) + 0.35·band]`,
   δ = contending .70 / balanced .82 / rebuilding .92 (profile `dynasty.strategy`).
-  Aging curves, attrition, availability, CV, draft priors: `config/calibration/*.json` (nflverse 2006–2025).
+  **In season (2.2.0):** share_1 = f = remaining team games/17, e_t = t − 2 + f for t ≥ 2, plus a tail year 6 with
+  share 1 − f (`years[].share`, `years[].tail`); offseason f = 1 (unchanged). 2.1.x counted the full current season.
+  Aging curves, attrition, availability, CV, draft priors: `config/calibration/*.json` (nflverse 2006–2025); since
+  2.2.0 hazard = weighted monotone fit, aging curves unimodal and never decelerating past the data
+  (`scripts/lib/calibration-shape.js`).
 * **Replacement** from Y1 points (μ1·17·avail) with the league structure.
 * **Signals and weights:** fundamental .25, market .35 (FantasyCalc dynasty, KTC import; DP 0), consensus .40
   (FP dynasty positional ECR), ADP 0 (Sleeper dynasty ADP). Market/consensus map by positional rank onto the
-  **fundamental** curve. Injury: IR/PUP/NFI −35% of year-1 contribution, Suspended −15%. Trend weight 0.
+  **fundamental** curve. Injury (2.2.0): expected games lost (redraft `injury_games_lost`) / games left this season ×
+  year-1 contribution; IR/PUP/NFI/Suspended with no ROS projection in season = whole remaining season (replaces
+  `injury_year1_fraction`). Trend weight 0.
 * **Components:** market, consensus, projection / production / prospect (year-1 fundamental split by evidence
   share), longevity (years 2+), injury. Details: breakout probability, decline probability, career horizon,
   per-year table.
@@ -420,6 +435,10 @@ Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your**
   Displacement value = value at rank `starters − teams/2` at that position.
 * `diff = adjA − adjB`, `pct = diff / max(adjA, adjB)`, `z = |diff| / √(σA² + σB²)`; verdict: z<1 "close",
   1–2 "modest edge", >2 "clear". Never "good/bad trade".
+* **`outcome` (2.2.0, redraft only, display only):** `{favoured, probability = 1/(1+e^(−1.5·|pct|))}`
+  (`config/model.json trade_outcome.redraft_logit_slope`, fitted in audit E7 on 5,000 simulated historical trades);
+  shown under the verdict by `trade-helpers.outcomeText` ("…went Team B's way about 65% of the time…") and in the
+  text summary. Null for dynasty, incomplete or exactly even trades.
 * Notes: value-weighted age (dynasty), now-vs-future split (dynasty: picks are future; market/consensus split in
   the fundamental's proportion), consolidation, low-confidence assets, missing assets.
 * Audit record: model_version, data_version, dataset build time, settings_hash, league, phase, source timestamps.
@@ -606,6 +625,18 @@ the header is not sticky and the data pill shows the data age ("6 h"). Usability
     added with verdict and "+" markers; Load restores the original (all 3 widths). Verified in Chromium on real data
     (redraft + dynasty, 1360/390 px, no page overflow, no console errors; lineup column with a roster). No valuation
     change → `model_version` stays 2.1.2.
+20. **Second model audit → model 2.2.0** (2026-10-03 session) — `docs/MODEL_AUDIT.md` (the 2.0.0 audit moved to
+    `docs/MODEL_AUDIT_2.0.0.md`), `docs/MODEL_COMPARISON.md`, model docs updated (VALUATION/DYNASTY/ROOKIE_PICK, plain-
+    English sections), `reports/audit/` regenerated (E1–E8 + current data + before/after vs 2.1.2 on the frozen
+    2026-10-03 dataset). Benchmark rebuilt; E1–E4 reproduced exactly (73 metrics). New experiments (scripts/audit/):
+    **E5** hindsight-free lineup value (`lineup.js`), **E6** historical league simulation with 5,000 trades
+    (`league.js`), **E7** verdict calibration (`calibration.js`), **E8** dynasty value spacing (`dynasty-shape.js`).
+    Changes: redraft σ × 0.4; `sos_strength` 0; dynasty current-season share (f, δ^(t−2+f), tail year) and games-lost
+    injuries (`injury_year1_fraction` removed); calibration shape constraints (`scripts/lib/calibration-shape.js`,
+    `npm run calibrate` re-run: only aging-curves.json and attrition.json changed in substance); trade outcome
+    frequency (redraft) in `analyzeTrade().outcome` + UI + Help. Rejected on evidence: availability-scaled
+    projections, volatility penalty, longer dynasty horizon, larger dynasty CV, β/package-strength changes.
+    Tests 130 → 137 (`tests/model-2-2.test.js`); E2E pass; lint clean.
 
 ## 18. What is currently in progress
 
@@ -635,10 +666,14 @@ devDependencies (done); ESPN placeholder ADP handled in the adapter (done, as a 
 | 13 | Header overflowed the page between 721 and ~1090 px (found while fixing #6) — **FIXED** (2.1.0 session) | was Medium (UX: Sync button off-screen on tablets/small laptops, page scrolled sideways on every route) | 800 px viewport, any page | header fits | right-hand controls (651 px) pushed the page 67–370 px sideways | no breakpoint between 720 px (phone layout) and desktop | `css/app.css` (≤1120 px: brand text hidden, header wraps; ≤960 px: data-pill text and Sync label hidden, as on phones) | — |
 | 12 | ~~`npm test` leaves one `ffta-sync-*` temp dir per run in the OS temp folder~~ **FIXED** (2.1.0 session) | Low (test hygiene) | run `npm test`, list `$TMPDIR/ffta-sync-*` | removed after the suite | stays | `tests/sync.test.js` creates it with `mkdtemp` and never removes it | `tests/sync.test.js` | delete them by hand |
 
-**All known bugs (#1–#13) are fixed as of the 2.1.0 session; none open.** Record new ones here.
+| 14 | ~~Dynasty value non-monotone in age (2 of 75 audit checks failed on 2026-10-03 data: Harold Fannin and Travis Kelce worth less when 2 years younger)~~ **FIXED in model 2.2.0** | was Medium (pathological, brief §32) | `npm run audit-model -- --only=current` → `cur-monotonicity.json` | younger never lowers value | 1 remaining failure: Fannin at 20.2 −1.9% — a TE whose peak (26) falls outside the 5-season horizon; documented limitation (longer horizons tested worse in E3) | calibration artefacts: flat aging-curve tails beyond the data; exit hazard un-regularised at young ages (TE 9 exits of 36 at 22) | `scripts/lib/calibration-shape.js`, `scripts/calibrate.js`, `config/calibration/{aging-curves,attrition}.json` | — |
+| 15 | ~~Dynasty counted the whole current season at any week; IR = −35% of a full season regardless of week~~ **FIXED in model 2.2.0** | was Medium | any in-season dynasty value | only remaining games count | `years[0].share = remaining games / 17`, discount from now, tail year; injuries = games lost / games left | year-1 formula ignored the phase | `js/core/valuation/dynasty.js`, `config/model.json` | — |
+
+**All known bugs (#1–#15) are fixed; none open** (the 2.2.0 audit's Fannin horizon effect is a documented model
+limitation, not a bug). Record new ones here.
 
 No flaky tests have been observed (66/66 across several runs in the 2.0.0 session; 68–122 as the suite grew in the
-2.1.0 session; 130/130 in the 2026-10-03 session).
+2.1.0 session; 130–137 in the 2026-10-03 session).
 
 ## 20. Known model / data problems (not software bugs)
 
@@ -647,10 +682,14 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 * **Consensus dependence:** FantasyPros ECR is the dominant signal; losing ECR and FantasyCalc together moves
   dynasty values a lot (ρ .933, p90 change 40%, `reports/audit/cur-missing-sources.json`).
 * **σ / ± ranges are a signal-disagreement heuristic**, not calibrated intervals; trade z-scores inherit that
-  (`js/core/valuation/confidence.js`).
-* **Expected surplus has hindsight optimism** for deep players (audit §5); combined with single-signal
-  renormalization this produced bug #1 (fixed for ADP in 2.1.0; a lone projection/consensus/market group is still
-  renormalized to 100%, which is intended — those are real evidence).
+  (`js/core/valuation/confidence.js`). E7 (2.2.0 audit): the verdict levels are ordered correctly (favoured side won
+  53% / 58% / 71% for close / modest / clear in simulated seasons) — shown to users as an outcome frequency (redraft).
+* **Expected-surplus option value** was calibrated against a hindsight target in 2.0.0 and over-valued depth; reduced
+  to 0.4× in 2.2.0 (E5/E6). In season the deepest tier (ranks 37–72) is still over-valued relative to stars at every
+  σ tested (E5 week 9) — small values, but watch it. A lone projection/consensus/market group is still renormalized
+  to 100% (intended — real evidence).
+* **Availability by depth tier** (stars play ~87–90% of games, depth 72–81%) is not modelled; position-level scaling of
+  projections was tested and made trade predictions worse (E6).
 * **Forced-preseason observation (2.1.0 validation):** running preseason weights on today's in-season data values
   ~25–39 free agents ≥100 in SF leagues from **projection alone** (e.g. Derek Carr, Teddy Bridgewater), because
   last summer's season projections are still in the dataset. This is an artifact of forcing the phase; in a real
@@ -658,8 +697,9 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 * **Rookie curve** (now exactly reproducible by `npm run calibrate`) smooths the historical drop after pick 2 (1.01–1.02 mean 228 vs fit 177); class strength is
   not modelled (CV .28 across 4 classes).
 * **Dynasty backtest** covers only 2020–2023 (4 seasons); ρ differences < .01 are noise.
-* **Not validated:** injury games-lost table, SoS strength (inconclusive), K/DEF values, dynasty discount rates,
-  the package adjustment for 3+ player trades (simulation correlation .49–.54).
+* **Not validated:** injury games-lost table (now shared by redraft and dynasty), K/DEF values, dynasty discount
+  rates, dynasty horizons beyond 3 seasons (no outcome data). SoS was removed in 2.2.0 (E2). The package adjustment IS
+  now validated against real outcomes (E6: better than plain sums in every season).
 * **Not modelled:** contracts, coaching, college production, landing spot (only via consensus/market), TE-premium
   dynasty consensus, Superflex-specific redraft ECR beyond what FP provides.
 * **Dataset bloat:** ≈1,000 ADP-only players (≈45% of the dataset) are kept but get no redraft value since 2.1.0 — wasted
@@ -669,14 +709,19 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 
 ## 21. Previous audits
 
-* **Model audit** — `docs/MODEL_AUDIT.md` (20 sections) and `docs/MODEL_COMPARISON.md`; outputs in
-  `reports/audit/` (`scorecard.csv` is the one-line-per-metric summary; `before-after.csv` compares every player
-  v1 vs v2 in four leagues; `v1/` holds the current-data analyses as run on model 1.0.0).
+* **Second model audit (2026-10-03, → 2.2.0)** — `docs/MODEL_AUDIT.md` (20 sections) and `docs/MODEL_COMPARISON.md`;
+  outputs in `reports/audit/` (regenerated: E1–E8, `cur-*`, `before-after*` = 2.1.2 → 2.2.0 on the frozen 2026-10-03
+  dataset, `values-v1.json` = the 2.1.2 baseline; `scorecard.csv` one row per metric). Main findings: the 2.0.0
+  expected-surplus σ was validated against a hindsight target and over-valued depth (E5/E6); 2 age-monotonicity
+  failures from calibration artefacts; dynasty counted the full current season; SoS added nothing (E2); verdicts mean
+  less than users think (E7). See §17 item 20.
+* **First model audit (→ 2.0.0)** — `docs/MODEL_AUDIT_2.0.0.md` (historical record; `reports/audit/v1/` holds its
+  model-1.0.0 current-data analyses; its other outputs are in git history at `464841f`).
   * Findings fixed in 2.0.0: prior-only veteran values, one-game backup values, non-monotone scale,
     deterministic-surplus bias (−14 pts), over-weighted in-season production, ignoring availability, DP
     double-counting, dynasty age bias (γ = 2), isotonic rookie curve, trend in values.
-  * Still open from the audit: SoS (inconclusive), injury table (untestable), σ calibration, 3+-player package
-    under-correction, ESPN young-QB bias, MAE-vs-mean pick curve trade-off.
+  * Still open after the second audit: injury table (untestable), ± range calibration, ESPN young-QB bias,
+    MAE-vs-mean pick curve trade-off. (SoS removed; package adjustment validated by E6.)
   * **Not found by the audit, discovered while writing this handoff:** bug #1 (FA ADP-only values). The audit's
     monotonicity and extreme-case checks covered top players, not deep free agents. Fixed in 2.1.0 (§17 item 6).
 * **Usability audit** (2026-10-03) — `docs/USABILITY_AUDIT.md` (sections 1–16, friction log F-01–F-44, before/after
@@ -712,12 +757,12 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 ## 24. Model version / data version
 
 ```text
-Model version:   2.1.2          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
+Model version:   2.2.0          config/model.json → model_version (bump on ANY formula/default change; CLAUDE.md rule)
 App version:     1.0.0          js/core/version.js APP_VERSION and package.json "version" (release tag v<version>-build.<n>)
 Schemas:         NORMALIZED_SCHEMA_VERSION 1, DATASET_SCHEMA_VERSION 1 (js/core/version.js); history.json schema_version 1;
                  config files carry their own schema_version
-Data version:    2026-10-02-46adf62e at the 2.1.0 validation (data/calculated/dataset.json; changes every build;
-                 format <date>-<hash>); the committed 2.0.0 audit reports used 2026-10-02-77e3c35d
+Data version:    2026-10-03-db0b55b5 at the 2.2.0 audit (data/calculated/dataset.json; changes every build;
+                 format <date>-<hash>); the committed reports/audit/ use it (frozen copy, git-ignored)
 settings_hash:   stableHash(league + model) per calculation (js/core/settings.js)
 ```
 
@@ -730,11 +775,11 @@ parameter tweaks with no formula change, minor for new optional components, majo
 
 | File | Key settings (current) | Effect |
 |---|---|---|
-| `config/model.json` | `scale` (top_value 10000, anchor_top_n 12, anchor_value null → 7000); `reference_league`; `phase.full_in_season_week` 8; `redraft.weights`, `.production` (regression_games 2, xfp_blend .25, min_games_without_history 3, sos_strength .5, availability), `.uncertainty.sd_per_game`, `.injury_games_lost`, `.bench_value_fraction` .35, `.trend.weight` 0, `.adp_requires_corroboration` true (2.1.0); `dynasty.weights` (.25/.35/.40/0), `horizon_years` 5, `strategy_discount`, `rate_evidence` (prior_pseudo_games 20), `aging_power` 2, `require_current_evidence_after_year` 1, `uncertainty`, `injury_year1_fraction`, `trend.weight` 0; `picks` (weights .45/.30/.25, future_year_discount .88, buckets, prior_class_adjustment .8, upcoming_class_switch_month 9); `source_weights` (projection/consensus/market/adp/pick_market); `mapping.min_source_players` 20; `package`; `confidence` | all valuation; per-league overrides via the profile's `overrides` |
+| `config/model.json` | `scale` (top_value 10000, anchor_top_n 12, anchor_value null → 7000); `reference_league`; `phase.full_in_season_week` 8; `redraft.weights`, `.production` (regression_games 2, xfp_blend .25, min_games_without_history 3, sos_strength 0 (2.2.0), availability), `.uncertainty.sd_per_game` (2.2.0: 0.4× the 2.1.x table), `.injury_games_lost`, `.bench_value_fraction` .35, `.trend.weight` 0, `.adp_requires_corroboration` true (2.1.0); `dynasty.weights` (.25/.35/.40/0), `horizon_years` 5, `strategy_discount`, `rate_evidence` (prior_pseudo_games 20), `aging_power` 2, `require_current_evidence_after_year` 1, `uncertainty`, `trend.weight` 0 (injuries use `redraft.injury_games_lost` since 2.2.0); `picks` (weights .45/.30/.25, future_year_discount .88, buckets, prior_class_adjustment .8, upcoming_class_switch_month 9); `source_weights` (projection/consensus/market/adp/pick_market); `mapping.min_source_players` 20; `trade_outcome.redraft_logit_slope` 1.5 (2.2.0, display only); `package`; `confidence` | all valuation; per-league overrides via the profile's `overrides` |
 | `config/sources.json` | per source: enabled, priority, method, data_types, update_frequency_hours, urls, terms, fallback, independence_group; `freshness_hours`; `exclusive_data_types`; `authoritative_player_sources`; `history_series` | sync, failover, staleness, identity |
 | `config/league-defaults.json`, `config/profiles.json` | §15 | leagues |
 | `config/import-specs.json` | templates `ktc_values`, `fantasypros_rankings`, `projections_generic`, `market_generic`, `rankings_generic`, `adp_generic`, `picks_generic` | manual import |
-| `config/calibration/*.json` | aging-curves, attrition, availability, draft-priors, rookie-slot-curve, year-over-year | replace model defaults in `buildModel` |
+| `config/calibration/*.json` | aging-curves, attrition, availability, draft-priors, rookie-slot-curve, year-over-year (regenerated 2026-10-03 with shape constraints) | replace model defaults in `buildModel` |
 
 Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep local unless LAN access is wanted),
 `FFTA_USER_AGENT`, `FFTA_FETCH_TIMEOUT_MS` (45000), `FFTA_DATA_DIR` (relocate `data/`), `FFTA_NO_AUTOSYNC`,
@@ -742,11 +787,12 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **130 tests, 130 pass, ≈7 s, no network** [verified 2026-10-03]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **137 tests, 137 pass, ≈7 s, no network** [verified 2026-10-03]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
 |---|---|---|
+| `model-2-2.test.js` | 7 | 2.2.0: calibration shape helpers + shipped curves monotone, dynasty current-season share/tail/discount (offseason unchanged), dynasty games-lost injuries, SoS off but configurable, σ effect on depth vs stars, trade outcome frequency (redraft only) |
 | `history-series.test.js` | 3 | Trends model-version boundaries, markers, within-model change vs raw-series change |
 | `server.test.js` | 6 | HTTP hardening: path traversal, malformed requests, CSRF/DNS rebinding, saved-trade ids, JSON body validation (BUG_AUDIT A1–A6) |
 | `search.test.js` | 3 | asset search de-dup, suffixes, team-code prefixes (SR1–SR3) |
@@ -781,18 +827,24 @@ From `docs/MODEL_AUDIT.md` / `reports/audit/` (REAL HISTORICAL = nflverse + Fant
 | Experiment | Result |
 |---|---|
 | E1 preseason redraft 2021–25 (ρ / MAE) | ECR .505 / 57.2; last-season PPG .410 / 61.7; fitted ECR weight 1.0 every fold |
-| E1b value scale bias by tier | deterministic −14 in all tiers; expected surplus −8.4 / −0.2 / −2.0 / +1.9 |
-| E2 in-season ROS 2021–24 | ECR .490 / 32.5; v1 blend .487 / 35.5; fitted blend .512 / 34.5; consensus weight .8–1.0 at weeks 4–12 |
-| E3 dynasty 2020–23 | ECR .581; fundamental .502 (v2 variant .506, age bias removed); 75/25 blend .583 |
-| E4 rookie slot curve (LOO) | isotonic MAE 40.7; LS exponential 37.9 (top-12 bias +1.7); MAE-fitted curves biased −34 to −74 |
+| E1b value scale bias by tier (2.0.0, hindsight target) | deterministic −14 in all tiers; expected surplus −8.4 / −0.2 / −2.0 / +1.9 |
+| E2 in-season ROS 2021–24 | ECR .490 / 32.5; v1 blend .487 / 35.5; fitted blend .512 / 34.5; consensus weight .8–1.0 at weeks 4–12; production without SoS ≥ with SoS in 17/20 checkpoints |
+| E3 dynasty 2020–23 | ECR .581; fundamental .508 (model settings .518 with 2.2.0 calibration, worst season .494); 75/25 blend .582 |
+| E4 rookie slot curve (LOO) | isotonic MAE 40.7; LS exponential 37.9 (top-12 bias +1.7); MAE-fitted curves biased low |
+| **E5** hindsight-free lineup value (tier ratio vs top 12; loss) | preseason: 2.1.x σ 1.28/1.20/1.57 (ranks 13–24/25–36/37–72), loss .306 → 0.4× σ 1.14/0.98/0.95, loss .020; in season from week 5 .579 → .160, week 9 1.81 → .665 |
+| **E6** league simulation, 5,000 trades 2021–25 | corr(margin, outcome): 2.1.2 .542, 2.2.0 values .549 (better all 5 seasons), plain sums .523, availability-scaled .527 |
+| **E7** verdict calibration | favoured side won 53% / 58% / 71% (close / modest / clear); logistic slope 1.5 (10% margin → 54%, 50% → 68%) |
+| **E8** dynasty spacing | CV × 1 proportional (loss .043; ranks 13–24 1.01, 25–72 0.86); CV × 0 loss 13.4 |
 
-CURRENT DATA (frozen 2026-10-02 snapshot): monotonicity 75 checks, v1 3 failures → v2 0. SIMULATION: package-sim
-correlation .25 → .63. Older `reports/backtest.json` (`npm run backtest`, also real data) is what the Model page
+CURRENT DATA (frozen 2026-10-03 snapshot, model 2.2.0): monotonicity 75 checks, 2.1.2 2 failures → 2.2.0 1 (horizon
+edge case). SIMULATION (2.0.0's internal package sim): .593 → .699. Before/after 2.1.2 → 2.2.0: redraft Spearman .993–
+.994, median change 0.6–0.7%; dynasty .999, 2.9–3.2%. Older `reports/backtest.json` (`npm run backtest`, also real data) is what the Model page
 shows. The benchmark itself (`data/benchmark/benchmark.json`, ~29 MB) is git-ignored and rebuilt automatically by
 the audit (downloads ≈60 MB + streams the 105 MB ECR archive).
 
 ## 28. Performance considerations
 
+* `npm run audit-model` (all of E1–E8 + current + compare) ≈ 100 s after the first benchmark download (E6 ≈ 40 s).
 * One valuation run ≈ **240–260 ms** in Node on current data (2,211 players) [verified]; the engine runs the user
   league **and** the reference league (2 runs unless identical). The UI caches per mode + league + data hash.
 * `dataset.json` ≈ 4.9 MB (served gzip-compressed when >2 KB). Half the players are ADP-only free agents (§20).
@@ -843,7 +895,12 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
    forced preseason) is a cheap, stronger check than the top-400 compare for targeted fixes.
 3. Make the change; **bump `model_version`**.
 4. Validate: `npm test`; `npm run lint`; `npm run audit-model -- --only=current,compare --out=/some/dir`
-   (monotonicity, stability, before/after against the frozen data — a re-sync in between doesn't matter); for formula changes with historical relevance, the relevant backtest (`--only=e1|e2|e3|e4`).
+   (monotonicity, stability, before/after against the frozen data — a re-sync in between doesn't matter); for formula changes with historical relevance, the relevant backtest (`--only=e1|…|e8`).
+   **Judge value changes against the hindsight-free targets** (E5 lineup value, E6 trade outcomes, E8 dynasty
+   spacing) and by *relative* tier accuracy — values are rescaled to the top 12, so only proportions between tiers
+   matter. The 2.0.0 E1b target (`max(0, season points − replacement)`) has hindsight and misled the σ choice.
+   Calibration changes: edit `scripts/calibrate.js` / `scripts/lib/calibration-shape.js` (used by the backtest refits
+   too), run `npm run calibrate`, then E3 and E8.
 5. Avoid leakage: fit only on seasons before the test season; rankings dated before the target window; refit
    calibration per season as `calibrateBefore()` in `scripts/audit/backtests.js` does.
 6. Redraft vs dynasty: they share `context.js` (production rate feeds dynasty μ1), `replacement.js`, `mapping.js`,
@@ -905,12 +962,13 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 |---|---|---|---|---|---|
 | Low | Show audit scorecard on the Model page | transparency | not served | none | `server/index.js`, `js/ui/views/model.js` |
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
-| Research | Calibrate σ (± ranges) against outcomes; archive projections/markets for future backtests | trust in verdicts | not started | months of snapshots | `confidence.js`, snapshots |
-| Research | 3+-player package adjustment; roster-specific valuation | multi-player trades are the weakest area | evidence insufficient | simulation work | `trade.js`, `scripts/audit/current.js` |
+| Research | Calibrate the ± range against outcomes (per signal-disagreement level); archive projections/markets daily and backtest their weights | trust in verdicts; weights are judgment | E7 calibrates verdict *levels* only | months of snapshots | `confidence.js`, snapshots |
+| Research | Availability by depth tier (stars ~.87–.90 of games, depth .72–.81); in-season deepest tier still over-valued (E5 week 9) | redraft depth values | investigated, position-level version rejected (E6) | E5/E6 harness | `redraft.js`, `scripts/audit/{lineup,league}.js` |
+| Research | Roster-specific valuation using the E6 simulator; package adjustment in dynasty (E6 is redraft-only) | multi-player / dynasty trades | E6 validates redraft packages | simulation work | `trade.js`, `scripts/audit/league.js` |
 | Low | Counteroffers: include in share link / text summary; server copy | sharing a negotiation | browser-only | — | `trade.js`, `counteroffers.js` |
 | Low | Hide "Model — advanced" settings behind a toggle; merge Data Refresh into Data (FEATURE_AUDIT Tier 2 #4) | simplicity | not started | — | `settings.js` |
 | Low | My Team: Sleeper draft picks (`traded_picks`), refresh from Sleeper, server copy of rosters | completeness | players only, browser-only | — | `js/ui/views/team.js`, `server/index.js` |
-| Research | Package charge on a star acquired for picks (usability F-40) | experienced users find it wrong | open model question | quantitative audit | `trade.js` `packageAdjustment` |
+| Research | Package charge on a star acquired for picks (usability F-40) | experienced users find it wrong | roster-economics argument supports it (the receiving team's displaced starter loses his surplus — what the charge measures); not testable in E6 (redraft has no picks) | dynasty simulation | `trade.js` `packageAdjustment` |
 | Low | Player dialog summary-first; unlabeled table inputs (Scoring/Import); chart text alternatives (F-33, F-42, F-44) | polish / a11y | open | — | `player-modal.js`, `settings.js`, `data.js` |
 
 ## 35. Recommended next steps
@@ -923,6 +981,9 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
     dead weight in redraft). Measure size and valuation time before and after.
 5. *(done 2026-10-03 — counteroffer table and combination value matches, §17 item 19)*. Next in Tier 2:
    **Sleeper draft picks + "refresh from Sleeper"** on My Team, then hiding advanced settings behind a toggle.
+6. *(done 2026-10-03 — second model audit → 2.2.0, §17 item 20)*. Model research next, in order of value
+   (docs/MODEL_AUDIT.md §20): daily archive of projections and market values → backtest their weights after a season;
+   calibrate the ± range; availability by depth tier; roster-specific valuation via the E6 simulator.
 
 # PICK UP HERE
 
@@ -933,17 +994,19 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 > shape-checked on load.
 
 ```text
-Current state:            Model 2.1.2. All known bugs (§19 #1–#13) and the 32 bug-audit bugs fixed. Usability audit
-                          done (docs/USABILITY_AUDIT.md, docs/FEATURE_AUDIT.md) with Tier 1 + My Team + Tier 2 items
-                          1–2 (counteroffer table, two-asset combinations) implemented.
-                          130/130 tests, lint clean (also in CI), E2E pass at 3 widths. All 10 sources sync (2026-10-03).
+Current state:            Model 2.2.0 after the second model audit (docs/MODEL_AUDIT.md, MODEL_COMPARISON.md; E1–E8 in
+                          reports/audit/). All known bugs (§19 #1–#15) and the 32 bug-audit bugs fixed. Usability audit
+                          done with Tier 1 + My Team + Tier 2 items 1–2 (counteroffer table, two-asset combinations).
+                          137/137 tests, lint clean (also in CI), E2E pass at 3 widths. All 10 sources sync (2026-10-03).
 Most important unfinished: My Team Sleeper picks + refresh (FEATURE_AUDIT Tier 2 #3), §35 items 3–4 (audit scorecard on
-                          the Model page; prune ADP-only players) and the §34 research items (incl. usability F-40:
-                          package charge on stars bought with picks).
+                          the Model page; prune ADP-only players), §35 item 6 model research (archive projections/market
+                          daily; calibrate the ± range; availability by depth tier; roster-specific values via E6).
 Known blockers:           None (no live Sleeper league was available to test the roster import; it was tested
                           against a mocked API).
-Files to inspect first:   js/ui/views/{trade,team}.js, js/core/{roster.js,counteroffers.js,valuation/balance.js}, js/ui/trade-helpers.js
-Tests to run first:       npm test (expect 130/130); npm run lint (clean); npm run test:e2e (pass or SKIP)
+Files to inspect first:   model: config/model.json, js/core/valuation/{redraft,dynasty,trade}.js, scripts/audit/{lineup,league,
+                          calibration,dynasty-shape}.js, scripts/lib/calibration-shape.js; UI: js/ui/views/trade.js
+Tests to run first:       npm test (expect 137/137); npm run lint (clean); npm run test:e2e (pass or SKIP);
+                          model work: npm run sync, then npm run audit-model -- --out=<scratch> (≈2 min)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
                           assigned branch and main (CLAUDE.md).
@@ -1003,14 +1066,20 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   PF1) → batch 8: import overwrite confirmation, CSV signed-number regression; import/export workflows verified
   (I4, I5) → batch 9: offline message; audit documents completed (O1) → usability audit + Tier 1 UX changes
   (verdict-first trade result, Even it out / value matches, share, Model − Market, grouped settings, a11y) → My Team
-  + lineup impact + "Which side is you?" (`4508193`) → counteroffer table + two-asset combination matches (this
-  update, 2026-10-03 session). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  + lineup impact + "Which side is you?" (`4508193`) → counteroffer table + two-asset combination matches
+  (`4f85c0d`) → second model audit + model 2.2.0 (this update, 2026-10-03 session). CI (release.yml) succeeded for
+  every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
 ## 39. Confidence in this handoff
 
-* **Verified in the 2026-10-03 session:** git state (HEAD = main = origin/main at `4508193` before this work), `npm test`
+* **Verified in the 2026-10-03 session, model audit (2.2.0):** benchmark rebuilt from scratch, E1–E4 reproduced
+  exactly (73 metrics); E5–E8 run and re-run for every candidate reported; frozen-data before/after 2.1.2 → 2.2.0;
+  `npm test` 137/137, lint clean, E2E pass; app restarted on 2.2.0 and the trade verdict's outcome line checked in
+  Chromium on real data (no console errors). Inferred, not exercised: dynasty values late in a season (f → 0) — the
+  formula is continuous by construction and unit-tested at week 6 and offseason.
+* **Verified in the 2026-10-03 session (start):** git state (HEAD = main = origin/main at `4508193` before this work), `npm test`
   122/122 before and 130/130 after, lint clean, `npm run sync` 10/10 OK (10.0 s, 92.6 MB, dataset
   `2026-10-03-db0b55b5`: 2,208 players), `npm start` + headless Chromium on every route (no console errors), E2E pass,
   bug #1 check (3 FA ≥100, all corroborated). Fixed a stale count in §3 (said 103 tests).

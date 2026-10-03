@@ -8,65 +8,65 @@
       "n": 196,
       "nWithFundamental": 196,
       "variants": {
-        "k10_g1": 0.518,
-        "k10_g1.5": 0.531,
-        "k10_g2": 0.526,
-        "k20_g1": 0.526,
-        "k20_g1.5": 0.53,
-        "k20_g2": 0.525,
-        "k40_g1": 0.525,
-        "k40_g1.5": 0.529,
-        "k40_g2": 0.52
+        "k10_g1": 0.523,
+        "k10_g1.5": 0.532,
+        "k10_g2": 0.533,
+        "k20_g1": 0.525,
+        "k20_g1.5": 0.528,
+        "k20_g2": 0.527,
+        "k40_g1": 0.522,
+        "k40_g1.5": 0.53,
+        "k40_g2": 0.519
       },
       "variantAgeBias": {
         "k10_g1": {
-          "young": -0.123,
-          "old": 0.088
+          "young": -0.116,
+          "old": 0.078
         },
         "k10_g1.5": {
-          "young": -0.088,
-          "old": 0.059
+          "young": -0.08,
+          "old": 0.05
         },
         "k10_g2": {
-          "young": -0.057,
-          "old": 0.033
+          "young": -0.046,
+          "old": 0.021
         },
         "k20_g1": {
-          "young": -0.098,
-          "old": 0.069
+          "young": -0.088,
+          "old": 0.055
         },
         "k20_g1.5": {
-          "young": -0.065,
-          "old": 0.04
+          "young": -0.053,
+          "old": 0.026
         },
         "k20_g2": {
-          "young": -0.031,
-          "old": 0.013
+          "young": -0.018,
+          "old": -0.002
         },
         "k40_g1": {
-          "young": -0.076,
-          "old": 0.053
+          "young": -0.065,
+          "old": 0.039
         },
         "k40_g1.5": {
-          "young": -0.037,
-          "old": 0.018
+          "young": -0.025,
+          "old": 0.007
         },
         "k40_g2": {
-          "young": 0,
-          "old": -0.014
+          "young": 0.015,
+          "old": -0.027
         }
       },
       "rho": {
         "ecr": 0.631,
-        "fundamental": 0.518,
-        "noAgeCurve": 0.472,
-        "noAttrition": 0.514,
-        "noDraftPrior": 0.512,
-        "deterministicSurplus": 0.414,
+        "fundamental": 0.523,
+        "noAgeCurve": 0.482,
+        "noAttrition": 0.525,
+        "noDraftPrior": 0.51,
+        "deterministicSurplus": 0.412,
         "year1Only": 0.46,
-        "blend_ecr25": 0.575,
-        "blend_ecr50": 0.619,
-        "blend_ecr75": 0.63
+        "blend_ecr25": 0.573,
+        "blend_ecr50": 0.621,
+        "blend_ecr75": 0.623
       }
     },
     {
@@ -75,65 +75,65 @@
       "n": 196,
       "nWithFundamental": 195,
       "variants": {
-        "k10_g1": 0.499,
-        "k10_g1.5": 0.503,
-        "k10_g2": 0.492,
-        "k20_g1": 0.513,
-        "k20_g1.5": 0.504,
-        "k20_g2": 0.506,
-        "k40_g1": 0.511,
-        "k40_g1.5": 0.506,
-        "k40_g2": 0.497
+        "k10_g1": 0.509,
+        "k10_g1.5": 0.521,
+        "k10_g2": 0.519,
+        "k20_g1": 0.53,
+        "k20_g1.5": 0.528,
+        "k20_g2": 0.524,
+        "k40_g1": 0.53,
+        "k40_g1.5": 0.522,
+        "k40_g2": 0.515
       },
       "variantAgeBias": {
         "k10_g1": {
-          "young": -0.11,
-          "old": 0.099
+          "young": -0.101,
+          "old": 0.089
         },
         "k10_g1.5": {
-          "young": -0.072,
-          "old": 0.069
+          "young": -0.07,
+          "old": 0.061
         },
         "k10_g2": {
-          "young": -0.04,
-          "old": 0.044
+          "young": -0.039,
+          "old": 0.035
         },
         "k20_g1": {
-          "young": -0.093,
-          "old": 0.085
+          "young": -0.083,
+          "old": 0.07
         },
         "k20_g1.5": {
-          "young": -0.055,
-          "old": 0.053
+          "young": -0.052,
+          "old": 0.043
         },
         "k20_g2": {
-          "young": -0.013,
-          "old": 0.017
+          "young": -0.017,
+          "old": 0.014
         },
         "k40_g1": {
-          "young": -0.073,
-          "old": 0.069
+          "young": -0.064,
+          "old": 0.054
         },
         "k40_g1.5": {
-          "young": -0.029,
-          "old": 0.029
+          "young": -0.026,
+          "old": 0.018
         },
         "k40_g2": {
-          "young": 0.01,
-          "old": -0.005
+          "young": 0.008,
+          "old": -0.008
         }
       },
       "rho": {
         "ecr": 0.568,
-        "fundamental": 0.499,
-        "noAgeCurve": 0.495,
-        "noAttrition": 0.501,
-        "noDraftPrior": 0.509,
-        "deterministicSurplus": 0.49,
+        "fundamental": 0.509,
+        "noAgeCurve": 0.498,
+        "noAttrition": 0.511,
+        "noDraftPrior": 0.507,
+        "deterministicSurplus": 0.491,
         "year1Only": 0.498,
-        "blend_ecr25": 0.534,
-        "blend_ecr50": 0.563,
-        "blend_ecr75": 0.569
+        "blend_ecr25": 0.543,
+        "blend_ecr50": 0.567,
+        "blend_ecr75": 0.572
       }
     },
     {
@@ -142,65 +142,65 @@
       "n": 196,
       "nWithFundamental": 196,
       "variants": {
-        "k10_g1": 0.475,
-        "k10_g1.5": 0.479,
-        "k10_g2": 0.483,
-        "k20_g1": 0.472,
-        "k20_g1.5": 0.473,
-        "k20_g2": 0.465,
-        "k40_g1": 0.463,
-        "k40_g1.5": 0.46,
-        "k40_g2": 0.461
+        "k10_g1": 0.489,
+        "k10_g1.5": 0.494,
+        "k10_g2": 0.5,
+        "k20_g1": 0.496,
+        "k20_g1.5": 0.491,
+        "k20_g2": 0.494,
+        "k40_g1": 0.487,
+        "k40_g1.5": 0.484,
+        "k40_g2": 0.48
       },
       "variantAgeBias": {
         "k10_g1": {
-          "young": -0.081,
-          "old": 0.08
+          "young": -0.077,
+          "old": 0.075
         },
         "k10_g1.5": {
-          "young": -0.051,
-          "old": 0.053
+          "young": -0.05,
+          "old": 0.048
         },
         "k10_g2": {
           "young": -0.016,
-          "old": 0.027
+          "old": 0.022
         },
         "k20_g1": {
-          "young": -0.063,
-          "old": 0.071
+          "young": -0.061,
+          "old": 0.065
         },
         "k20_g1.5": {
-          "young": -0.03,
-          "old": 0.043
+          "young": -0.027,
+          "old": 0.034
         },
         "k20_g2": {
-          "young": 0.006,
-          "old": 0.016
+          "young": 0.008,
+          "old": 0.006
         },
         "k40_g1": {
-          "young": -0.044,
-          "old": 0.057
+          "young": -0.042,
+          "old": 0.051
         },
         "k40_g1.5": {
-          "young": -0.005,
-          "old": 0.024
+          "young": -0.004,
+          "old": 0.017
         },
         "k40_g2": {
-          "young": 0.027,
-          "old": -0.001
+          "young": 0.031,
+          "old": -0.008
         }
       },
       "rho": {
         "ecr": 0.551,
-        "fundamental": 0.475,
-        "noAgeCurve": 0.448,
-        "noAttrition": 0.46,
-        "noDraftPrior": 0.414,
-        "deterministicSurplus": 0.486,
+        "fundamental": 0.489,
+        "noAgeCurve": 0.461,
+        "noAttrition": 0.478,
+        "noDraftPrior": 0.428,
+        "deterministicSurplus": 0.505,
         "year1Only": 0.431,
-        "blend_ecr25": 0.509,
-        "blend_ecr50": 0.538,
-        "blend_ecr75": 0.548
+        "blend_ecr25": 0.511,
+        "blend_ecr50": 0.542,
+        "blend_ecr75": 0.55
       }
     },
     {
@@ -209,65 +209,65 @@
       "n": 196,
       "nWithFundamental": 196,
       "variants": {
-        "k10_g1": 0.514,
-        "k10_g1.5": 0.522,
-        "k10_g2": 0.521,
-        "k20_g1": 0.526,
-        "k20_g1.5": 0.529,
-        "k20_g2": 0.529,
-        "k40_g1": 0.525,
-        "k40_g1.5": 0.521,
-        "k40_g2": 0.516
+        "k10_g1": 0.513,
+        "k10_g1.5": 0.521,
+        "k10_g2": 0.52,
+        "k20_g1": 0.531,
+        "k20_g1.5": 0.537,
+        "k20_g2": 0.527,
+        "k40_g1": 0.534,
+        "k40_g1.5": 0.53,
+        "k40_g2": 0.522
       },
       "variantAgeBias": {
         "k10_g1": {
-          "young": -0.124,
-          "old": 0.11
+          "young": -0.119,
+          "old": 0.106
         },
         "k10_g1.5": {
-          "young": -0.089,
-          "old": 0.082
+          "young": -0.081,
+          "old": 0.074
         },
         "k10_g2": {
-          "young": -0.051,
+          "young": -0.046,
           "old": 0.048
         },
         "k20_g1": {
-          "young": -0.109,
-          "old": 0.093
+          "young": -0.102,
+          "old": 0.088
         },
         "k20_g1.5": {
-          "young": -0.069,
-          "old": 0.058
+          "young": -0.066,
+          "old": 0.056
         },
         "k20_g2": {
-          "young": -0.035,
-          "old": 0.033
+          "young": -0.031,
+          "old": 0.03
         },
         "k40_g1": {
-          "young": -0.09,
-          "old": 0.072
+          "young": -0.084,
+          "old": 0.066
         },
         "k40_g1.5": {
-          "young": -0.055,
-          "old": 0.041
+          "young": -0.048,
+          "old": 0.037
         },
         "k40_g2": {
-          "young": -0.014,
-          "old": 0.011
+          "young": -0.012,
+          "old": 0.009
         }
       },
       "rho": {
         "ecr": 0.575,
-        "fundamental": 0.514,
-        "noAgeCurve": 0.486,
-        "noAttrition": 0.512,
-        "noDraftPrior": 0.48,
+        "fundamental": 0.513,
+        "noAgeCurve": 0.494,
+        "noAttrition": 0.516,
+        "noDraftPrior": 0.487,
         "deterministicSurplus": 0.567,
-        "year1Only": 0.482,
+        "year1Only": 0.485,
         "blend_ecr25": 0.549,
-        "blend_ecr50": 0.565,
-        "blend_ecr75": 0.584
+        "blend_ecr50": 0.561,
+        "blend_ecr75": 0.582
       }
     }
   ],
@@ -284,7 +284,7 @@
       "model": "fundamental",
       "age": "<=23",
       "n": 67,
-      "meanOverrating": -0.123
+      "meanOverrating": -0.116
     },
     {
       "season": 2020,
@@ -298,7 +298,7 @@
       "model": "fundamental",
       "age": "24-26",
       "n": 69,
-      "meanOverrating": 0.042
+      "meanOverrating": 0.045
     },
     {
       "season": 2020,
@@ -312,7 +312,7 @@
       "model": "fundamental",
       "age": "27-29",
       "n": 34,
-      "meanOverrating": 0.081
+      "meanOverrating": 0.084
     },
     {
       "season": 2020,
@@ -326,7 +326,7 @@
       "model": "fundamental",
       "age": "30+",
       "n": 26,
-      "meanOverrating": 0.098
+      "meanOverrating": 0.069
     },
     {
       "season": 2021,
@@ -340,7 +340,7 @@
       "model": "fundamental",
       "age": "<=23",
       "n": 62,
-      "meanOverrating": -0.109
+      "meanOverrating": -0.1
     },
     {
       "season": 2021,
@@ -368,7 +368,7 @@
       "model": "fundamental",
       "age": "27-29",
       "n": 42,
-      "meanOverrating": 0.139
+      "meanOverrating": 0.138
     },
     {
       "season": 2021,
@@ -382,7 +382,7 @@
       "model": "fundamental",
       "age": "30+",
       "n": 20,
-      "meanOverrating": 0.014
+      "meanOverrating": -0.013
     },
     {
       "season": 2022,
@@ -396,7 +396,7 @@
       "model": "fundamental",
       "age": "<=23",
       "n": 66,
-      "meanOverrating": -0.081
+      "meanOverrating": -0.077
     },
     {
       "season": 2022,
@@ -410,7 +410,7 @@
       "model": "fundamental",
       "age": "24-26",
       "n": 65,
-      "meanOverrating": 0.002
+      "meanOverrating": 0.003
     },
     {
       "season": 2022,
@@ -424,7 +424,7 @@
       "model": "fundamental",
       "age": "27-29",
       "n": 49,
-      "meanOverrating": 0.055
+      "meanOverrating": 0.054
     },
     {
       "season": 2022,
@@ -438,7 +438,7 @@
       "model": "fundamental",
       "age": "30+",
       "n": 16,
-      "meanOverrating": 0.159
+      "meanOverrating": 0.14
     },
     {
       "season": 2023,
@@ -452,7 +452,7 @@
       "model": "fundamental",
       "age": "<=23",
       "n": 61,
-      "meanOverrating": -0.124
+      "meanOverrating": -0.119
     },
     {
       "season": 2023,
@@ -480,7 +480,7 @@
       "model": "fundamental",
       "age": "27-29",
       "n": 42,
-      "meanOverrating": 0.117
+      "meanOverrating": 0.118
     },
     {
       "season": 2023,
@@ -494,7 +494,7 @@
       "model": "fundamental",
       "age": "30+",
       "n": 20,
-      "meanOverrating": 0.096
+      "meanOverrating": 0.08
     }
   ],
   "calibrations": {
@@ -504,9 +504,9 @@
       "aging": {
         "QB": {
           "22": 0.872,
-          "24": 0.95,
+          "24": 0.933,
           "26": 0.933,
-          "28": 0.974,
+          "28": 0.956,
           "30": 1,
           "32": 0.958
         },
@@ -542,9 +542,9 @@
       "aging": {
         "QB": {
           "22": 0.875,
-          "24": 0.956,
+          "24": 0.943,
           "26": 0.943,
-          "28": 0.966,
+          "28": 0.951,
           "30": 1,
           "32": 0.966
         },
@@ -580,9 +580,9 @@
       "aging": {
         "QB": {
           "22": 0.864,
-          "24": 0.97,
+          "24": 0.945,
           "26": 0.945,
-          "28": 0.97,
+          "28": 0.962,
           "30": 1,
           "32": 0.951
         },
@@ -618,9 +618,9 @@
       "aging": {
         "QB": {
           "22": 0.845,
-          "24": 0.944,
+          "24": 0.936,
           "26": 0.936,
-          "28": 0.97,
+          "28": 0.962,
           "30": 1,
           "32": 0.947
         },
@@ -653,70 +653,70 @@
   },
   "summary": {
     "ecr": 0.581,
-    "fundamental": 0.502,
-    "noAgeCurve": 0.475,
-    "noAttrition": 0.497,
-    "noDraftPrior": 0.479,
-    "deterministicSurplus": 0.489,
-    "year1Only": 0.468,
-    "blend_ecr25": 0.542,
-    "blend_ecr50": 0.571,
-    "blend_ecr75": 0.583
+    "fundamental": 0.508,
+    "noAgeCurve": 0.484,
+    "noAttrition": 0.508,
+    "noDraftPrior": 0.483,
+    "deterministicSurplus": 0.494,
+    "year1Only": 0.469,
+    "blend_ecr25": 0.544,
+    "blend_ecr50": 0.573,
+    "blend_ecr75": 0.582
   },
   "variantSummary": {
     "k10_g1": {
-      "rho": 0.502,
-      "youngBias": -0.109,
-      "oldBias": 0.094,
-      "minSeasonRho": 0.475
+      "rho": 0.508,
+      "youngBias": -0.103,
+      "oldBias": 0.087,
+      "minSeasonRho": 0.489
     },
     "k10_g1.5": {
-      "rho": 0.509,
-      "youngBias": -0.075,
-      "oldBias": 0.066,
-      "minSeasonRho": 0.479
+      "rho": 0.517,
+      "youngBias": -0.07,
+      "oldBias": 0.058,
+      "minSeasonRho": 0.494
     },
     "k10_g2": {
-      "rho": 0.505,
-      "youngBias": -0.041,
-      "oldBias": 0.038,
-      "minSeasonRho": 0.483
+      "rho": 0.518,
+      "youngBias": -0.037,
+      "oldBias": 0.032,
+      "minSeasonRho": 0.5
     },
     "k20_g1": {
-      "rho": 0.509,
-      "youngBias": -0.091,
-      "oldBias": 0.08,
-      "minSeasonRho": 0.472
+      "rho": 0.521,
+      "youngBias": -0.083,
+      "oldBias": 0.07,
+      "minSeasonRho": 0.496
     },
     "k20_g1.5": {
-      "rho": 0.509,
-      "youngBias": -0.055,
-      "oldBias": 0.049,
-      "minSeasonRho": 0.473
+      "rho": 0.521,
+      "youngBias": -0.049,
+      "oldBias": 0.04,
+      "minSeasonRho": 0.491
     },
     "k20_g2": {
-      "rho": 0.506,
-      "youngBias": -0.018,
-      "oldBias": 0.02,
-      "minSeasonRho": 0.465
+      "rho": 0.518,
+      "youngBias": -0.014,
+      "oldBias": 0.012,
+      "minSeasonRho": 0.494
     },
     "k40_g1": {
-      "rho": 0.506,
-      "youngBias": -0.071,
-      "oldBias": 0.063,
-      "minSeasonRho": 0.463
+      "rho": 0.518,
+      "youngBias": -0.064,
+      "oldBias": 0.053,
+      "minSeasonRho": 0.487
     },
     "k40_g1.5": {
-      "rho": 0.504,
-      "youngBias": -0.031,
-      "oldBias": 0.028,
-      "minSeasonRho": 0.46
+      "rho": 0.517,
+      "youngBias": -0.026,
+      "oldBias": 0.02,
+      "minSeasonRho": 0.484
     },
     "k40_g2": {
-      "rho": 0.499,
-      "youngBias": 0.006,
-      "oldBias": -0.002,
-      "minSeasonRho": 0.461
+      "rho": 0.509,
+      "youngBias": 0.01,
+      "oldBias": -0.008,
+      "minSeasonRho": 0.48
     }
   },
   "ageBiasSummary": {
@@ -727,10 +727,10 @@
       "30+": -0.043
     },
     "fundamental": {
-      "<=23": -0.109,
-      "24-26": 0.017,
-      "27-29": 0.098,
-      "30+": 0.092
+      "<=23": -0.103,
+      "24-26": 0.018,
+      "27-29": 0.099,
+      "30+": 0.069
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "model_version": "2.1.2",
+  "model_version": "2.2.0",
   "_comment": "Valuation model parameters. Bump model_version whenever a formula or default changes so stored trades/values remain comparable. Every parameter is documented in docs/VALUATION_MODEL.md, docs/DYNASTY_MODEL.md and docs/ROOKIE_PICK_MODEL.md.",
   "scale": {
     "top_value": 10000,
@@ -52,9 +52,9 @@
       "regression_games": 2,
       "xfp_blend": 0.25,
       "min_games": 1,
-      "sos_strength": 0.5,
+      "sos_strength": 0,
       "sos_min_weeks": 3,
-      "_comment": "Production rate = (gp*blend + k*prior)/(gp+k), blend = (1-xfp_blend)*ppg + xfp_blend*xppg; ROS points = rate * remaining games * availability * SoS. k, xfp_blend fitted walk-forward (audit E2); availability = realized share of remaining team games played (E2). SoS kept at 0.5 (fitted 0.5 in 3 of 4 folds, but removing it raised rank correlation slightly: inconclusive). Players without a last-season rate (>=4 games) need min_games_without_history games before production is used, and regress to the positional MEDIAN.",
+      "_comment": "Production rate = (gp*blend + k*prior)/(gp+k), blend = (1-xfp_blend)*ppg + xfp_blend*xppg; ROS points = rate * remaining games * availability (* SoS if sos_strength > 0). k, xfp_blend fitted walk-forward (audit E2); availability = realized share of remaining team games played (E2). SoS strength 0 since 2.2.0: without it the in-season production forecast was at least as accurate in 17 of 20 walk-forward checkpoints (E2), and the projections it is blended with already include matchups (double counting). Players without a last-season rate (>=4 games) need min_games_without_history games before production is used, and regress to the positional MEDIAN.",
       "availability": {
         "QB": 0.8,
         "RB": 0.77,
@@ -86,23 +86,23 @@
     "uncertainty": {
       "sd_per_game": {
         "preseason": {
-          "QB": 4.9,
-          "RB": 4.2,
-          "WR": 3.8,
-          "TE": 3.1,
-          "K": 3,
-          "DEF": 3
+          "QB": 2,
+          "RB": 1.7,
+          "WR": 1.5,
+          "TE": 1.2,
+          "K": 1.2,
+          "DEF": 1.2
         },
         "in_season": {
-          "QB": 5.5,
-          "RB": 4.4,
-          "WR": 4.3,
-          "TE": 3.8,
-          "K": 3,
-          "DEF": 3
+          "QB": 2.2,
+          "RB": 1.8,
+          "WR": 1.7,
+          "TE": 1.5,
+          "K": 1.2,
+          "DEF": 1.2
         }
       },
-      "_comment": "SD of realized rest-of-season points around the forecast, per remaining game (audit E1b/E2: the residual SD grows ~linearly with games). Surplus is the EXPECTED surplus E[max(0, X - r)] (+ bench band), which removed the -14 point under-valuation of the deterministic version across all tiers."
+      "_comment": "Uncertainty per remaining game used for the option value in expected surplus E[max(0, X - r)] (+ bench band). 2.2.0: 0.4 x the 2.1.x table (which was the total forecast-error SD incl. missed games and week-to-week noise, calibrated against a hindsight target). Against hindsight-free lineup value (audit E5: weekly starts decided before each week, 2020-2025) the 2.1.x sigma over-valued ranks 13-72 relative to the top 12 by 24-57% preseason and up to 2-4x deep in season; 0.4x was best preseason (tier ratios 0.95-1.14), much better in season, and in a historical league simulation (E6, 5,000 trades) it predicted realised trade outcomes better than 1.0x in all 5 seasons. Only the option value of a player's persistent rate is real; unforeseeable weekly noise and missed games are not."
     },
     "_weights_comment": "v2 (audit E1/E2): expert consensus was the most accurate single signal at every checkpoint and the fitted consensus weight did not decline during the season, so consensus dominates and production gets a small in-season weight. Projection/market weights are judgment (no free historical archives to backtest them)."
   },
@@ -280,16 +280,7 @@
         "slope": 0
       }
     },
-    "injury_year1_fraction": {
-      "IR": 0.35,
-      "PUP": 0.35,
-      "NFI": 0.35,
-      "Suspended": 0.15,
-      "Sus": 0.15,
-      "Out": 0.04,
-      "Doubtful": 0.03,
-      "Questionable": 0.01
-    },
+    "_injury_comment": "2.2.0: dynasty injuries use redraft.injury_games_lost (expected games missed) as a share of the remaining current season, and a player on IR/PUP/NFI/Suspended with no rest-of-season projection loses the whole remaining season (as in redraft). The former flat injury_year1_fraction (IR = 35% of a full season, whatever the week) was removed.",
     "trend": {
       "weight": 0,
       "cap_pct": 0.06,
@@ -370,6 +361,10 @@
   "mapping": {
     "min_source_players": 20,
     "_comment": "A ranking/market list must contain at least this many matched players at a position to be mapped onto that position's value curve."
+  },
+  "trade_outcome": {
+    "redraft_logit_slope": 1.5,
+    "_comment": "P(the side receiving more value ends the season with more lineup points) = 1 / (1 + exp(-slope x |margin|)), margin = difference / larger side. Fitted on 5,000 random trades in historical league simulations (audit E7: 12-team PPR, full seasons 2020-2025, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68% of the time. Redraft only (dynasty outcomes cannot be validated). Shown next to the verdict; it does not change any value."
   },
   "package": {
     "enabled": true,

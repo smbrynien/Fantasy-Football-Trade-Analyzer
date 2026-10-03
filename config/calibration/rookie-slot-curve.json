@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T18:58:21.487Z",
+  "generated_at": "2026-10-03T08:58:18.441Z",
   "method": "FantasyPros rookie ECR (last summer scrape, Jun-Aug of the draft year) for the 2020-2023 classes; value = discounted (0.82) 3-season PPR surplus over 12-team replacement (QB12/RB30/WR42/TE12). Mean by class rank, least-squares exponential fit a·exp(−b(p−1)); shape normalised so mean of ranks 1-12 = 1.",
   "fit": {
     "a": 177.043,

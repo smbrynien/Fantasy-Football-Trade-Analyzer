@@ -18,6 +18,7 @@ import { loadSeasons, loadCSV, streamECRArchive, replacementBySeason } from './l
 import { mean, sd, median, fitExpDecay } from '../js/core/util/stats.js';
 import { toNumber } from '../js/core/util/csv.js';
 import { draftBucket } from '../js/core/valuation/dynasty.js';
+import { monotoneHazard, unimodalAgeCurve } from './lib/calibration-shape.js';
 
 const OUT = path.join(ROOT, 'config', 'calibration');
 const FROM = 2006, TO = 2025;
@@ -88,7 +89,9 @@ for (const pos of POS) {
     out[a] = w * (v / peak) + (1 - w) * defAt(Number(a));
   }
   const peak2 = Math.max(...Object.values(out));
-  aging[pos] = Object.fromEntries(Object.entries(out).sort((x, y) => x[0] - y[0]).map(([a, v]) => [a, r3(v / peak2)]));
+  // Unimodal, and still declining past the last age with >=15 pairs (the default curves end flat at 35-37, which
+  // stopped old players' projected decline and made dynasty values non-monotone in age; audit 2026-10-03).
+  aging[pos] = unimodalAgeCurve(Object.fromEntries(Object.entries(out).sort((x, y) => x[0] - y[0]).map(([a, v]) => [a, v / peak2])), hi + 1);
 }
 
 // ---------- attrition & availability ----------
@@ -107,27 +110,11 @@ for (const pos of POS) {
     }
   }
   hazardRaw[pos] = acc;
-  const ages = Object.keys(acc).map(Number).sort((a, b) => a - b);
-  hazard[pos] = {};
-  for (let a = 21; a <= 40; a++) {
-    // pool ±1 year (±2 when sparse) for stability
-    let ex = 0, n = 0;
-    for (const span of [1, 2]) {
-      ex = 0; n = 0;
-      for (let b = a - span; b <= a + span; b++) if (acc[b]) { ex += acc[b].exits; n += acc[b].n; }
-      if (n >= 30) break;
-    }
-    if (n >= 15) hazard[pos][a] = r3(ex / n);
-  }
-  // enforce non-decreasing after the minimum (older players do not get less likely to exit)
-  const hs = Object.keys(hazard[pos]).map(Number).sort((a, b) => a - b);
-  let minAge = hs[0];
-  for (const a of hs) if (hazard[pos][a] < hazard[pos][minAge]) minAge = a;
-  for (let i = 1; i < hs.length; i++) if (hs[i] > minAge && hazard[pos][hs[i]] < hazard[pos][hs[i - 1]]) hazard[pos][hs[i]] = hazard[pos][hs[i - 1]];
-  const last = hs[hs.length - 1];
-  for (let a = last + 1; a <= 42; a++) hazard[pos][a] = r3(Math.min(0.9, hazard[pos][a - 1] + 0.06));
+  // ±1-year pooling (as before), then a weighted monotone fit: the former rule ("non-decreasing after the minimum")
+  // left young ages unregularised, and one TE cell (9 exits of 36 at 22) gave 21-22-year-olds a higher hazard than
+  // 24-year-olds (audit 2026-10-03).
+  hazard[pos] = monotoneHazard(acc);
   avail[pos] = r3(mean(availVals));
-  void ages;
 }
 avail.K = 0.95; avail.DEF = 1.0;
 
@@ -227,8 +214,8 @@ const hitRates = bucketsP.map(([a, b]) => {
 });
 
 const sample = { seasons: `${FROM}-${TO}`, players: seasons.size };
-await writeJSON(path.join(OUT, 'aging-curves.json'), { generated_at: now, method: 'Delta method on PPR PPG: consecutive seasons with >=6 games, kept when either season >=5 PPG (symmetric selection avoids building regression-to-the-mean into the curve), weighted by harmonic-mean games, 3-pt smoothed, anchored at mean PPG of ages 24-28; ages without >=15 pairs follow the shape of the default curve, and every age is shrunk toward the default curve with weight n/(n+80) (n = pairs observed). Survivorship bias (decliners leave the sample) is partly offset by attrition.json.', sample, curves: aging, raw: agingRaw }, { pretty: true });
-await writeJSON(path.join(OUT, 'attrition.json'), { generated_at: now, method: 'P(next season < 4 games or absent | top-N positional finish this season: QB32/RB60/WR84/TE32), pooled +-1 age (+-2 when sparse), non-decreasing after the minimum.', sample, hazard, raw: hazardRaw }, { pretty: true });
+await writeJSON(path.join(OUT, 'aging-curves.json'), { generated_at: now, method: 'Delta method on PPR PPG: consecutive seasons with >=6 games, kept when either season >=5 PPG (symmetric selection avoids building regression-to-the-mean into the curve), weighted by harmonic-mean games, 3-pt smoothed, anchored at mean PPG of ages 24-28; ages without >=15 pairs follow the shape of the default curve, and every age is shrunk toward the default curve with weight n/(n+80) (n = pairs observed); then made unimodal, with the decline of the last three supported ages continued beyond the data. Survivorship bias (decliners leave the sample) is partly offset by attrition.json.', sample, curves: aging, raw: agingRaw }, { pretty: true });
+await writeJSON(path.join(OUT, 'attrition.json'), { generated_at: now, method: 'P(next season < 4 games or absent | top-N positional finish this season: QB32/RB60/WR84/TE32), pooled +-1 age (+-2 when sparse), then a weighted monotone (non-decreasing in age) fit; +0.06 per year beyond the last age with >=15 pooled observations (cap 0.9).', sample, hazard, raw: hazardRaw }, { pretty: true });
 await writeJSON(path.join(OUT, 'availability.json'), { generated_at: now, method: 'Mean share of games played next season by fantasy-relevant players who played >=4 games.', sample, by_position: avail }, { pretty: true });
 await writeJSON(path.join(OUT, 'year-over-year.json'), { generated_at: now, method: 'SD of next-season PPG change / mean PPG, players with >=8 games and >=8 PPG.', sample, cv: yoy }, { pretty: true });
 await writeJSON(path.join(OUT, 'draft-priors.json'), { generated_at: now, method: 'Mean PPR PPG of players with >=4 games in career year k, scaled by min(1, P(>=4 games)/position availability). Buckets: R1a picks 1-16, R1b 17-32, R2, R3, R4-5, R6-7, UDFA.', sample, priors, detail: priorDetail }, { pretty: true });

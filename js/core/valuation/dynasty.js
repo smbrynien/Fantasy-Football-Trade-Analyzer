@@ -119,6 +119,17 @@ export function runDynasty(dataset, league, model, env) {
   const structure = computeLeagueStructure(pool, league);
 
   const unc = cfg.uncertainty;
+  // In season, the current year only has its REMAINING games left to play (model 2.2.0; 2.1.x counted a full
+  // season at any week). Share f of the current season remains; later seasons are discounted from now (exponent
+  // t − 2 + f) and a final partial season (1 − f) keeps the horizon at H full seasons of football, so values do not
+  // jump when the season rolls over.
+  const inSeason = phase.phase === 'in_season';
+  const remAll = [...inputs.values()].map((x) => x.remGames).filter((v) => typeof v === 'number' && v >= 0).sort((a, b) => a - b);
+  const medianRem = remAll.length ? remAll[Math.floor(remAll.length / 2)] : G;
+  const remainingShare = (x) => (inSeason ? clamp((typeof x.remGames === 'number' ? x.remGames : medianRem) / G, 0, 1) : 1);
+  // Weekly projection sources omit players ruled out for the rest of the season (as in redraft).
+  const projSourcesActive = inSeason && [...inputs.values()].some((x) => x.proj.bySource.length > 0);
+  const LONG_TERM = new Set(['IR', 'PUP', 'NFI', 'Suspended']);
   // --- fundamental ---
   for (const x of inputs.values()) {
     if (!positions.has(x.pos) || x.dyn.mu1 === null || (x.age === null && !['K', 'DEF'].includes(x.pos))) { x.dyn.F = null; continue; }
@@ -131,7 +142,11 @@ export function runDynasty(dataset, league, model, env) {
     const cv1 = unc.cv_year1[x.pos] ?? 0.3, g = unc.annual_cv_growth[x.pos] ?? 0.12;
     const years = [];
     let surv = 1, F = 0;
-    for (let t = 1; t <= H; t++) {
+    const f = remainingShare(x);
+    x.dyn.remainingShare = f;
+    const T = f < 1 ? H + 1 : H;
+    for (let t = 1; t <= T; t++) {
+      const share = t === 1 ? f : t === H + 1 ? 1 - f : 1;
       const age = age0 + (t - 1);
       if (t > 1) surv *= 1 - hazard(model, x.pos, age - 1);
       let mu = x.dyn.mu1;
@@ -146,13 +161,14 @@ export function runDynasty(dataset, league, model, env) {
       const eAbove = expectedSurplus(M, SD, r);
       const eBand = Math.max(0, expectedSurplus(M, SD, w) - eAbove);
       const eSurplus = eAbove + beta * eBand;
-      const disc = Math.pow(delta, t - 1);
-      const contrib = disc * surv * eSurplus;
+      const disc = Math.pow(delta, t === 1 ? 0 : t - 2 + f);
+      // Expected surplus scales linearly with the share of a season (ES(a·M, a·SD; a·r) = a·ES(M, SD; r)).
+      const contrib = disc * surv * eSurplus * share;
       F += contrib;
       years.push({
         t, season: phase.season + (phase.phase === 'offseason' || phase.phase === 'postseason' ? t : t - 1), age: Math.round(age * 10) / 10,
         ppg: mu, ppgLow: Math.max(0, mu * (1 - 1.2816 * cv)), ppgHigh: mu * (1 + 1.2816 * cv), cv,
-        survival: surv, pStarter: surv * probAbove(M, SD, r), eSurplus, discount: disc, contribution: contrib,
+        survival: surv, pStarter: surv * probAbove(M, SD, r), eSurplus, discount: disc, share, tail: t > H, contribution: contrib,
       });
     }
     x.dyn.F = F;
@@ -164,7 +180,7 @@ export function runDynasty(dataset, league, model, env) {
       const sd2 = y2.cv * y2.ppg;
       x.dyn.declineProb = sd2 > 0 ? normCdf((0.85 * x.dyn.mu1 - y2.ppg) / sd2) : (y2.ppg < 0.85 * x.dyn.mu1 ? 1 : 0);
     }
-    const horizon = years.filter((y) => y.survival * probAbove(y.ppg * G * avail, Math.max(1e-6, y.cv * y.ppg * G * avail), r) >= 0.25).length;
+    const horizon = years.filter((y) => !y.tail && y.survival * probAbove(y.ppg * G * avail, Math.max(1e-6, y.cv * y.ppg * G * avail), r) >= 0.25).length;
     x.dyn.careerHorizon = horizon;
   }
 
@@ -181,7 +197,11 @@ export function runDynasty(dataset, league, model, env) {
   for (const x of inputs.values()) {
     if (!positions.has(x.pos)) continue;
     const cid = x.p.cid;
-    const injFrac = x.injury.status ? (cfg.injury_year1_fraction[x.injury.status] ?? 0) : 0;
+    // Injury = expected games missed (the redraft table) as a share of the games left this season; out for the season
+    // (long-term list and no rest-of-season projection) loses the whole remaining current season.
+    const remGamesY1 = inSeason ? (typeof x.remGames === 'number' ? x.remGames : medianRem) : G;
+    const outForSeason = projSourcesActive && LONG_TERM.has(x.injury.status) && x.proj.points === null;
+    const injFrac = outForSeason ? 1 : remGamesY1 > 0 ? clamp((x.injury.gamesLostRedraft || 0) / remGamesY1, 0, 1) : 0;
     const y1 = x.dyn.years ? x.dyn.years[0].contribution : 0;
     const injuryLoss = x.dyn.F !== null ? injFrac * y1 : 0;
     const groups = {

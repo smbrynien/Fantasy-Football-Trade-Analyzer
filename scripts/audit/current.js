@@ -155,7 +155,7 @@ function influence(ds, config) {
       const v = values(ds, config, pid, mode, (c) => {
         if (extra === 'trend') { c.model.redraft.trend.weight = 0; c.model.dynasty.trend.weight = 0; }
         if (extra === 'sos') c.model.redraft.production.sos_strength = 0;
-        if (extra === 'injury') { for (const k of Object.keys(c.model.redraft.injury_games_lost)) c.model.redraft.injury_games_lost[k] = 0; for (const k of Object.keys(c.model.dynasty.injury_year1_fraction)) c.model.dynasty.injury_year1_fraction[k] = 0; }
+        if (extra === 'injury') { for (const k of Object.keys(c.model.redraft.injury_games_lost)) c.model.redraft.injury_games_lost[k] = 0; } // dynasty uses the same games-lost table since 2.2.0
         return c;
       });
       out.push({ mode, removed: extra, ...compareValues(base, v) });

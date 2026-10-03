@@ -1,0 +1,1802 @@
+{
+  "label": "REAL HISTORICAL DATA",
+  "experiment": "E5 hindsight-free lineup value (12-team 1QB PPR)",
+  "method": "Weekly starts from the window-start ECR rank (rank→rate curve fitted on earlier seasons) blended with points since the window start (kInfo pseudo-games). Value = Σ over started weeks (points − mean of the 3 best non-starters that week). Predictions = availability(tier) × team games × E[max(0, rate − r)], all fitted on earlier seasons. Ratios are relative to ranks 1–12 (values are rescaled to the top assets).",
+  "preseason": {
+    "windows": {
+      "2020": "2020-09-03",
+      "2021": "2021-09-03",
+      "2022": "2022-09-02",
+      "2023": "2023-09-01",
+      "2024": "2024-08-30",
+      "2025": "2025-08-08"
+    },
+    "folds": [
+      {
+        "season": 2022,
+        "fittedMultiplier": 0.30000000000000004,
+        "sigmaRateOnly": {
+          "QB": 1.679,
+          "RB": 2.55,
+          "WR": 2.894,
+          "TE": 2.082
+        },
+        "replacementRate": {
+          "QB": 13.597,
+          "RB": 7.519,
+          "WR": 9.754,
+          "TE": 9.471
+        }
+      },
+      {
+        "season": 2023,
+        "fittedMultiplier": 0,
+        "sigmaRateOnly": {
+          "QB": 1.911,
+          "RB": 2.519,
+          "WR": 2.474,
+          "TE": 1.886
+        },
+        "replacementRate": {
+          "QB": 14.995,
+          "RB": 8.014,
+          "WR": 9.17,
+          "TE": 9.259
+        }
+      },
+      {
+        "season": 2024,
+        "fittedMultiplier": 0,
+        "sigmaRateOnly": {
+          "QB": 2.226,
+          "RB": 2.937,
+          "WR": 2.535,
+          "TE": 1.893
+        },
+        "replacementRate": {
+          "QB": 15.804,
+          "RB": 8.041,
+          "WR": 8.572,
+          "TE": 9.07
+        }
+      },
+      {
+        "season": 2025,
+        "fittedMultiplier": 0.30000000000000004,
+        "sigmaRateOnly": {
+          "QB": 2.364,
+          "RB": 3.092,
+          "WR": 2.666,
+          "TE": 2.178
+        },
+        "replacementRate": {
+          "QB": 16.156,
+          "RB": 8.383,
+          "WR": 8.627,
+          "TE": 9.099
+        }
+      }
+    ],
+    "candidates": {
+      "det": {
+        "label": "deterministic (σ = 0)",
+        "k": 0.871,
+        "mae": 29.613,
+        "ratio": [
+          {
+            "tier": "1-6",
+            "n": 96,
+            "ratio": 0.991
+          },
+          {
+            "tier": "7-12",
+            "n": 96,
+            "ratio": 1.014
+          },
+          {
+            "tier": "13-24",
+            "n": 192,
+            "ratio": 1.091
+          },
+          {
+            "tier": "25-36",
+            "n": 159,
+            "ratio": 0.947
+          },
+          {
+            "tier": "37-72",
+            "n": 241,
+            "ratio": 0.706
+          }
+        ],
+        "loss": 0.132,
+        "byPos": {
+          "QB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.734
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 2.869
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.305
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -0.184
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ],
+          "RB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.941
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.08
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.204
+            },
+            {
+              "tier": "25-36",
+              "n": 48,
+              "ratio": 1.274
+            },
+            {
+              "tier": "37-72",
+              "n": 96,
+              "ratio": 0.624
+            }
+          ],
+          "WR": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.991
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.013
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.285
+            },
+            {
+              "tier": "25-36",
+              "n": 47,
+              "ratio": 0.975
+            },
+            {
+              "tier": "37-72",
+              "n": 145,
+              "ratio": 0.962
+            }
+          ],
+          "TE": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 1.301
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 0.408
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 0
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": 0
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ]
+        }
+      },
+      "model": {
+        "label": "expected surplus, 2.1.x σ (preseason table)",
+        "k": 0.83,
+        "mae": 33.263,
+        "ratio": [
+          {
+            "tier": "1-6",
+            "n": 96,
+            "ratio": 0.961
+          },
+          {
+            "tier": "7-12",
+            "n": 96,
+            "ratio": 1.063
+          },
+          {
+            "tier": "13-24",
+            "n": 192,
+            "ratio": 1.282
+          },
+          {
+            "tier": "25-36",
+            "n": 159,
+            "ratio": 1.2
+          },
+          {
+            "tier": "37-72",
+            "n": 241,
+            "ratio": 1.574
+          }
+        ],
+        "loss": 0.306,
+        "byPos": {
+          "QB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.693
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 3.157
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 3.293
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -1.515
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ],
+          "RB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.938
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.083
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.261
+            },
+            {
+              "tier": "25-36",
+              "n": 48,
+              "ratio": 1.602
+            },
+            {
+              "tier": "37-72",
+              "n": 96,
+              "ratio": 2.274
+            }
+          ],
+          "WR": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.986
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.02
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.31
+            },
+            {
+              "tier": "25-36",
+              "n": 47,
+              "ratio": 1.084
+            },
+            {
+              "tier": "37-72",
+              "n": 145,
+              "ratio": 1.867
+            }
+          ],
+          "TE": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 1.1
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 0.803
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 6.045
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -1.587
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ]
+        }
+      },
+      "v22": {
+        "label": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+        "k": 0.865,
+        "mae": 30.441,
+        "ratio": [
+          {
+            "tier": "1-6",
+            "n": 96,
+            "ratio": 0.984
+          },
+          {
+            "tier": "7-12",
+            "n": 96,
+            "ratio": 1.026
+          },
+          {
+            "tier": "13-24",
+            "n": 192,
+            "ratio": 1.138
+          },
+          {
+            "tier": "25-36",
+            "n": 159,
+            "ratio": 0.978
+          },
+          {
+            "tier": "37-72",
+            "n": 241,
+            "ratio": 0.953
+          }
+        ],
+        "loss": 0.02,
+        "byPos": {
+          "QB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.727
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 2.915
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.933
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -0.516
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ],
+          "RB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.941
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.08
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.205
+            },
+            {
+              "tier": "25-36",
+              "n": 48,
+              "ratio": 1.305
+            },
+            {
+              "tier": "37-72",
+              "n": 96,
+              "ratio": 1.125
+            }
+          ],
+          "WR": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.991
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.013
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.285
+            },
+            {
+              "tier": "25-36",
+              "n": 47,
+              "ratio": 0.978
+            },
+            {
+              "tier": "37-72",
+              "n": 145,
+              "ratio": 1.184
+            }
+          ],
+          "TE": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 1.235
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 0.537
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.583
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -0.044
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ]
+        }
+      },
+      "fit": {
+        "label": "expected surplus, m × model σ, m fitted on earlier seasons",
+        "k": 0.869,
+        "mae": 29.861,
+        "ratio": [
+          {
+            "tier": "1-6",
+            "n": 96,
+            "ratio": 0.989
+          },
+          {
+            "tier": "7-12",
+            "n": 96,
+            "ratio": 1.018
+          },
+          {
+            "tier": "13-24",
+            "n": 192,
+            "ratio": 1.102
+          },
+          {
+            "tier": "25-36",
+            "n": 159,
+            "ratio": 0.955
+          },
+          {
+            "tier": "37-72",
+            "n": 241,
+            "ratio": 0.781
+          }
+        ],
+        "loss": 0.073,
+        "byPos": {
+          "QB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.733
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 2.88
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.456
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -0.287
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ],
+          "RB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.941
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.08
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.204
+            },
+            {
+              "tier": "25-36",
+              "n": 48,
+              "ratio": 1.28
+            },
+            {
+              "tier": "37-72",
+              "n": 96,
+              "ratio": 0.78
+            }
+          ],
+          "WR": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.991
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.013
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.285
+            },
+            {
+              "tier": "25-36",
+              "n": 47,
+              "ratio": 0.976
+            },
+            {
+              "tier": "37-72",
+              "n": 145,
+              "ratio": 1.027
+            }
+          ],
+          "TE": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 1.275
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 0.459
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 0.493
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -0.004
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ]
+        }
+      },
+      "rate": {
+        "label": "expected surplus, rate-only σ (weekly noise removed)",
+        "k": 0.858,
+        "mae": 31.219,
+        "ratio": [
+          {
+            "tier": "1-6",
+            "n": 96,
+            "ratio": 0.978
+          },
+          {
+            "tier": "7-12",
+            "n": 96,
+            "ratio": 1.035
+          },
+          {
+            "tier": "13-24",
+            "n": 192,
+            "ratio": 1.163
+          },
+          {
+            "tier": "25-36",
+            "n": 159,
+            "ratio": 1.032
+          },
+          {
+            "tier": "37-72",
+            "n": 241,
+            "ratio": 1.25
+          }
+        ],
+        "loss": 0.075,
+        "byPos": {
+          "QB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.725
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 2.932
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.993
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -0.529
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ],
+          "RB": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.94
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.08
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.218
+            },
+            {
+              "tier": "25-36",
+              "n": 48,
+              "ratio": 1.413
+            },
+            {
+              "tier": "37-72",
+              "n": 96,
+              "ratio": 1.619
+            }
+          ],
+          "WR": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 0.991
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 1.014
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 1.29
+            },
+            {
+              "tier": "25-36",
+              "n": 47,
+              "ratio": 1.016
+            },
+            {
+              "tier": "37-72",
+              "n": 145,
+              "ratio": 1.504
+            }
+          ],
+          "TE": [
+            {
+              "tier": "1-6",
+              "n": 24,
+              "ratio": 1.175
+            },
+            {
+              "tier": "7-12",
+              "n": 24,
+              "ratio": 0.656
+            },
+            {
+              "tier": "13-24",
+              "n": 48,
+              "ratio": 3.453
+            },
+            {
+              "tier": "25-36",
+              "n": 32,
+              "ratio": -0.47
+            },
+            {
+              "tier": "37-72",
+              "n": 0,
+              "ratio": null
+            }
+          ]
+        }
+      }
+    },
+    "hindsightVsNew": {
+      "k": 1.129,
+      "mae": 14.967,
+      "ratio": [
+        {
+          "tier": "1-6",
+          "n": 96,
+          "ratio": 1.018
+        },
+        {
+          "tier": "7-12",
+          "n": 96,
+          "ratio": 0.972
+        },
+        {
+          "tier": "13-24",
+          "n": 192,
+          "ratio": 0.952
+        },
+        {
+          "tier": "25-36",
+          "n": 159,
+          "ratio": 0.981
+        },
+        {
+          "tier": "37-72",
+          "n": 241,
+          "ratio": 0.941
+        }
+      ],
+      "loss": 0.008
+    }
+  },
+  "robustness": [
+    {
+      "kInfo": 2,
+      "fittedMultipliers": [
+        0.30000000000000004,
+        0,
+        0.2,
+        0.4
+      ],
+      "candidates": {
+        "det": {
+          "label": "deterministic (σ = 0)",
+          "mae": 28.535,
+          "loss": 0.211,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.984
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.026
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.099
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 0.945
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 0.641
+            }
+          ]
+        },
+        "model": {
+          "label": "expected surplus, 2.1.x σ (preseason table)",
+          "mae": 32.286,
+          "loss": 0.347,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.953
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.077
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.334
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 1.262
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 1.567
+            }
+          ]
+        },
+        "v22": {
+          "label": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+          "mae": 29.383,
+          "loss": 0.036,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.978
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.036
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.163
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 0.992
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 0.9
+            }
+          ]
+        },
+        "fit": {
+          "label": "expected surplus, m × model σ, m fitted on earlier seasons",
+          "mae": 28.911,
+          "loss": 0.09,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.981
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.031
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.132
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 0.966
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 0.764
+            }
+          ]
+        },
+        "rate": {
+          "label": "expected surplus, rate-only σ (weekly noise removed)",
+          "mae": 30.194,
+          "loss": 0.077,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.972
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.046
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.194
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 1.063
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 1.218
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kInfo": 8,
+      "fittedMultipliers": [
+        0.30000000000000004,
+        0,
+        0,
+        0.4
+      ],
+      "candidates": {
+        "det": {
+          "label": "deterministic (σ = 0)",
+          "mae": 28.62,
+          "loss": 0.183,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.983
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.029
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.112
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 0.923
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 0.667
+            }
+          ]
+        },
+        "model": {
+          "label": "expected surplus, 2.1.x σ (preseason table)",
+          "mae": 32.174,
+          "loss": 0.436,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.952
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.08
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.365
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 1.303
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 1.667
+            }
+          ]
+        },
+        "v22": {
+          "label": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+          "mae": 29.388,
+          "loss": 0.034,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.976
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.039
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.179
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 0.994
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 0.932
+            }
+          ]
+        },
+        "fit": {
+          "label": "expected surplus, m × model σ, m fitted on earlier seasons",
+          "mae": 28.935,
+          "loss": 0.086,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.98
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.034
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.137
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 0.952
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 0.774
+            }
+          ]
+        },
+        "rate": {
+          "label": "expected surplus, rate-only σ (weekly noise removed)",
+          "mae": 30.161,
+          "loss": 0.108,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 96,
+              "ratio": 0.971
+            },
+            {
+              "tier": "7-12",
+              "n": 96,
+              "ratio": 1.049
+            },
+            {
+              "tier": "13-24",
+              "n": 192,
+              "ratio": 1.216
+            },
+            {
+              "tier": "25-36",
+              "n": 159,
+              "ratio": 1.079
+            },
+            {
+              "tier": "37-72",
+              "n": 241,
+              "ratio": 1.279
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "inSeason": [
+    {
+      "startWeek": 5,
+      "folds": [
+        {
+          "season": 2022,
+          "fittedMultiplier": 0,
+          "sigmaRateOnly": {
+            "QB": 1.961,
+            "RB": 3.406,
+            "WR": 2.652,
+            "TE": 1.933
+          },
+          "replacementRate": {
+            "QB": 14.465,
+            "RB": 7.802,
+            "WR": 9.257,
+            "TE": 9.751
+          }
+        },
+        {
+          "season": 2023,
+          "fittedMultiplier": 0,
+          "sigmaRateOnly": {
+            "QB": 2.497,
+            "RB": 3.48,
+            "WR": 2.411,
+            "TE": 1.741
+          },
+          "replacementRate": {
+            "QB": 15.147,
+            "RB": 8.311,
+            "WR": 9.767,
+            "TE": 9.26
+          }
+        },
+        {
+          "season": 2024,
+          "fittedMultiplier": 0,
+          "sigmaRateOnly": {
+            "QB": 2.525,
+            "RB": 3.492,
+            "WR": 2.371,
+            "TE": 1.823
+          },
+          "replacementRate": {
+            "QB": 15.776,
+            "RB": 8.156,
+            "WR": 9.174,
+            "TE": 8.715
+          }
+        }
+      ],
+      "candidates": {
+        "det": {
+          "label": "deterministic (σ = 0)",
+          "mae": 24.965,
+          "loss": 0.249,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.977
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.038
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 0.974
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.654
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 0.774
+            }
+          ]
+        },
+        "model": {
+          "label": "expected surplus, 2.1.x σ (in_season table)",
+          "mae": 28.259,
+          "loss": 0.579,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.941
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.098
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 1.228
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.899
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 2.047
+            }
+          ]
+        },
+        "v22": {
+          "label": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+          "mae": 25.78,
+          "loss": 0.16,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.968
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.053
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 1.05
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.688
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 1.124
+            }
+          ]
+        },
+        "fit": {
+          "label": "expected surplus, m × model σ, m fitted on earlier seasons",
+          "mae": 24.965,
+          "loss": 0.249,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.977
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.038
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 0.974
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.654
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 0.774
+            }
+          ]
+        },
+        "rate": {
+          "label": "expected surplus, rate-only σ (weekly noise removed)",
+          "mae": 26.417,
+          "loss": 0.28,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.965
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.058
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 1.074
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.75
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 1.543
+            }
+          ]
+        }
+      },
+      "hindsightVsNew": {
+        "k": 1.176,
+        "mae": 13.283,
+        "ratio": [
+          {
+            "tier": "1-6",
+            "n": 72,
+            "ratio": 0.989
+          },
+          {
+            "tier": "7-12",
+            "n": 72,
+            "ratio": 1.019
+          },
+          {
+            "tier": "13-24",
+            "n": 144,
+            "ratio": 0.938
+          },
+          {
+            "tier": "25-36",
+            "n": 120,
+            "ratio": 0.956
+          },
+          {
+            "tier": "37-72",
+            "n": 181,
+            "ratio": 1.327
+          }
+        ],
+        "loss": 0.087
+      }
+    },
+    {
+      "startWeek": 9,
+      "folds": [
+        {
+          "season": 2022,
+          "fittedMultiplier": 0,
+          "sigmaRateOnly": {
+            "QB": 1.459,
+            "RB": 3.235,
+            "WR": 2.517,
+            "TE": 2.994
+          },
+          "replacementRate": {
+            "QB": 13.652,
+            "RB": 9.59,
+            "WR": 8.353,
+            "TE": 9.887
+          }
+        },
+        {
+          "season": 2023,
+          "fittedMultiplier": 0,
+          "sigmaRateOnly": {
+            "QB": 2.322,
+            "RB": 2.778,
+            "WR": 2.159,
+            "TE": 2.292
+          },
+          "replacementRate": {
+            "QB": 15.061,
+            "RB": 10.258,
+            "WR": 8.397,
+            "TE": 10.507
+          }
+        },
+        {
+          "season": 2024,
+          "fittedMultiplier": 0,
+          "sigmaRateOnly": {
+            "QB": 2.438,
+            "RB": 2.989,
+            "WR": 2.293,
+            "TE": 2.239
+          },
+          "replacementRate": {
+            "QB": 14.98,
+            "RB": 9.288,
+            "WR": 9.262,
+            "TE": 9.916
+          }
+        }
+      ],
+      "candidates": {
+        "det": {
+          "label": "deterministic (σ = 0)",
+          "mae": 18.688,
+          "loss": 0.388,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 1.004
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 0.993
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 0.784
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.663
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 1.491
+            }
+          ]
+        },
+        "model": {
+          "label": "expected surplus, 2.1.x σ (in_season table)",
+          "mae": 20.916,
+          "loss": 1.81,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.963
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.061
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 0.983
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.985
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 3.832
+            }
+          ]
+        },
+        "v22": {
+          "label": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+          "mae": 19.171,
+          "loss": 0.665,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.995
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.008
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 0.834
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.736
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 2.083
+            }
+          ]
+        },
+        "fit": {
+          "label": "expected surplus, m × model σ, m fitted on earlier seasons",
+          "mae": 18.688,
+          "loss": 0.388,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 1.004
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 0.993
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 0.784
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.663
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 1.491
+            }
+          ]
+        },
+        "rate": {
+          "label": "expected surplus, rate-only σ (weekly noise removed)",
+          "mae": 19.609,
+          "loss": 1.022,
+          "ratio": [
+            {
+              "tier": "1-6",
+              "n": 72,
+              "ratio": 0.986
+            },
+            {
+              "tier": "7-12",
+              "n": 72,
+              "ratio": 1.022
+            },
+            {
+              "tier": "13-24",
+              "n": 144,
+              "ratio": 0.854
+            },
+            {
+              "tier": "25-36",
+              "n": 120,
+              "ratio": 0.799
+            },
+            {
+              "tier": "37-72",
+              "n": 181,
+              "ratio": 2.645
+            }
+          ]
+        }
+      },
+      "hindsightVsNew": {
+        "k": 1.106,
+        "mae": 9.966,
+        "ratio": [
+          {
+            "tier": "1-6",
+            "n": 72,
+            "ratio": 0.965
+          },
+          {
+            "tier": "7-12",
+            "n": 72,
+            "ratio": 1.056
+          },
+          {
+            "tier": "13-24",
+            "n": 144,
+            "ratio": 1.012
+          },
+          {
+            "tier": "25-36",
+            "n": 120,
+            "ratio": 0.998
+          },
+          {
+            "tier": "37-72",
+            "n": 181,
+            "ratio": 2.21
+          }
+        ],
+        "loss": 0.633
+      }
+    }
+  ],
+  "volatility": {
+    "QB": {
+      "n": 103,
+      "corrCvResidual": 0.133,
+      "meanCv": 0.459
+    },
+    "RB": {
+      "n": 186,
+      "corrCvResidual": -0.09,
+      "meanCv": 0.621
+    },
+    "WR": {
+      "n": 242,
+      "corrCvResidual": -0.046,
+      "meanCv": 0.604
+    },
+    "TE": {
+      "n": 112,
+      "corrCvResidual": 0.213,
+      "meanCv": 0.663
+    }
+  },
+  "availability": {
+    "QB": [
+      {
+        "tier": "1-6",
+        "n": 24,
+        "played": 0.843
+      },
+      {
+        "tier": "7-12",
+        "n": 24,
+        "played": 0.76
+      },
+      {
+        "tier": "13-24",
+        "n": 48,
+        "played": 0.812
+      },
+      {
+        "tier": "25-36",
+        "n": 32,
+        "played": 0.675
+      },
+      {
+        "tier": "37-72",
+        "n": 0,
+        "played": null
+      }
+    ],
+    "RB": [
+      {
+        "tier": "1-6",
+        "n": 24,
+        "played": 0.88
+      },
+      {
+        "tier": "7-12",
+        "n": 24,
+        "played": 0.897
+      },
+      {
+        "tier": "13-24",
+        "n": 48,
+        "played": 0.81
+      },
+      {
+        "tier": "25-36",
+        "n": 48,
+        "played": 0.793
+      },
+      {
+        "tier": "37-72",
+        "n": 96,
+        "played": 0.724
+      }
+    ],
+    "WR": [
+      {
+        "tier": "1-6",
+        "n": 24,
+        "played": 0.874
+      },
+      {
+        "tier": "7-12",
+        "n": 24,
+        "played": 0.877
+      },
+      {
+        "tier": "13-24",
+        "n": 48,
+        "played": 0.82
+      },
+      {
+        "tier": "25-36",
+        "n": 47,
+        "played": 0.812
+      },
+      {
+        "tier": "37-72",
+        "n": 145,
+        "played": 0.813
+      }
+    ],
+    "TE": [
+      {
+        "tier": "1-6",
+        "n": 24,
+        "played": 0.809
+      },
+      {
+        "tier": "7-12",
+        "n": 24,
+        "played": 0.841
+      },
+      {
+        "tier": "13-24",
+        "n": 48,
+        "played": 0.826
+      },
+      {
+        "tier": "25-36",
+        "n": 32,
+        "played": 0.764
+      },
+      {
+        "tier": "37-72",
+        "n": 0,
+        "played": null
+      }
+    ]
+  }
+}

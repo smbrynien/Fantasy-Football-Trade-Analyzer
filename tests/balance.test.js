@@ -128,11 +128,15 @@ test('combinations in dynasty: player + pick offered when one evens the trade; t
   // Doubling a generic pick is allowed ("two 2027 1sts"); a player never pairs with himself.
   const up = dyn.picks.upcoming;
   const pick = dyn.getAsset(`pick:${up}:1`);
-  const two = comboSuggestions(dyn, [], [ps[2].id], { only: [pick.id, pick.id, ps[10].id], minShare: 0, limit: 10 });
+  // Target: the player worth about two of that pick, so "pick + the same pick" is a valid pair whatever the model's
+  // current pick/player ratio.
+  const target = ps.reduce((b, p) => (Math.abs(p.value - 2 * pick.value) < Math.abs(b.value - 2 * pick.value) ? p : b));
+  const other = ps.find((p) => p.id !== target.id && p.value < target.value);
+  const two = comboSuggestions(dyn, [], [target.id], { only: [pick.id, pick.id, other.id], minShare: 0, limit: 10 });
   assert.ok(two.combos.some((x) => x.ids[0] === pick.id && x.ids[1] === pick.id), 'two copies in the list → can pair with itself');
-  const one = comboSuggestions(dyn, [], [ps[2].id], { only: [pick.id, ps[10].id], minShare: 0, limit: 10 });
+  const one = comboSuggestions(dyn, [], [target.id], { only: [pick.id, other.id], minShare: 0, limit: 10 });
   assert.ok(!one.combos.some((x) => x.ids[0] === x.ids[1]), 'one copy → never doubled');
-  assert.ok(!comboSuggestions(dyn, [], [ps[2].id], { only: [ps[10].id], minShare: 0 }).combos.length, 'a single player cannot form a pair');
+  assert.ok(!comboSuggestions(dyn, [], [target.id], { only: [other.id], minShare: 0 }).combos.length, 'a single player cannot form a pair');
 });
 
 test('combinations: close or empty trades get none; read-only', () => {

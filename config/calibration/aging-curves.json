@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-02T18:58:21.487Z",
-  "method": "Delta method on PPR PPG: consecutive seasons with >=6 games, kept when either season >=5 PPG (symmetric selection avoids building regression-to-the-mean into the curve), weighted by harmonic-mean games, 3-pt smoothed, anchored at mean PPG of ages 24-28; ages without >=15 pairs follow the shape of the default curve, and every age is shrunk toward the default curve with weight n/(n+80) (n = pairs observed). Survivorship bias (decliners leave the sample) is partly offset by attrition.json.",
+  "generated_at": "2026-10-03T08:58:18.441Z",
+  "method": "Delta method on PPR PPG: consecutive seasons with >=6 games, kept when either season >=5 PPG (symmetric selection avoids building regression-to-the-mean into the curve), weighted by harmonic-mean games, 3-pt smoothed, anchored at mean PPG of ages 24-28; ages without >=15 pairs follow the shape of the default curve, and every age is shrunk toward the default curve with weight n/(n+80) (n = pairs observed); then made unimodal, with the decline of the last three supported ages continued beyond the data. Survivorship bias (decliners leave the sample) is partly offset by attrition.json.",
   "sample": {
     "seasons": "2006-2025",
     "players": 2975
@@ -45,16 +45,16 @@
       "30": 0.668,
       "31": 0.59,
       "32": 0.52,
-      "33": 0.466,
+      "33": 0.461,
       "34": 0.395,
       "35": 0.326,
-      "36": 0.328,
-      "37": 0.33,
-      "38": 0.33,
-      "39": 0.33,
-      "40": 0.33,
-      "41": 0.33,
-      "42": 0.33
+      "36": 0.269,
+      "37": 0.222,
+      "38": 0.183,
+      "39": 0.151,
+      "40": 0.125,
+      "41": 0.103,
+      "42": 0.085
     },
     "WR": {
       "20": 0.751,
@@ -74,12 +74,12 @@
       "34": 0.569,
       "35": 0.556,
       "36": 0.487,
-      "37": 0.45,
-      "38": 0.45,
-      "39": 0.45,
-      "40": 0.45,
-      "41": 0.45,
-      "42": 0.45
+      "37": 0.427,
+      "38": 0.374,
+      "39": 0.327,
+      "40": 0.287,
+      "41": 0.251,
+      "42": 0.22
     },
     "TE": {
       "20": 0.653,
@@ -100,11 +100,11 @@
       "35": 0.659,
       "36": 0.579,
       "37": 0.499,
-      "38": 0.502,
-      "39": 0.502,
-      "40": 0.502,
-      "41": 0.502,
-      "42": 0.502
+      "38": 0.43,
+      "39": 0.371,
+      "40": 0.32,
+      "41": 0.276,
+      "42": 0.238
     }
   },
   "raw": {

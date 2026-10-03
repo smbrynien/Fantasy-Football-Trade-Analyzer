@@ -6,8 +6,9 @@ production, age, future production, market value, scarcity and uncertainty?"* It
 Code: `js/core/valuation/dynasty.js`. Calibration: `scripts/calibrate.js` → `config/calibration/*.json`.
 Audit evidence: [MODEL_AUDIT.md §6](MODEL_AUDIT.md#6-dynasty-audit).
 
-**In plain English:** a dynasty value is the sum of what the player should add above a replacement-level player in each
-of the next five seasons. Each season counts less than the one before (more for contending teams), shrinks with the
+**In plain English:** a dynasty value is the sum of what the player should add above a replacement-level player over
+the next five seasons of football — during the season, only the games still left this year count, plus the matching
+part of a sixth season. Each season counts less than the one before (more for contending teams), shrinks with the
 chance he is out of the league, and includes upside: an uncertain young player who *might* become a starter is worth
 more than his average forecast alone suggests. Age enters through measured position-specific growth and decline curves,
 not a flat multiplier. Because expert dynasty rankings proved more accurate than any formula, they carry the most
@@ -47,6 +48,12 @@ For season t (age a+t−1):
 
 `Fundamental = Σ δ^(t−1) · Sₜ · E[surplus]`, δ = strategy discount: contending 0.70, balanced 0.82, rebuilding 0.92.
 
+**In season (2.2.0).** Only the share `f = remaining team games / 17` of the current season is left to play, so year 1
+counts `f × E[surplus]` (expected surplus scales linearly with a share of a season), later seasons are discounted from
+now (`δ^(t−2+f)`), and a final partial season `(1 − f)` keeps the horizon at five full seasons. Before 2.2.0 the current
+season counted in full at any week, which over-stated players whose value is concentrated in this season (veterans)
+mid-season and made values jump when the season rolled over. In the offseason f = 1 and nothing changes.
+
 Why E[max(0, X − r)]: surplus is convex. A young, uncertain player projected just below replacement still has a real
 chance of a startable season — breakout optionality falls out of the math instead of an ad-hoc bonus. The UI shows
 P(startable next season), decline risk P(Y2 PPG < 85% of now), and career horizon (seasons with ≥25% chance of being
@@ -58,8 +65,15 @@ startable).
   ≥5 PPG; selecting on year-1 performance would build regression to the mean into every age step), anchored at ages
   24–28, shrunk toward the default curve where samples are thin (n/(n+80)). Result: RB peak ≈24 → 0.82 at 28, 0.67
   at 30; WR peak ≈26 → 0.79 at 30; TE peak ≈26; QB flat to ~32.
-* **Attrition** — P(<4 games next season | top-N finish), pooled ±1 age, non-decreasing past the minimum
-  (RB 26% at 30; WR 13% at 30; QB ~14% through 34).
+* **Attrition** — P(<4 games next season | top-N finish), pooled ±1 age (±2 when sparse), then a weighted **monotone
+  (non-decreasing) fit** in age (2.2.0), +6 points a year beyond the data (RB 24% at 30; WR 13% at 30; TE 15% at 30;
+  QB ~12% through 34). The former rule only enforced monotonicity after the minimum, so one noisy TE cell (9 exits of
+  36 at age 22) gave 21–22-year-old TEs a 12–20% exit hazard — higher than 24-year-olds' 4.5% — and made a player
+  worth *less* if he were two years younger.
+* **Aging-curve tails (2.2.0)** — curves are unimodal, and beyond the last age with ≥15 season pairs the decline never
+  slows down (each year's ratio is capped by the previous year's). The former curves copied a flat default tail past
+  ages 35–37, so a 37-year-old TE stopped declining while a 35-year-old declined 12–14% a year (Travis Kelce was worth
+  more at 37 than he would have been at 35). Values inside the data range are unchanged.
 * **Availability** — ~81–83% of games for relevant players who stay active.
 * **Year-1 CV** — SD of next-season PPG change / PPG: QB .23, RB .32, WR .29, TE .28.
 * **Draft-capital priors** — PPR PPG by position × bucket (R1 picks 1–16, R1 17–32, R2, R3, R4–5, R6–7, UDFA) × career
@@ -85,13 +99,27 @@ Why .25 for the fundamental model: on 2020–2023 dynasty rankings scored agains
 FantasyPros dynasty ECR reached ρ 0.581, the fundamental model 0.502–0.506, and a 75/25 consensus/fundamental blend
 0.583 (best). The fundamental model still matters: it sets the *magnitudes* (league scoring, scarcity, horizon) that
 every ranking is mapped onto, it is the only signal for players no list covers, and it explains the value.
-| Injury | IR/PUP/NFI: −35% of year-1 contribution; Suspended −15% | explicit component |
+| Injury | expected games lost (redraft table: Out 1, Doubtful .8, Questionable .25, IR/PUP/NFI 5, Suspended 3) as a share of the games left this season; on IR/PUP/NFI/Suspended with no rest-of-season projection = the whole remaining season (as in redraft). Replaced the flat "IR = 35% of a season" rule in 2.2.0 | explicit component |
 
 Components shown: Market, Consensus, Projection / Production / Prospect (year-1 fundamental split by evidence share),
 Age/longevity (seasons 2+), ADP, Trend, Injury — they sum to the value. The league-specific adjustment vs the
 reference league is shown separately.
 
-## 5. Contracts, team situation, trade liquidity
+## 5. Audit evidence (2.2.0)
+
+* **Value spacing (E8).** Dynasty values are mostly rankings mapped onto the fundamental curve, so the curve's shape
+  sets how much a star is worth relative to a mid-tier player. Scored against hindsight-free three-season lineup value
+  (2021–2023 rankings), the current uncertainty gives proportional spacing (value ratio relative to the top 12:
+  ranks 13–24 1.01, 25–36 0.87, 37–72 0.86); removing the option value (cv × 0) under-values depth badly (0.57 / 0.26 /
+  0.04), and cv × 1.25 was best in only one of three seasons — **kept** (unlike redraft, where the option value was
+  too large: over several seasons a manager can act on how a role develops).
+* **Horizon.** 5 seasons (ρ .518; age bias −.014 young / +.012 old) beat 8 (ρ .513, over-rates youth by .027) and
+  12 (ρ .508, .040) against realised three-season value — **kept**. Known limitation: a finite horizon slightly
+  penalises players more than ~4 years before their peak (a TE made two years younger at 20 loses ~2%).
+* **Calibration constraints** (above) left rank accuracy unchanged (ρ .513 → .518) and improved the worst season
+  (.471 → .494) and age bias (−.016/+.015 → −.014/+.012) in the leak-free walk-forward test (E3).
+
+## 6. Contracts, team situation, trade liquidity
 
 Not modelled directly: free sources don't provide reliable contract data in a stable form, and team situation is
 already priced by market/consensus/projections. FantasyCalc's trade frequency is stored for future use.

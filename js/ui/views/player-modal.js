@@ -96,7 +96,7 @@ export function openPlayer(cid) {
       if (ad?.details) {
         const dd = ad.details;
         rows.push(['Dynasty: current scoring rate', `${fmt1(dd.mu1)} PPG (blend of ${dd.evidence.map((e) => e.kind.replace('_', ' ')).join(', ') || 'no evidence'})`]);
-        rows.push(['Dynasty: career horizon', dd.careerHorizon !== null ? `${dd.careerHorizon} of ${dd.years?.length || 0} projected seasons likely startable (≥25%)` : '—']);
+        rows.push(['Dynasty: career horizon', dd.careerHorizon !== null ? `${dd.careerHorizon} of ${dd.years?.filter((y) => !y.tail).length || 0} projected seasons likely startable (≥25%)` : '—']);
       }
       const u = ar?.details?.usage;
       if (u) rows.push(['Usage (season avg)', [u.snap_pct !== null ? `snaps ${fmtPctPlain(u.snap_pct)}` : null, u.target_share !== null ? `target share ${fmtPctPlain(u.target_share)}` : null, u.carries_pg ? `${fmt1(u.carries_pg)} car/g` : null, u.targets_pg ? `${fmt1(u.targets_pg)} tgt/g` : null, u.rz_targets ? `${u.rz_targets} RZ tgt` : null, u.rz_carries ? `${u.rz_carries} RZ car` : null].filter(Boolean).join(' · ') || '—']);
@@ -132,7 +132,7 @@ export function openPlayer(cid) {
         h('h3.mt', {}, 'Multi-year projection'), chart,
         h('p.small.muted', {}, 'Five-year projections are NOT precise. The band shows the model\'s ±1.28σ range; uncertainty grows each year. Surplus uses E[max(0, X − replacement)], which credits young, uncertain players with upside.'),
         h('table.data.mt-s', {}, h('thead', {}, h('tr', {}, ['Season', 'Age', 'PPG (80% range)', 'Still relevant', 'P(starter)', 'Exp. surplus', 'Discount', 'Contribution'].map((x) => h('th', { class: x === 'Season' || x === 'Age' ? '' : 'num' }, x)))),
-          h('tbody', {}, d.years.map((y) => h('tr', {}, h('td', {}, y.season), h('td', {}, fmt1(y.age)), h('td.num', {}, `${fmt1(y.ppg)} (${fmt1(y.ppgLow)}–${fmt1(y.ppgHigh)})`), h('td.num', {}, fmtPctPlain(y.survival)), h('td.num', {}, fmtPctPlain(y.pStarter)), h('td.num', {}, fmt1(y.eSurplus)), h('td.num', {}, y.discount.toFixed(2)), h('td.num', {}, fmt1(y.contribution)))))),
+          h('tbody', {}, d.years.map((y) => h('tr', {}, h('td', { title: y.share < 1 ? `${Math.round(y.share * 100)}% of a season counted (${y.t === 1 ? 'games left this season' : 'keeps the horizon at full seasons'})` : null }, y.share < 1 ? `${y.season} (${Math.round(y.share * 100)}%)` : y.season), h('td', {}, fmt1(y.age)), h('td.num', {}, `${fmt1(y.ppg)} (${fmt1(y.ppgLow)}–${fmt1(y.ppgHigh)})`), h('td.num', {}, fmtPctPlain(y.survival)), h('td.num', {}, fmtPctPlain(y.pStarter)), h('td.num', {}, fmt1(y.eSurplus)), h('td.num', {}, y.discount.toFixed(2)), h('td.num', {}, fmt1(y.contribution)))))),
         h('h3.mt', {}, 'Current scoring-rate evidence'),
         h('table.data', {}, h('tbody', {}, d.evidence.map((e) => h('tr', {}, h('td', {}, e.kind.replace('_', ' ')), h('td.num', {}, `${fmt1(e.v)} PPG`), h('td.num', {}, `weight ${e.w.toFixed(2)}`))))),
         h('p.small.muted', {}, `Strategy: ${d.strategy} (yearly discount ${d.discount}). Change under Settings → Dynasty Model.`));

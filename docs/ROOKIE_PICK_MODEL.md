@@ -61,6 +61,19 @@ monotone and is unchanged; only future-class picks next to an inversion moved (b
 league's rookie rounds, or a slot/range outside 1..teams (they used to be valued — a "1.13" in a 12-team league as
 1.12). Labels with round or slot 0 are not parsed as picks.
 
+## Audit 2026-10-03 (model 2.2.0): unchanged, re-verified
+
+* E4 (leave-one-class-out) reproduces exactly on a freshly rebuilt benchmark: isotonic MAE 40.7, least-squares
+  exponential 37.9 with top-12 bias +1.7 (absolute-error fits 32–35 but biased low by 21–31 overall). Kept.
+* **Shape (brief §20).** The exponential makes every class position worth ~11% less than the one before, so 1.01 → 1.02
+  (−0.20 of an average top-12 pick's value) is about three times the *absolute* drop of 1.10 → 1.11 (−0.07), while
+  the *relative* drop is the same ~11%; this matches the historical means; the remaining misfit is the cliff after pick 2 (data 228 vs fit 177), carried by the market and
+  current-class inputs.
+* **Unknown slots (§21)** are a uniform probability-weighted average over slots; buckets average the third of the
+  round. Projected standings are not modelled (no reliable free source) — use a bucket or custom range instead.
+* Not testable: the 0.45/0.30/0.25 weights, the 0.88 future-year discount and the 0.8 prior-class adjustment (no pick
+  market history). Labelled as judgment.
+
 ## Uncertainty
 
 * **Estimate range** (±): spread of V across the possible slots, disagreement between the three inputs, a growing

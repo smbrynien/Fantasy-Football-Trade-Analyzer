@@ -48,6 +48,18 @@ export function verdictHeadline(ana, N = NEUTRAL) {
   }
 }
 
+/**
+ * How often a margin this size actually worked out (analyzeTrade().outcome, redraft only): "Similar trades went Team
+ * B's way about 60% of the time …". Rounded to 5% — it is a rough, historical frequency, not a precise forecast.
+ */
+export function outcomeText(ana, N = NEUTRAL) {
+  const o = ana.outcome;
+  if (!o || !(o.probability > 0)) return null;
+  const pct = Math.round((o.probability * 100) / 5) * 5;
+  const team = o.favoured === 'A' ? N.A : N.B;
+  return `In historical league simulations (2020–2025 seasons), trades with this margin went ${mid(team)}'s way about ${pct}% of the time — a full season leaves a lot to luck.`;
+}
+
 /** Cross-check against market values alone: do the trade markets point the same way as the blended model? */
 export function marketCheck(ana, N = NEUTRAL) {
   const m = ana.signalDiffs.find((s) => s.key === 'market');

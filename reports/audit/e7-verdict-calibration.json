@@ -1,0 +1,104 @@
+{
+  "label": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+  "experiment": "E7 trade verdict calibration (share of simulated trades won by the side receiving more value)",
+  "trades": 4990,
+  "byMargin": [
+    {
+      "margin": "0-5%",
+      "n": 185,
+      "hitRate": 0.551
+    },
+    {
+      "margin": "5-10%",
+      "n": 198,
+      "hitRate": 0.53
+    },
+    {
+      "margin": "10-20%",
+      "n": 389,
+      "hitRate": 0.571
+    },
+    {
+      "margin": "20-30%",
+      "n": 473,
+      "hitRate": 0.552
+    },
+    {
+      "margin": "30-50%",
+      "n": 1016,
+      "hitRate": 0.636
+    },
+    {
+      "margin": "50-75%",
+      "n": 1328,
+      "hitRate": 0.724
+    },
+    {
+      "margin": "75-100%",
+      "n": 1401,
+      "hitRate": 0.799
+    }
+  ],
+  "verdictLevels": [
+    {
+      "sigmaPctOfValue": 0.05,
+      "levels": {
+        "close": {
+          "n": 218,
+          "hitRate": 0.541
+        },
+        "lean": {
+          "n": 231,
+          "hitRate": 0.511
+        },
+        "clear": {
+          "n": 4541,
+          "hitRate": 0.701
+        }
+      }
+    },
+    {
+      "sigmaPctOfValue": 0.1,
+      "levels": {
+        "close": {
+          "n": 449,
+          "hitRate": 0.526
+        },
+        "lean": {
+          "n": 413,
+          "hitRate": 0.581
+        },
+        "clear": {
+          "n": 4128,
+          "hitRate": 0.712
+        }
+      }
+    },
+    {
+      "sigmaPctOfValue": 0.15,
+      "levels": {
+        "close": {
+          "n": 661,
+          "hitRate": 0.557
+        },
+        "lean": {
+          "n": 638,
+          "hitRate": 0.547
+        },
+        "clear": {
+          "n": 3691,
+          "hitRate": 0.732
+        }
+      }
+    }
+  ],
+  "logistic": {
+    "slope": 1.5,
+    "logLik": -3001.642,
+    "at10pct": 0.537,
+    "at20pct": 0.574,
+    "at30pct": 0.611,
+    "at50pct": 0.679
+  },
+  "meanHitRate": 0.685
+}

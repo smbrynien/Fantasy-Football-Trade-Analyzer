@@ -1,9 +1,82 @@
 # Model Comparison
 
-The current production model (v1.0.0, before the audit) against three candidates, using only the validation that is
-actually available. Details and methods: [MODEL_AUDIT.md](MODEL_AUDIT.md). All historical figures are
-**REAL HISTORICAL DATA, walk-forward** (parameters fitted on earlier seasons only); current-data figures are
-**CURRENT DATA** (frozen 2026-10-02 snapshot) or **SIMULATION**, as labelled.
+Candidate models compared on the validation that is actually available. Methods and caveats:
+[MODEL_AUDIT.md](MODEL_AUDIT.md) (2026-10-03 audit, model 2.2.0) and [MODEL_AUDIT_2.0.0.md](MODEL_AUDIT_2.0.0.md).
+Historical figures are **REAL HISTORICAL DATA, walk-forward**; E6/E7 are **SIMULATED leagues on real weekly points**;
+current-data figures are **CURRENT DATA** (frozen 2026-10-03 snapshot). Reproduce with `npm run audit-model`.
+
+## 2.1.2 → 2.2.0 (second audit)
+
+| Model | Definition |
+|---|---|
+| **Current (2.1.2)** | 2.0.0 structure; redraft option value σ = full forecast-error SD (in season QB 5.5 / RB 4.4 / WR 4.3 / TE 3.8); SoS 0.5 on production; dynasty year 1 = full season at any week; dynasty IR = −35% of year 1; calibration with flat tails and partial hazard monotonicity |
+| **Candidate A — 2.2.0 (adopted)** | σ × 0.4; SoS 0; dynasty current season = remaining games only (later seasons discounted from now, partial sixth season); injuries = expected games lost; monotone hazard, unimodal aging curves that keep declining; trade view shows historical outcome frequency |
+| **Candidate B — deterministic surplus** | A with σ = 0 (the 1.x surplus) |
+| **Candidate C — availability-scaled projections** | A with projections × measured availability (expected games instead of all remaining games) |
+| **Candidate D — no package adjustment** | plain sums of values in trades |
+| Dynasty variants | uncertainty CV × 0 / 0.5 / 1 (kept) / 1.25; horizon 5 (kept) / 8 / 12 |
+
+### Redraft value proportionality (E5: hindsight-free lineup value; tier value ÷ value of ranks 1–12, 1.0 = right)
+
+| Window | Current 2.1.2 | **A (2.2.0)** | B (σ = 0) | σ fitted per fold |
+|---|---|---|---|---|
+| Preseason, ranks 13–24 / 25–36 / 37–72 | 1.28 / 1.20 / 1.57 | **1.14 / 0.98 / 0.95** | 1.09 / 0.95 / 0.71 | 1.10 / 0.96 / 0.78 |
+| Preseason loss (Σ log ratio²) | 0.306 | **0.020** | 0.132 | 0.073 |
+| … prior weight 2 / 8 games (robustness) | 0.347 / 0.436 | **0.036 / 0.034** | 0.211 / 0.183 | 0.090 / 0.086 |
+| In season from week 5 (loss) | 0.579 | **0.160** | 0.249 | 0.249 |
+| In season from week 9 (loss) | 1.810 | 0.665 | **0.388** | 0.388 |
+
+### Trade outcomes (E6: 5,000 random trades, 12-team leagues 2021–2025; correlation of the preseason margin with the realised change in season points)
+
+| Model | all | uneven player counts | seasons better than Current |
+|---|---|---|---|
+| Current 2.1.2 | 0.542 | 0.540 | — |
+| **A (2.2.0 values)** | **0.549** | **0.547** | **5 / 5** |
+| B (σ = 0) + availability | 0.527 | 0.527 | 0 / 5 |
+| C (availability-scaled) | 0.527 | 0.527 | 0 / 5 |
+| D (no package adjustment, 2.1.2 values) | 0.523 | 0.522 | 0 / 5 (worse than Current in 4, equal in 1) |
+| bench fraction 0 / 0.7; package strength 0.5 / 1.5; slot cost × 2 | 0.521–0.530 | | within ±.006 of their base |
+
+### Verdict calibration (E7, same trades): share won by the favoured side
+
+| Margin (% of larger side) | 0–5 | 5–10 | 10–20 | 20–30 | 30–50 | 50–75 | 75–100 |
+|---|---|---|---|---|---|---|---|
+| won | 55% | 53% | 57% | 55% | 64% | 72% | 80% |
+
+Verdict levels (asset ranges ±10% of value): close 53%, modest edge 58%, clear 71%. Logistic fit
+P = 1/(1 + e^(−1.5·margin)) → shown in the trade view (redraft).
+
+### Dynasty
+
+| Check | Current 2.1.2 | **A (2.2.0)** |
+|---|---|---|
+| E3 ρ at model settings / worst season | 0.513 / 0.471 | **0.518 / 0.494** |
+| E3 age bias (young / old, percentile points) | −0.016 / +0.015 | **−0.014 / +0.012** |
+| Monotonicity failures on current data (75 checks) | 2 | **1** (horizon edge case, documented) |
+| E8 spacing loss (CV × 1) | 0.041 | 0.043 (unchanged within noise) |
+
+| Dynasty variant | E8 loss | E3 ρ | Decision |
+|---|---|---|---|
+| CV × 0 / 0.5 / **1** / 1.25 | 13.4 / 1.40 / **0.043** / 0.015 (best in 1 of 3 seasons) | — | keep 1 |
+| Horizon **5** / 8 / 12 | — | **.518** / .513 / .508 (young over-rated .000 / +.027 / +.040 vs 5) | keep 5 |
+
+### Current data, before → after (frozen 2026-10-03, `reports/audit/before-after*.json/csv`)
+
+| Set | Spearman | median abs. change | notes |
+|---|---|---|---|
+| Redraft 12-team 1QB | 0.993 | 0.7% | top 10 within ±1%; bench QBs fall (Geno Smith 972 → 251); #150 972 → 447; #12 ÷ (#60 + #100) 1.40 → 1.84 |
+| Redraft 12-team SF | 0.994 | 0.6% | depth WR/TE fall (Tre Tucker 1,246 → 679) |
+| Dynasty 12-team 1QB | 0.999 | 2.9% | young TEs up (Tyler Warren 4,580 → 4,999; Fannin 3,677 → 3,958), old TEs down (Kittle 2,345 → 1,936); IR without ROS projection loses the rest of the season (Achane 4,475 → 4,085) |
+| Dynasty 12-team SF | 0.999 | 3.2% | same pattern; picks ±1% |
+
+The 2.0.0 audit's internal package simulation (draft and lineups by model values) also improved:
+corr(model margin, simulated lineup gain) 0.593 → 0.699 (plain sums 0.565 → 0.677).
+
+**Choice:** A — the only candidate that is better than Current on every redraft tier test and in every season of the
+trade simulation, with dynasty accuracy unchanged or better and fewer monotonicity failures. B is simpler but
+under-values depth (ratio 0.71 for ranks 37–72) and predicted trades worse.
+
+## Earlier comparison: 1.0.0 → 2.0.0 (first audit)
 
 | Model | Definition |
 |---|---|
@@ -12,7 +85,7 @@ actually available. Details and methods: [MODEL_AUDIT.md](MODEL_AUDIT.md). All h
 | **Candidate B — "fundamentals only"** | projections + production (redraft) / fundamental multi-year model (dynasty) — no expert or market signals |
 | **Candidate C — v2.0.0 (adopted)** | expected surplus; consensus-dominant weights (in season: consensus .45, projection .30, market .15, production .10); production x .25, k 2, × availability, median prior with ≥3 games; dynasty fundamental .25 / market .35 / consensus .40, aging power 2, prior k 20, evidence gate; DP and dynasty ADP weight 0; trend display-only; least-squares exponential slot curve; top-12 scale anchor |
 
-## Ordering accuracy (Spearman ρ within position; higher is better)
+### Ordering accuracy (Spearman ρ within position; higher is better)
 
 | Task | Current v1 | A: consensus only | B: fundamentals only | C: v2 |
 |---|---|---|---|---|
@@ -25,7 +98,7 @@ market could not be backtested, so the full preseason blend is not measurable.
 ² Fitted consensus+production blend (consensus weight 0.8–1.0), the historical analogue of v2's in-season weights.
 ³ ECR/fundamental blends at 50/50 (v1's 40% fundamental with 60% consensus-like signals) and 75/25 (v2).
 
-## Level accuracy and additivity
+### Level accuracy and additivity
 
 | Metric | Current v1 | A | B | C: v2 |
 |---|---|---|---|---|
@@ -38,7 +111,7 @@ Consensus-only has the best ROS MAE, but it is a rank list: it cannot price leag
 packages or picks, and it disappears when the source does. v2 keeps consensus as the dominant ordering signal and adds
 the league-specific value structure.
 
-## Robustness and internal consistency (CURRENT DATA / SIMULATION)
+### Robustness and internal consistency (CURRENT DATA / SIMULATION)
 
 | Check | Current v1 | A | B | C: v2 |
 |---|---|---|---|---|
@@ -51,7 +124,7 @@ the league-specific value structure.
 | Remove both projection sources: redraft ρ vs full | 0.800 | unaffected | model gone | **0.949** |
 | Ordinary noise (±1 ECR rank, ±5% market/projections): ρ | ≥0.998 | — | — | ≥0.999 |
 
-## Decision
+### Decision
 
 C (v2) is adopted because it is **at least as accurate as consensus on ordering where that can be tested, unbiased
 where v1 was biased, monotone, and internally consistent** with the roster-economics simulation, while remaining
@@ -71,7 +144,7 @@ dataset; `--out` keeps the committed reports untouched). The committed baseline 
 on the 2026-10-02 frozen dataset, which is not in the repository, so on any other dataset `--only=compare` skips with
 these instructions.
 
-## Before / after — representative players (12-team, CURRENT DATA)
+### Before / after — representative players (12-team, CURRENT DATA)
 
 | Player | Category | Redraft 1QB v1 → v2 | Dynasty 1QB v1 → v2 | Main mathematical reason |
 |---|---|---|---|---|

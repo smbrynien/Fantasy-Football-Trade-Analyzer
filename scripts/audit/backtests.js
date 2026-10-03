@@ -9,6 +9,7 @@ import { mean, median, spearman, isotonicDecreasing, sd, expectedSurplus, interp
 import { readJSONSync } from '../../server/lib/store.js';
 import path from 'node:path';
 import { ROOT } from '../../server/lib/paths.js';
+import { monotoneHazard, unimodalAgeCurve } from '../lib/calibration-shape.js';
 
 const POS = ['QB', 'RB', 'WR', 'TE'];
 const TOPN = { QB: 32, RB: 60, WR: 72, TE: 32 };
@@ -58,7 +59,7 @@ function fitRankCurve(pairs) {
   return (pos, rank) => { const c = curves[pos]; if (!c || !c.length) return null; const i = Math.min(c.length, Math.max(1, Math.round(rank))) - 1; return c[i]; };
 }
 
-function positionalRanks(rows) {
+export function positionalRanks(rows) {
   // rows: [{g,pos,ecr}] → Map g → positional rank (1-based, by ecr)
   const out = new Map();
   for (const pos of POS) rows.filter((r) => r.pos === pos && r.ecr !== null).sort((a, b) => a.ecr - b.ecr).forEach((r, i) => out.set(r.g, { rank: i + 1, pos }));
@@ -376,7 +377,7 @@ function sosRatio(bench, y, team, fromW, pos, fpa) {
 //   hist = loadSeasons(2006, 2025) (nflverse season totals). Aging curve, attrition and draft priors are refit for each
 //   test season Y using ONLY seasons < Y, so the fundamental model never sees the outcomes it is scored on.
 // ---------------------------------------------------------------------------------------------------------------
-export function dynasty(bench, hist, { discount = 0.82 } = {}) {
+export function dynasty(bench, hist, { discount = 0.82, regularize = true } = {}) {
   const seasonRows = new Map();
   for (const arr of hist.seasons.values()) for (const r of arr) seasonRows.set(`${r.gsis}|${r.season}`, r);
   const replCache = {};
@@ -390,7 +391,7 @@ export function dynasty(bench, hist, { discount = 0.82 } = {}) {
     const first = bench.schedule[Y]?.weeks[1]?.first;
     const snap = snapshotBefore(bench, 'dynasty', first, 45);
     if (!snap) continue;
-    const cal = calibrateBefore(hist, Y);
+    const cal = calibrateBefore(hist, Y, { regularize });
     out.calibrations[Y] = { agingSample: cal.agingN, priorsClasses: cal.priorClasses, aging: Object.fromEntries(POS.map((p) => [p, Object.fromEntries([22, 24, 26, 28, 30, 32].map((a) => [a, r3(interp(cal.aging[p], a))]))])) };
     const ranks = positionalRanks(snap.rows);
     const rows = [];
@@ -444,7 +445,7 @@ export function dynasty(bench, hist, { discount = 0.82 } = {}) {
 }
 
 /** Aging (delta method, symmetric selection, shrunk to default), attrition and draft priors from seasons < Y only. */
-function calibrateBefore(hist, Y) {
+export function calibrateBefore(hist, Y, { regularize = true } = {}) {
   const defaults = readJSONSync(path.join(ROOT, 'config', 'model.json')).dynasty.default_aging_curves;
   const aging = {}, hazard = {};
   let agingN = 0;
@@ -466,7 +467,7 @@ function calibrateBefore(hist, Y) {
     }
     const defPts = Object.entries(defaults[pos]).map(([k, v]) => [Number(k), v]).sort((x, y) => x[0] - y[0]);
     const level = { 22: 10 };
-    for (let a = 22; a < 38; a++) level[a + 1] = level[a] + (acc[a] && acc[a].n >= 10 ? acc[a].s / acc[a].w : 0);
+    for (let a = 22; a < 42; a++) level[a + 1] = level[a] + (acc[a] && acc[a].n >= 10 ? acc[a].s / acc[a].w : 0);
     for (let a = 21; a >= 20; a--) level[a] = level[a + 1] - 0.5;
     const minL = Math.min(...Object.values(level));
     const pk = Math.max(...Object.values(level).map((v) => v - minL + 3));
@@ -476,7 +477,16 @@ function calibrateBefore(hist, Y) {
     });
     const pk2 = Math.max(...aging[pos].map((x) => x[1]));
     aging[pos] = aging[pos].map(([a, v]) => [a, v / pk2]);
-    hazard[pos] = (age) => { let e = 0, n = 0; for (let b = Math.floor(age) - 1; b <= Math.floor(age) + 1; b++) if (rel[b]) { e += rel[b].e; n += rel[b].n; } return n >= 15 ? e / n : 0.1; };
+    if (regularize) {
+      // Same shape constraints as scripts/calibrate.js (scripts/lib/calibration-shape.js).
+      const supported = Object.keys(acc).map(Number).filter((a) => acc[a].n >= 15);
+      const reg = unimodalAgeCurve(Object.fromEntries(aging[pos]), supported.length ? Math.max(...supported) + 1 : undefined);
+      aging[pos] = Object.entries(reg).map(([a, v]) => [Number(a), v]).sort((x, y) => x[0] - y[0]);
+      const hz = monotoneHazard(Object.fromEntries(Object.entries(rel).map(([a, r]) => [a, { exits: r.e, n: r.n }])));
+      hazard[pos] = (age) => hz[Math.min(42, Math.max(21, Math.floor(age)))] ?? 0.1;
+    } else {
+      hazard[pos] = (age) => { let e = 0, n = 0; for (let b = Math.floor(age) - 1; b <= Math.floor(age) + 1; b++) if (rel[b]) { e += rel[b].e; n += rel[b].n; } return n >= 15 ? e / n : 0.1; };
+    }
   }
   // draft priors: classes whose career year k ended before Y
   const priors = {};
@@ -501,7 +511,7 @@ function calibrateBefore(hist, Y) {
 }
 const toNum = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
 
-function fundamental(seasonRows, cal, g, m, pos, Y, age, r, opt) {
+export function fundamental(seasonRows, cal, g, m, pos, Y, age, r, opt) {
   // Reduced form of js/core/valuation/dynasty.js using only information available before season Y.
   const prev = seasonRows.get(`${g}|${Y - 1}`), prev2 = seasonRows.get(`${g}|${Y - 2}`);
   const ev = [];
@@ -522,7 +532,7 @@ function fundamental(seasonRows, cal, g, m, pos, Y, age, r, opt) {
   for (let t = 1; t <= H; t++) {
     if (t > 1 && !opt.noAttrition) surv *= 1 - cal.hazard[pos](age + t - 2);
     const mu = (mu1 * A(age + t - 1)) / A(age);
-    const M = mu * 17 * 0.82, S = (0.3 + 0.12 * (t - 1)) * M;
+    const M = mu * 17 * 0.82, S = (opt.cvMult ?? 1) * (0.3 + 0.12 * (t - 1)) * M;
     F += 0.82 ** (t - 1) * surv * (opt.deterministic ? Math.max(0, M - r) : expectedSurplus(M, S, r));
   }
   return F;

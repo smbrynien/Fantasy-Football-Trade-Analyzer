@@ -116,6 +116,12 @@ export function analyzeTrade(result, idsA, idsB, { dataSources = {}, names = nul
   else if (z < 2) assessment = { level: 'lean', text: `Team ${diff > 0 ? 'A' : 'B'} receives more value (${Math.abs(pct * 100).toFixed(1)}%). The gap exceeds the model's uncertainty, but only modestly — reasonable people could disagree.` };
   else assessment = { level: 'clear', text: `Team ${diff > 0 ? 'A' : 'B'} receives clearly more value in this model (${Math.abs(pct * 100).toFixed(1)}%, about ${z.toFixed(1)}× the combined uncertainty).` };
 
+  // How often a margin this size actually worked out over a season (audit E7; redraft only, display only).
+  const slope = result.model.trade_outcome?.redraft_logit_slope;
+  const outcome = result.mode === 'redraft' && complete && diff !== 0 && slope > 0
+    ? { favoured: diff > 0 ? 'A' : 'B', probability: 1 / (1 + Math.exp(-slope * Math.abs(pct))) }
+    : null;
+
   const keys = new Set([...Object.keys(sa.components), ...Object.keys(sb.components)]);
   const componentDiffs = COMPONENT_ORDER.filter((k) => keys.has(k)).map((k) => ({ key: k, a: sa.components[k] || 0, b: sb.components[k] || 0, diff: (sa.components[k] || 0) - (sb.components[k] || 0) }));
   const groupKeys = new Set([...Object.keys(sa.groupValues), ...Object.keys(sb.groupValues)]);
@@ -149,7 +155,7 @@ export function analyzeTrade(result, idsA, idsB, { dataSources = {}, names = nul
       { label: 'Team A receives', assets: A.map(summarize), ...sa, package: pkgA, adjusted: adjA },
       { label: 'Team B receives', assets: B.map(summarize), ...sb, package: pkgB, adjusted: adjB },
     ],
-    diff, pct, sigmaDiff, z, assessment, componentDiffs, signalDiffs, notes, missing,
+    diff, pct, sigmaDiff, z, assessment, outcome, componentDiffs, signalDiffs, notes, missing,
     audit: {
       calculated_at: new Date().toISOString(),
       model_version: result.meta.model_version,
