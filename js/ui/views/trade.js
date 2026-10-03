@@ -1,7 +1,7 @@
 // TRADE CALCULATOR — the central experience.
 
 import { h, clear, fmtValue, fmtSigned, fmtPct, fmtRange, fmtAge, posBadge, confBadge, injuryBadge, toast, download, fmtTime, copyText, openModal } from '../dom.js';
-import { app, getValuations, load, save, activeProfile, allProfiles, playerData, isPlainObject, isStringArray, myRoster } from '../state.js';
+import { app, getValuations, load, save, activeProfile, allProfiles, playerData, isPlainObject, isStringArray, myRoster, teamsFor, activeTeam, setActiveTeam } from '../state.js';
 import { analyzeTrade } from '../../core/valuation/trade.js';
 import { balanceSuggestions, comboSuggestions } from '../../core/valuation/balance.js';
 import { compareCounteroffers, addVariant, sameTrade, variantLabel, MAX_VARIANTS } from '../../core/counteroffers.js';
@@ -86,7 +86,10 @@ export function renderTrade(root) {
         h('label', {}, 'Which side is you? ', h('select', { 'aria-label': 'Which side is your team', onchange: (e) => { trade.me = e.target.value || undefined; rerender(); } },
           h('option', { value: '' }, 'Neither (neutral)'), h('option', { value: 'a', selected: trade.me === 'a' ? true : null }, 'Team A'), h('option', { value: 'b', selected: trade.me === 'b' ? true : null }, 'Team B'))),
         roster.ids.length
-          ? h('span.muted', {}, ` · My Team: ${roster.ids.length} assets — `, h('a', { href: '#/team' }, 'edit'))
+          ? h('span.muted', {}, ' · My Team: ', teamsFor().length > 1
+            ? h('select', { 'aria-label': 'Which saved team is yours in this trade', onchange: (e) => setActiveTeam(e.target.value) },
+              teamsFor().map((t) => h('option', { value: t.id, selected: t.id === activeTeam()?.id ? true : null }, `${t.name} (${t.ids.length})`)))
+            : h('strong', {}, activeTeam()?.name || 'My team'), ` — ${roster.ids.length} assets — `, h('a', { href: '#/team' }, 'edit'))
           : h('span.muted', {}, ' · ', h('a', { href: '#/team' }, 'Add your roster'), h('span.mode-text', {}, ' to see how a trade changes your starting lineup (optional)'), '.'))));
   root.append(
     contextEl,

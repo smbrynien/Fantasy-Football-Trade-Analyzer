@@ -25,5 +25,6 @@ export const P = {
   quality: path.join(DATA_DIR, 'state', 'quality-report.json'),
   nflState: path.join(DATA_DIR, 'state', 'nfl-state.json'),
   userProfiles: path.join(DATA_DIR, 'user', 'profiles.json'),
+  userTeams: path.join(DATA_DIR, 'user', 'teams.json'),
   trades: path.join(DATA_DIR, 'user', 'trades.json'),
 };

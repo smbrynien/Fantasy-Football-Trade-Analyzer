@@ -89,3 +89,25 @@ test('API: non-object JSON bodies and malformed profiles are 400, never 500 (BUG
   assert.equal((await call('PUT', '/api/profiles', JSON.stringify({ profiles: [null, 1] }))).status, 400);
   assert.equal((await call('PUT', '/api/profiles', JSON.stringify({ profiles: [{ id: 'u1', name: 'ok' }] }))).status, 200);
 });
+
+test('My Team saved teams: PUT/GET round trip, shape validation, same-origin rule', async () => {
+  const put = (body) => fetch(`http://127.0.0.1:${port}/api/teams`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  assert.deepEqual(await (await fetch(`http://127.0.0.1:${port}/api/teams`)).json(), { teams: [] });
+  const teams = [{ id: 'team_a', name: 'Gang', profileId: 'preset_12_1qb_ppr', ids: ['P1', 'pick:2027:1'] }];
+  assert.equal((await put({ teams })).status, 200);
+  assert.deepEqual((await (await fetch(`http://127.0.0.1:${port}/api/teams`)).json()).teams, teams);
+  for (const bad of [{ teams: 'x' }, { teams: [{ id: 'a', name: 'n', ids: [1] }] }, { teams: [{ id: 'a', ids: [] }] }, { teams: [{ name: 'n', ids: [] }] }, { teams: [{ id: 'a', name: 'n', ids: Array(501).fill('P') }] }]) {
+    assert.equal((await put(bad)).status, 400, JSON.stringify(bad).slice(0, 60));
+  }
+  const body = JSON.stringify({ teams: [] });
+  const cross = await raw(['PUT /api/teams HTTP/1.1', `Host: 127.0.0.1:${port}`, 'Origin: https://evil.example', 'Content-Type: application/json', `Content-Length: ${body.length}`, 'Connection: close', '', body]);
+  assert.equal(cross.status, 403);
+  assert.deepEqual((await (await fetch(`http://127.0.0.1:${port}/api/teams`)).json()).teams, teams, 'unchanged by rejected writes');
+});
+
+test('static: the audit scorecard is served, other audit outputs are not', async () => {
+  assert.equal((await get('/reports/audit/scorecard.json')).status, 200);
+  assert.equal((await get('/reports/audit/scorecard.csv')).status, 200);
+  assert.equal((await get('/reports/audit/values-v1.json')).status, 404);
+  assert.equal((await get('/reports/audit/e6-league-simulation.json')).status, 404);
+});

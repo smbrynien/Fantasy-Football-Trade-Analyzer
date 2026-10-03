@@ -166,7 +166,32 @@ try {
     await o2.waitFor({ timeout: 5000 }); await o2.dispatchEvent('mousedown');
     const impact = await page.locator('.lineup-impact').waitFor({ timeout: 5000 }).then(() => page.locator('.lineup-impact').innerText(), () => '');
     check(/Lineup value/.test(impact) && /Into your lineup: Test WR 1\b/.test(impact) && /Out of your lineup: Test WR 5\b/.test(impact), `my team: lineup impact names who moves in and out (${impact.replace(/\n/g, ' | ').slice(0, 300)})`);
-    await page.evaluate(() => { for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.myteam.') || k.startsWith('ffta.trade.')) localStorage.removeItem(k); });
+    if (viewport.width >= 1024) {
+      // Desktop: trade targets by roster need, several saved teams, and the team picker on the Trade page.
+      await page.goto(`${base}/#/team`);
+      await page.locator('.targets').waitFor({ timeout: 5000 });
+      await page.locator('.targets button', { hasText: 'Any value' }).click();
+      const targetRows = await page.locator('.targets tbody tr').count();
+      const chips = await page.locator('.need-chips .chip').count();
+      check(targetRows > 0 && chips >= 5, `my team: trade targets listed with positions by gain (${targetRows} rows, ${chips} chips)`);
+      const firstTarget = (await page.locator('.targets tbody tr .linklike').first().innerText()).trim();
+      page.once('dialog', (d) => d.accept('Second team'));
+      await page.locator('.team-bar button', { hasText: 'New team' }).click();
+      await page.waitForTimeout(500);
+      const opts = await page.locator('.team-bar select[aria-label="Saved team"] option').allInnerTexts();
+      check(opts.length === 2 && /Second team \(0\)/.test(opts.join()) && /My team \(2\)/.test(opts.join()), `my team: a second saved team, the first kept (${opts.join(' | ')})`);
+      await page.locator('.team-bar select[aria-label="Saved team"]').selectOption({ label: opts.find((o) => o.startsWith('My team')) });
+      await page.waitForTimeout(400);
+      check(/My team/.test(await page.locator('#view h2').first().innerText()), 'my team: switching back shows the first team');
+      await page.locator('.targets tbody tr').first().locator('button', { hasText: 'Trade for' }).click();
+      await page.locator('.trade-side').first().waitFor({ timeout: 5000 });
+      check(new RegExp(firstTarget).test(await page.locator('.trade-side').nth(0).innerText()), `my team: "Trade for" puts the target on your side (${firstTarget})`);
+      check((await page.locator('.side-picker select[aria-label^="Which saved team"] option').count()) === 2, 'trade: picker for the league\'s saved teams');
+    }
+    await page.evaluate(async () => {
+      for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.myteam.') || k.startsWith('ffta.trade.') || k.startsWith('ffta.team') || k.startsWith('ffta.myteam')) localStorage.removeItem(k);
+      await fetch('/api/teams', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teams: [] }) }); // server copy too
+    });
 
     // Keyboard: a Players row opens the player with Enter.
     await page.goto(`${base}/#/players`);
@@ -276,6 +301,17 @@ try {
     await page.goto(`${base}/#/settings`); await page.reload(); await page.waitForTimeout(300);
     const st = await page.locator('nav.subtabs').innerText();
     check(/Show model settings/.test(st) && !/Source Weights/.test(st), 'settings: model parameters folded away by default');
+    if (viewport.width >= 1024) {
+      await page.goto(`${base}/#/model`);
+      const sc = await page.locator('.audit-summary tbody tr').first().waitFor({ timeout: 5000 }).then(() => page.locator('.audit-summary tbody tr').count(), () => 0);
+      check(sc >= 10 && (await page.locator('.audit-exp').count()) === sc - 1, `model: audit scorecard summary and per-experiment results (${sc} rows)`);
+      // Trade boxes: same top and height before anything is added (the second used to sit 16 px lower).
+      await page.evaluate(() => localStorage.setItem('ffta.trade.redraft', JSON.stringify({ a: [], b: [] })));
+      await page.goto(`${base}/#/trade`); await page.reload();
+      await page.locator('.trade-side').nth(1).waitFor({ timeout: 5000 });
+      const box = await page.evaluate(() => [...document.querySelectorAll('.trade-side')].map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.height)]; }));
+      check(box.length === 2 && box[0][0] === box[1][0] && box[0][1] === box[1][1], `trade: both side boxes start level and are the same height (${JSON.stringify(box)})`);
+    }
     await page.goto(`${base}/#/settings/refresh`); await page.waitForTimeout(300);
     check(/#\/data$/.test(page.url()), 'settings: old Data Refresh link goes to the sync dashboard');
 

@@ -115,6 +115,9 @@ body.mode-dynasty .redraft-only { display: none !important; }
 .loading { padding: 3rem; text-align: center; color: var(--muted); }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem; }
 .panel + .panel { margin-top: 1rem; }
+/* Side-by-side panels in a grid are spaced by the grid gap: the stacking margin above pushed the second one 16 px lower
+   (Team B's trade box sat below Team A's). */
+.trade-layout > .panel + .panel, .grid-2 > .panel + .panel, .grid-3 > .panel + .panel { margin-top: 0; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
 .panel-head h2, .panel-head h3 { margin: 0; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
@@ -155,7 +158,12 @@ label.field > input, label.field > select { font-weight: 400; }
 .check { display: inline-flex; align-items: center; gap: .35rem; font-size: .86rem; cursor: pointer; }
 .chips { display: flex; gap: .3rem; flex-wrap: wrap; }
 .chip { appearance: none; border: 1px solid var(--border-strong); background: var(--panel); color: var(--text); border-radius: 999px; padding: .3rem .7rem; font: 600 .78rem var(--font); cursor: pointer; }
-.chip.on { background: var(--text); color: var(--panel); border-color: var(--text); }
+.chip.on, .chip[aria-pressed="true"] { background: var(--text); color: var(--panel); border-color: var(--text); }
+.chip[aria-pressed="true"] .muted { color: inherit; opacity: .75; }
+/* My Team: saved-team picker and trade targets */
+.team-bar { gap: .5rem; align-items: center; margin: .25rem 0 .5rem; }
+.team-bar select { max-width: 22rem; }
+.need-chips { margin-top: .35rem; }
 
 /* ---------- badges ---------- */
 .pos { display: inline-block; min-width: 2.3em; text-align: center; font: 700 .7rem/1.6 var(--font); padding: 0 .35em; border-radius: 4px; color: #fff; background: var(--faint); letter-spacing: .02em; }
@@ -195,7 +203,7 @@ table.data tfoot td { font-weight: 700; background: var(--panel-2); }
 .player-sub { color: var(--muted); font-size: .78rem; }
 
 /* ---------- trade ---------- */
-.trade-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.trade-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; } /* both boxes: same top, same height */
 .trade-side { border-top: 4px solid var(--team-a); }
 .trade-side.b { border-top-color: var(--team-b); }
 .trade-side h2 { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
@@ -455,3 +463,7 @@ details.panel > summary { cursor: pointer; }
 
 /* Phones: the mode badge + league name are enough above the builder; the explanation stays in Help and on wider screens. */
 @media (max-width: 720px) { .trade-context .mode-text { display: none; } }
+/* Model page: audit scorecard */
+.audit-exp { border-top: 1px solid var(--border); padding: .5rem 0; }
+.audit-exp summary { cursor: pointer; }
+.audit-scorecard td.best { color: var(--accent); }

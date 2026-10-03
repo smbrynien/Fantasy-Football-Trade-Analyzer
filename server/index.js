@@ -22,7 +22,7 @@ const HOST = process.env.HOST || '127.0.0.1';
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.md': 'text/markdown; charset=utf-8', '.csv': 'text/csv; charset=utf-8', '.webmanifest': 'application/manifest+json' };
 // Only these paths are served statically (never raw caches, user data or .env).
-const STATIC_ALLOW = [/^\/index\.html$/, /^\/css\//, /^\/js\//, /^\/config\//, /^\/docs\//, /^\/assets\//, /^\/data\/calculated\/(dataset|history)\.json$/, /^\/favicon\.svg$/, /^\/reports\/[\w.-]+\.json$/, /^\/manifest\.webmanifest$/];
+const STATIC_ALLOW = [/^\/index\.html$/, /^\/css\//, /^\/js\//, /^\/config\//, /^\/docs\//, /^\/assets\//, /^\/data\/calculated\/(dataset|history)\.json$/, /^\/favicon\.svg$/, /^\/reports\/[\w.-]+\.json$/, /^\/reports\/audit\/scorecard\.(json|csv)$/, /^\/manifest\.webmanifest$/];
 
 function send(res, status, body, headers = {}, req = null) {
   const isBuf = Buffer.isBuffer(body);
@@ -153,6 +153,18 @@ route('PUT', /^\/api\/profiles$/, async (req) => {
     throw Object.assign(new Error('profiles must be an array of profile objects with an id'), { status: 400 });
   }
   await writeJSON(P.userProfiles, { profiles: body.profiles, updated_at: new Date().toISOString() }, { pretty: true });
+  return { ok: true };
+});
+// My Team: saved teams (asset ids per team, linked to a league profile). Same shape checks as profiles.
+route('GET', /^\/api\/teams$/, async () => (await readJSON(P.userTeams, { teams: [] })));
+route('PUT', /^\/api\/teams$/, async (req) => {
+  const body = await readBody(req);
+  const ok = (t) => t && typeof t === 'object' && !Array.isArray(t) && typeof t.id === 'string' && typeof t.name === 'string'
+    && Array.isArray(t.ids) && t.ids.length <= 500 && t.ids.every((x) => typeof x === 'string' && x.length <= 120);
+  if (!Array.isArray(body.teams) || body.teams.length > 500 || !body.teams.every(ok)) {
+    throw Object.assign(new Error('teams must be an array of team objects with an id, a name and an ids array of asset ids'), { status: 400 });
+  }
+  await writeJSON(P.userTeams, { teams: body.teams, updated_at: new Date().toISOString() }, { pretty: true });
   return { ok: true };
 });
 route('GET', /^\/api\/trades$/, async () => (await readJSON(P.trades, { trades: [] })));

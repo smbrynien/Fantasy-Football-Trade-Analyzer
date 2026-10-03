@@ -1,9 +1,11 @@
-// MY TEAM — optional roster for the active league: best lineup, bench, picks, depth, and one-click "trade away".
-// The trade page uses it for lineup impact ("your starters before → after"). Everything works without it.
+// MY TEAM — optional saved teams (rosters), each linked to a league: best lineup, bench, picks, depth, one-click
+// "trade away" and trade targets by roster need. The trade page uses the league's active team for lineup impact
+// ("your starters before → after"). Everything works without it.
 
 import { h, clear, fmtValue, fmtAge, fmt1, posBadge, confBadge, injuryBadge, toast, openModal } from '../dom.js';
-import { app, getValuations, activeProfile, playerData, myRoster, saveMyRoster, load, save, isPlainObject, isStringArray } from '../state.js';
-import { bestLineup, expectationInputs, expectedLineupPoints } from '../../core/roster.js';
+import { app, getValuations, activeProfile, allProfiles, setProfile, playerData, myRoster, saveMyRoster, load, save, isPlainObject, isStringArray,
+  allTeams, teamsFor, activeTeam, setActiveTeam, createTeam, updateTeam, deleteTeam } from '../state.js';
+import { bestLineup, expectationInputs, expectedLineupPoints, rosterTargets } from '../../core/roster.js';
 import { assetSearchBox, buildSearchIndex, searchAssets } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
 import { parsePickAssetId, pickDisplayName } from '../../core/pick-labels.js';
@@ -39,17 +41,51 @@ export function renderTeam(root) {
 
   function setIds(ids, meta) { saveMyRoster(ids, meta, profile); roster = myRoster(profile); draw(); }
 
+  const leagueName = (id) => allProfiles().find((p) => p.id === id)?.name;
+  /** Team picker, like the league profiles: this league's teams first, then teams saved for other leagues. */
+  function teamBar() {
+    const team = activeTeam(profile);
+    const mine = teamsFor(profile);
+    const others = allTeams().filter((t) => t.profileId !== profile.id);
+    const pick = (e) => {
+      const t = allTeams().find((x) => x.id === e.target.value);
+      if (!t) return;
+      if (t.profileId === profile.id) { setActiveTeam(t.id, profile); return; }
+      const target = allProfiles().find((p) => p.id === t.profileId);
+      if (target) { save(`team.active.${target.id}`, t.id); setProfile(target.id); toast(`Switched to "${t.name}" and its league, ${target.name}.`); return; }
+      // Its league profile was deleted: give the team to this league instead.
+      updateTeam(t.id, { profileId: profile.id }); setActiveTeam(t.id, profile);
+      toast(`"${t.name}" was saved for a league that no longer exists; it now uses ${profile.name}.`, 'warn');
+    };
+    const sel = h('select', { 'aria-label': 'Saved team', onchange: pick },
+      !team ? h('option', { value: '' }, 'No saved team yet') : null,
+      mine.length ? h('optgroup', { label: `${profile.name}` }, mine.map((t) => h('option', { value: t.id, selected: team && t.id === team.id ? true : null }, `${t.name} (${t.ids.length})`))) : null,
+      others.length ? h('optgroup', { label: 'Other leagues (switches the league)' }, others.map((t) => h('option', { value: t.id }, `${t.name} — ${leagueName(t.profileId) || 'deleted league'}`))) : null);
+    const ask = (q, def) => { const v = prompt(q, def); return v === null ? null : v.trim().slice(0, 80) || null; };
+    return h('div.team-bar.flex.no-print', {},
+      h('label.small.muted', {}, 'Team ', sel),
+      h('button.btn.btn-sm', { onclick: () => { const n = ask(`Name for the new team (${profile.name})`, `Team ${mine.length + 1}`); if (n) { createTeam({ name: n }, profile); toast(`Created "${n}". Add players below, import from Sleeper or paste a list.`); } } }, '＋ New team'),
+      team ? h('button.btn.btn-sm', { onclick: () => { const n = ask('Rename team', team.name); if (n) { updateTeam(team.id, { name: n }); roster = myRoster(profile); draw(); } } }, 'Rename') : null,
+      team ? h('button.btn.btn-sm', { title: 'Save a copy of this team (e.g. to try out a different roster)', onclick: () => { const n = ask('Name for the copy', `${team.name} — copy`); if (n) createTeam({ name: n, ids: team.ids, source: team.source ?? null }, profile); } }, 'Copy') : null,
+      team ? h('label.small.muted', { title: 'The league whose settings value this team' }, 'League ',
+        h('select', { 'aria-label': 'League of this team', onchange: (e) => { updateTeam(team.id, { profileId: e.target.value }); save(`team.active.${e.target.value}`, team.id); setProfile(e.target.value); toast(`"${team.name}" now uses ${leagueName(e.target.value)}.`); } },
+          allProfiles().map((p) => h('option', { value: p.id, selected: p.id === profile.id ? true : null }, p.name)))) : null,
+      team ? h('button.btn.btn-sm.btn-danger', { onclick: () => { if (confirm(`Delete the team "${team.name}"? Its roster is removed; your league settings stay.`)) { deleteTeam(team.id); toast(`Deleted "${team.name}".`); } } }, 'Delete') : null);
+  }
+
   function draw() {
     clear(head); clear(body);
     const assets = roster.ids.map((id) => result.getAsset(id)).filter(Boolean);
     const missing = roster.ids.filter((id) => !result.getAsset(id));
+    const team = activeTeam(profile);
     head.append(
-      h('div.panel-head', {}, h('h2', {}, 'My Team'),
+      h('div.panel-head', {}, h('h2', {}, 'My Team', team ? h('span.muted', { style: { fontWeight: 600 } }, ` — ${team.name}`) : null),
         h('div.flex.no-print', {},
           h('button.btn.btn-sm', { onclick: sleeperDialog }, 'Import from Sleeper'),
           h('button.btn.btn-sm', { onclick: pasteDialog }, 'Paste a list'),
-          roster.ids.length ? h('button.btn.btn-sm.btn-danger', { onclick: () => { if (confirm('Remove every player and pick from My Team for this league?')) setIds([], { source: null }); } }, 'Clear') : null)),
-      h('p.small.muted', {}, 'Optional. Your roster for ', h('strong', {}, profile.name), ` (${app.mode} values). With it, the Trade page shows how a trade changes your starting lineup. Saved in this browser, per league.`),
+          roster.ids.length ? h('button.btn.btn-sm.btn-danger', { onclick: () => { if (confirm(`Remove every player and pick from "${team?.name || 'My Team'}"? The team itself stays saved.`)) setIds([], { source: null }); } }, 'Clear') : null)),
+      teamBar(),
+      h('p.small.muted', {}, 'Optional. Save as many teams as you like — each uses a league\'s settings (here ', h('strong', {}, profile.name), `, ${app.mode} values). The Trade page uses the league's selected team to show how a trade changes your starting lineup. Saved in this browser and by the app on this computer.`),
       assetSearchBox({
         getResult: () => result,
         includePicks: app.mode === 'dynasty',
@@ -105,6 +141,73 @@ export function renderTeam(root) {
         return h('span.chip', { title: `${n} rostered, ${st} in your best lineup` }, `${p} ${n} (${st} starting)`);
       })),
       h('p.tiny.muted.mt-s', {}, 'Best lineup = highest-valued eligible players for each starting slot (dedicated slots first, then FLEX, then Superflex), using this league\'s values.')));
+    body.append(targetsPanel(L));
+  }
+
+  // ---- Trade targets by roster need (F46) ----
+  const TARGET_KEY = `myteam.targets.${app.mode}`;
+  const targetCache = new Map();
+  function targetsPanel(L) {
+    const ex = rosterExpectation();
+    const panel = h('section.panel.mt.targets', { 'aria-label': 'Trade targets by roster need' });
+    panel.append(h('div.panel-head', {}, h('h3', {}, 'Trade targets for your roster')));
+    if (!ex) { panel.append(h('p.small.muted', {}, 'Needs redraft projections, which are not in the current data.')); return panel; }
+    // Default value band: up to what the bench and picks are worth — roughly what you could offer without giving up a
+    // starter. Remembered per mode once changed.
+    const benchPlusPicks = L.bench.reduce((s, a) => s + a.value, 0) + roster.ids.map((id) => result.getAsset(id)).filter((a) => a && a.kind === 'pick').reduce((s, a) => s + a.value, 0);
+    const saved = load(TARGET_KEY, {}, isPlainObject);
+    const num = (v) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Math.max(0, Number(v)));
+    const band = { min: num(saved.min) ?? 0, max: num(saved.max) ?? (benchPlusPicks > 0 ? Math.round(benchPlusPicks / 10) * 10 : null), pos: typeof saved.pos === 'string' ? saved.pos : '' };
+    const minIn = h('input', { type: 'number', min: 0, step: 50, value: band.min || '', placeholder: '0', 'aria-label': 'Minimum value', style: { width: '6.5rem' } });
+    const maxIn = h('input', { type: 'number', min: 0, step: 50, value: band.max ?? '', placeholder: 'any', 'aria-label': 'Maximum value', style: { width: '6.5rem' } });
+    const set = (patch) => { save(TARGET_KEY, { ...load(TARGET_KEY, {}, isPlainObject), ...patch }); draw(); };
+    panel.append(h('p.small.muted', {}, 'Players on other NFL rosters who would add the most ', h('strong', {}, 'expected lineup points per week'),
+      ' to this team — each one added on top of your roster, with missed games and your bench as cover (the measure that best predicted how trades turned out in historical league simulations). ',
+      app.mode === 'dynasty' ? 'Points are this season\'s; dynasty values also price future seasons. ' : '',
+      'A measure of fit, not advice: the Trade page shows what the full trade does.'),
+      h('div.flex.no-print', {},
+        h('label.small', {}, 'Value from ', minIn), h('label.small', {}, 'to ', maxIn),
+        h('button.btn.btn-sm', { onclick: () => set({ min: num(minIn.value), max: maxIn.value === '' ? '' : num(maxIn.value) }) }, 'Apply'),
+        benchPlusPicks > 0 ? h('button.btn.btn-sm', { title: 'Up to the value of your bench and picks — roughly what you could offer without giving up a starter', onclick: () => set({ min: null, max: null }) }, `Bench + picks (${fmtValue(benchPlusPicks)})`) : null,
+        h('button.btn.btn-sm', { onclick: () => set({ min: null, max: '' }) }, 'Any value')));
+    const key = `${roster.ids.join(',')}|${band.min}|${band.max}`;
+    if (!targetCache.has(key)) targetCache.set(key, rosterTargets(result, roster.ids, ex, { minValue: band.min, maxValue: band.max ?? Infinity, limit: 200 }));
+    const T = targetCache.get(key);
+    if (T.base === null) { panel.append(h('p.small.muted', {}, 'No lineup to improve yet.')); return panel; }
+    const posFilter = T.byPosition.some((p) => p.position === band.pos) ? band.pos : '';
+    panel.append(h('div.kpis.mt-s', {}, kpi('Your expected lineup points / week', fmt1(T.base), `value band ${fmtValue(band.min)}–${band.max === null ? 'any' : fmtValue(band.max)}`)),
+      h('h4.mt', {}, 'Where an upgrade helps most'),
+      h('div.chips.need-chips', { role: 'group', 'aria-label': 'Positions by gain' },
+        h('button.chip', { 'aria-pressed': String(!posFilter), onclick: () => set({ pos: '' }) }, 'All positions'),
+        T.byPosition.map((p) => h('button.chip', { 'aria-pressed': String(posFilter === p.position), title: p.best ? `Best in the band: ${p.best.asset.name}, +${fmt1(p.best.gain)} points/week. You roster ${p.rostered} ${p.position}, ${p.starters} starting.` : `No player in the value band adds lineup points at ${p.position}.`, onclick: () => set({ pos: p.position }) },
+          h('strong', {}, p.position), ' ', p.best ? `up to +${fmt1(p.best.gain)}/wk` : 'no gain', h('span.muted', {}, ` · ${p.rostered} rostered`)))));
+    const rows = T.targets.filter((t) => !posFilter || t.asset.position === posFilter).slice(0, 15);
+    if (!rows.length) { panel.append(h('p.small.muted.mt-s', {}, 'No player in this value band would add lineup points — try a wider band.')); return panel; }
+    panel.append(h('div.table-wrap.mt-s', {}, h('table.data', {},
+      h('thead', {}, h('tr', {}, h('th', {}, 'Player'), h('th', {}, 'Team'), h('th.num', {}, 'Age'), h('th.num', { title: 'Expected lineup points per week this player would add to this team' }, '+ Pts/wk'), h('th.num', {}, 'Value'), h('th.num', { title: 'Points per week added per 1,000 of value: how much lineup help per unit of trade value' }, 'Pts/wk per 1,000'), h('th', {}, ''))),
+      h('tbody', {}, rows.map((t) => h('tr', {},
+        h('td', {}, h('div.flex', { style: { gap: '.4rem', flexWrap: 'nowrap' } }, posBadge(t.asset.position), h('button.linklike.bold', { type: 'button', onclick: () => openPlayer(t.asset.id) }, t.asset.name), injuryBadge(playerData(t.asset.id)?.injury && { status: playerData(t.asset.id).injury.status || playerData(t.asset.id).injury.official_status }))),
+        h('td.small', {}, `${t.asset.team}${t.asset.posRank ? ` · ${t.asset.position}${t.asset.posRank}` : ''}`),
+        h('td.num', {}, fmtAge(t.asset.age)),
+        h('td.num.bold', {}, `+${fmt1(t.gain)}`),
+        h('td.num', {}, fmtValue(t.asset.value)),
+        h('td.num', {}, fmt1(t.perThousand)),
+        h('td.nowrap.no-print', {}, h('button.btn.btn-xs', { title: 'Start a trade where you receive this player', onclick: () => tradeFor(t.asset.id) }, 'Trade for'))))))),
+    h('p.tiny.muted.mt-s', {}, `Scored: the ${40} most valuable players per position inside the value band (NFL free agents left out). Each gain assumes nobody leaves your roster.`));
+    return panel;
+  }
+
+  // "Trade for" a target: I receive it, so it goes on my side of the trade.
+  function tradeFor(id) {
+    const key = `trade.${app.mode}`;
+    let t = load(key, { a: [], b: [] }, (x) => isPlainObject(x) && isStringArray(x.a) && isStringArray(x.b));
+    const current = [...t.a, ...t.b];
+    if (current.length && !current.some((x) => roster.ids.includes(x)) && confirm(`Start a new trade for ${nameOf(id)}?\n\nOK = new trade · Cancel = add to the trade you are building`)) t = { a: [], b: [], me: t.me };
+    const me = t.me === 'b' ? 'b' : 'a';
+    if (![...t.a, ...t.b].includes(id)) t[me].push(id);
+    t.me = me;
+    save(key, t);
+    location.hash = '#/trade';
   }
 
   // "Trade" on a rostered asset: you give it, so it goes to the side the OTHER team receives.
@@ -160,6 +263,9 @@ export function renderTeam(root) {
     openModal((close) => {
       const lid = h('input', { type: 'text', inputmode: 'numeric', 'aria-label': 'Sleeper league ID', placeholder: 'League ID (the number in your Sleeper league URL)', value: profile.source?.platform === 'sleeper' ? profile.source.league_id : '', style: { width: '100%' } });
       const out = h('div.mt');
+      const cur = activeTeam(profile);
+      // A filled team is kept by default: the import becomes a new saved team named after the Sleeper team.
+      const asNew = h('input', { type: 'checkbox', checked: Boolean(cur && cur.ids.length) });
       const loadTeams = async () => {
         const id = lid.value.trim();
         if (!/^\d{5,25}$/.test(id)) { clear(out).append(h('p.small', {}, 'Enter the numeric league ID.')); return; }
@@ -179,7 +285,9 @@ export function renderTeam(root) {
             const ids = [...new Set([...(r.players || []), ...(r.reserve || []), ...(r.taxi || [])].map(String))];
             return h('button.btn', { style: { justifyContent: 'space-between', width: '100%' }, onclick: () => {
               const cids = ids.map((x) => bySleeper.get(x)).filter(Boolean);
-              setIds(cids, { source: 'sleeper', sleeper_league: id, team_name: label });
+              const meta = { source: 'sleeper', sleeper_league: id, team_name: label };
+              if (asNew.checked || !activeTeam(profile)) { createTeam({ name: label, ...meta, ids: cids }, profile); roster = myRoster(profile); }
+              else setIds(cids, meta);
               close();
               toast(`Imported ${cids.length} of ${ids.length} players from "${label}".${cids.length < ids.length ? ' Unmatched players are not in the current player database.' : ''} Draft picks aren't imported — add them with the search box.`, cids.length < ids.length ? 'warn' : 'ok', 8000);
             } }, h('span.bold', {}, label), h('span.small.muted', {}, `${ids.length} players`));
@@ -190,8 +298,9 @@ export function renderTeam(root) {
       };
       return h('div.modal-body', {},
         h('div.flex-between', {}, h('h3', { style: { margin: 0 } }, 'Import your roster from Sleeper'), h('button.btn.btn-sm', { onclick: close, 'aria-label': 'Close' }, '×')),
-        h('p.small.muted', {}, 'Reads the league\'s public team list from Sleeper (no login). Your current My Team list for this league is replaced.'),
-        h('div.flex', { style: { flexWrap: 'nowrap' } }, lid, h('button.btn.btn-primary', { onclick: loadTeams }, 'Load teams')), out);
+        h('p.small.muted', {}, 'Reads the league\'s public team list from Sleeper (no login).'),
+        h('div.flex', { style: { flexWrap: 'nowrap' } }, lid, h('button.btn.btn-primary', { onclick: loadTeams }, 'Load teams')),
+        cur ? h('label.small.mt-s', { style: { display: 'block' } }, asNew, ` Save as a new team (otherwise "${cur.name}" is replaced)`) : null, out);
     });
   }
 

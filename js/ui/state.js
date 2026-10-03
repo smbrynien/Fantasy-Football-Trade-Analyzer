@@ -145,10 +145,98 @@ export function setDataset(ds) {
 
 export function playerData(cid) { return app.playerById ? app.playerById.get(cid) : null; }
 
-// ---------- My Team: one roster per league profile (browser storage; optional everywhere) ----------
-const isRoster = (r) => isPlainObject(r) && isStringArray(r.ids);
-export function myRoster(profile = activeProfile()) { return load(`myteam.${profile.id}`, { ids: [] }, isRoster); }
+// ---------- My Team: saved teams, each linked to a league profile (browser storage + server copy; optional everywhere) ----------
+// Several teams can be saved, like league profiles: one per league you play in, or several in leagues with the same
+// settings. Each league remembers which of its teams is active; the Trade page uses that one. Before teams existed,
+// every league profile had exactly one roster under `ffta.myteam.<profileId>`; those are migrated once (and kept).
+const isTeam = (t) => isPlainObject(t) && typeof t.id === 'string' && isStringArray(t.ids) && typeof t.name === 'string';
+const now = () => new Date().toISOString();
+const newTeamId = () => `team_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+app.teams = [];
+
+/** One team per legacy `ffta.myteam.<profileId>` roster (non-empty only). */
+export function legacyTeams() {
+  const out = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('ffta.myteam.')) continue;
+      const profileId = key.slice('ffta.myteam.'.length);
+      const r = load(`myteam.${profileId}`, null, (v) => isPlainObject(v) && isStringArray(v.ids));
+      if (!r || !r.ids.length) continue;
+      const { ids, source, sleeper_league, team_name, updated_at } = r;
+      out.push({ id: `team_${profileId}`, name: typeof team_name === 'string' && team_name ? team_name : 'My team', profileId, ids, source: source ?? null, sleeper_league, team_name, updated_at: updated_at || now() });
+    }
+  } catch { /* storage unavailable */ }
+  return out;
+}
+
+export async function initTeams() {
+  let local = load('teams', null, Array.isArray);
+  if (local === null) { local = legacyTeams(); save('teams', local); }
+  const byId = new Map(local.filter(isTeam).map((t) => [t.id, t]));
+  if (hasServer()) {
+    try {
+      for (const r of ((await api.get('/api/teams')).teams || []).filter(isTeam)) {
+        const l = byId.get(r.id);
+        if (!l || (r.updated_at || '') > (l.updated_at || '')) byId.set(r.id, r);
+      }
+    } catch { /* offline */ }
+  }
+  app.teams = [...byId.values()];
+}
+
+export async function persistTeams() {
+  save('teams', app.teams);
+  if (hasServer()) { try { await api.put('/api/teams', { teams: app.teams }); } catch { /* keep local */ } }
+}
+
+export function allTeams() { return app.teams; }
+export function teamsFor(profile = activeProfile()) { return app.teams.filter((t) => t.profileId === profile.id); }
+/** The league's active team: the one chosen last, else its first team, else none. */
+export function activeTeam(profile = activeProfile()) {
+  const list = teamsFor(profile);
+  const id = load(`team.active.${profile.id}`, null, (v) => typeof v === 'string');
+  return list.find((t) => t.id === id) || list[0] || null;
+}
+export function setActiveTeam(id, profile = activeProfile()) { save(`team.active.${profile.id}`, id); emit('team'); }
+
+export function createTeam({ name = 'My team', ids = [], ...meta } = {}, profile = activeProfile()) {
+  const t = { ...meta, id: newTeamId(), name: String(name).slice(0, 80) || 'My team', profileId: profile.id, ids: [...ids], updated_at: now() };
+  app.teams.unshift(t);
+  persistTeams();
+  save(`team.active.${profile.id}`, t.id);
+  emit('team');
+  return t;
+}
+export function updateTeam(id, patch) {
+  const t = app.teams.find((x) => x.id === id);
+  if (!t) return null;
+  Object.assign(t, patch, { updated_at: now() });
+  if (patch.ids) t.ids = [...patch.ids];
+  persistTeams();
+  return t; // no 'team' event: the view that edits a roster redraws itself (a full re-render would drop search focus)
+}
+export function deleteTeam(id) {
+  app.teams = app.teams.filter((t) => t.id !== id);
+  persistTeams();
+  emit('team');
+}
+/** Move every team of one league profile to another (a built-in preset copied on its first edit takes its teams along). */
+export function relinkTeams(fromProfileId, toProfileId) {
+  let moved = 0;
+  for (const t of app.teams) if (t.profileId === fromProfileId) { t.profileId = toProfileId; t.updated_at = now(); moved++; }
+  if (!moved) return;
+  const active = load(`team.active.${fromProfileId}`, null, (v) => typeof v === 'string');
+  if (active) save(`team.active.${toProfileId}`, active);
+  persistTeams();
+}
+
+/** The active team's roster for a league ({ids: []} when the league has no team) — what lineup impact uses. */
+export function myRoster(profile = activeProfile()) { const t = activeTeam(profile); return t ? { ...t, ids: [...t.ids] } : { ids: [] }; }
+/** Save the active team's roster; creates the league's first team when it has none. */
 export function saveMyRoster(ids, meta = {}, profile = activeProfile()) {
-  const prev = myRoster(profile);
-  save(`myteam.${profile.id}`, { ...prev, ...meta, ids: [...ids], updated_at: new Date().toISOString() });
+  const t = activeTeam(profile);
+  if (t) updateTeam(t.id, { ...meta, ids });
+  else createTeam({ name: meta.team_name || 'My team', ...meta, ids }, profile);
 }

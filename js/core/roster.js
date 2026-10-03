@@ -199,3 +199,57 @@ export function rosterImpact(result, rosterIds, giveIds, getIds, { points = null
     overLimit,
   };
 }
+
+// ---- Roster-need targeting (FEATURE_AUDIT F46) ---------------------------------------------------------------------
+// Which positions an upgrade would help THIS roster most, and which players would add the most expected lineup points
+// per week (the E12 measure that predicted trade outcomes best). Each candidate is added to the roster without
+// removing anyone: the gain is what he would add to the weekly lineup — a measure, not a trade evaluation and not
+// advice on whom to trade for (the Trade page evaluates the full trade).
+
+/**
+ * @param result     computeValuations() output (current mode: values and the league)
+ * @param rosterIds  asset ids on my roster (picks are ignored for the lineup)
+ * @param expected   expectationInputs(redraft valuations)
+ * @param minValue / maxValue  value band of the candidates (current mode's values)
+ * @param perPosition  candidates scored per position (the most valuable ones inside the band)
+ * @param limit      number of targets returned
+ * @returns {base, targets: [{asset, gain, perThousand}], byPosition: [{position, best, gains, starters, rostered}]}
+ */
+export function rosterTargets(result, rosterIds, expected, { minValue = 0, maxValue = Infinity, perPosition = 40, limit = 25, minGain = 0.05 } = {}) {
+  const league = result.league;
+  const mine = rosterIds.map((id) => getAsset(result, id)).filter(Boolean);
+  const base = expectedLineupPoints(mine, league, expected);
+  if (base === null) return { base: null, targets: [], byPosition: [] };
+  const onRoster = new Set(rosterIds);
+  // Only positions that can fill a starting slot in this league.
+  const lineupPositions = [...new Set(lineupSlots(league).flat())].sort((x, y) => DEDICATED.indexOf(x) - DEDICATED.indexOf(y));
+  const byPos = new Map(lineupPositions.map((p) => [p, []]));
+  for (const a of result.assets.values()) {
+    // NFL free agents (no team) are waiver pickups at best, not trade targets.
+    if (a.kind !== 'player' || onRoster.has(a.id) || !byPos.has(a.position) || !a.team || a.team === 'FA') continue;
+    if (!(a.value > 0) || a.value < minValue || a.value > maxValue) continue;
+    byPos.get(a.position).push(a);
+  }
+  const L = bestLineup(mine, league);
+  const all = [];
+  const byPosition = [];
+  for (const [position, list] of byPos) {
+    list.sort((x, y) => y.value - x.value || String(x.id).localeCompare(String(y.id)));
+    const scored = list.slice(0, perPosition).map((asset) => {
+      const gain = expectedLineupPoints([...mine, asset], league, expected) - base;
+      return { asset, gain, perThousand: asset.value > 0 ? (gain / asset.value) * 1000 : null };
+    }).filter((t) => t.gain >= minGain);
+    scored.sort((x, y) => y.gain - x.gain || x.asset.value - y.asset.value);
+    all.push(...scored);
+    byPosition.push({
+      position,
+      best: scored[0] || null,
+      gains: scored.length,
+      starters: L.starters.filter((a) => a.position === position).length,
+      rostered: mine.filter((a) => a.kind === 'player' && a.position === position).length,
+    });
+  }
+  byPosition.sort((x, y) => (y.best?.gain ?? 0) - (x.best?.gain ?? 0) || lineupPositions.indexOf(x.position) - lineupPositions.indexOf(y.position));
+  all.sort((x, y) => y.gain - x.gain || x.asset.value - y.asset.value);
+  return { base, targets: all.slice(0, limit), byPosition };
+}

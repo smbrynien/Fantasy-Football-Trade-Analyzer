@@ -2,7 +2,7 @@
 
 import { h, clear, timeAgo, toast } from './ui/dom.js';
 import { detectServer, hasServer, loadConfig, loadDataset } from './ui/api.js';
-import { app, on, initProfiles, setMode, setProfile, allProfiles, activeProfile, setDataset } from './ui/state.js';
+import { app, on, initProfiles, initTeams, setMode, setProfile, allProfiles, activeProfile, setDataset } from './ui/state.js';
 import { refreshStatus, startSync, resumeIfRunning } from './ui/sync.js';
 import { renderTrade } from './ui/views/trade.js';
 import { renderTeam } from './ui/views/team.js';
@@ -148,6 +148,7 @@ async function boot() {
     return;
   }
   await initProfiles();
+  await initTeams();
   try { setDataset(await loadDataset()); } catch (e) { toast(`Could not load cached dataset: ${e.message}`, 'bad'); }
   await refreshStatus();
 
@@ -185,6 +186,7 @@ async function boot() {
       return;
     }
     if (evt === 'status') { renderDataPill(); renderBanner(); if (current && current.view === 'data') render(); return; }
+    if (evt === 'team') { if (current && ['team', 'trade'].includes(current.view)) render(); return; }
     if (['mode', 'profile', 'dataset', 'profiles'].includes(evt)) {
       renderHeader();
       renderBanner();

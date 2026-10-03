@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Automated model audit: `npm run audit-model` → reports/audit/*.json (+ CSV)
 //   --only=e1,…,e13,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
+//   --only=scorecard    only rewrite scorecard.csv/.json from the reports already in the output dir (no experiments)
 //   E1–E4 (2.0.0 audit): preseason/in-season/dynasty backtests, rookie curve. E5–E8 (2.2.0 audit): hindsight-free
 //   lineup value (σ), historical league simulation (trades, package), verdict calibration, dynasty value spacing.
 //   E9–E13 (2.3.0 research): signal weights from projection/ADP archives, ± calibration, availability by rank,
@@ -154,5 +155,33 @@ if (!setupOnly) {
   if (mono) rows.push(['Monotonicity', mono.label, 'current', 'failures', mono.failures]);
   if (pk) for (const [m, v] of Object.entries(pk.overall || {})) rows.push(['Package simulation', pk.label, m, 'corr(model diff, simulated lineup gain)', v]);
   if (rows.length > 1) { fs.writeFileSync(path.join(OUT, 'scorecard.csv'), rows.map((r) => r.map((c) => (/[",]/.test(String(c)) ? `"${String(c).replace(/"/g, '""')}"` : c)).join(',')).join('\n')); console.log(`  wrote ${rel(path.join(OUT, 'scorecard.csv'))}`); }
+  // scorecard.json: the same rows grouped by experiment, with each report's own description and candidate labels, for
+  // the Model page (reports/audit/scorecard.json is served; the other audit files are not).
+  if (rows.length > 1) {
+    const { loadConfig } = await import('../server/lib/config.js');
+    const reportOf = { E1: 'e1-preseason-redraft', E1b: 'e1-preseason-redraft', E2: 'e2-inseason-ros', E3: 'e3-dynasty', E4: 'e4-rookie-curve', E5: 'e5-lineup-value', E6: 'e6-league-simulation', E7: 'e7-verdict-calibration', E8: 'e8-dynasty-spacing', E9: 'e9-signal-weights', E10: 'e10-uncertainty', E12: 'e12-roster-values', Monotonicity: 'cur-monotonicity', Package: 'cur-package-simulation' };
+    const fallback = { Monotonicity: 'Monotonicity checks on current data (e.g. more projected points or a younger age never lowers a value)', Package: 'Package-adjustment simulation on current data (does the adjustment track the simulated lineup gain of uneven trades?)' };
+    const candidateLabels = (rep) => {
+      const out = {};
+      for (const [k, v] of Object.entries(rep?.preseason?.candidates || {})) if (typeof v?.label === 'string') out[k] = v.label;
+      for (const [k, v] of Object.entries(rep?.summary || {})) if (typeof v?.label === 'string') out[k] = v.label;
+      for (const [k, v] of Object.entries(rep?.predictors || {})) if (typeof v === 'string') out[k] = v;
+      return out;
+    };
+    const groups = new Map();
+    for (const [name, label, model, metric, value] of rows.slice(1)) {
+      if (!groups.has(name)) {
+        const key = name.split(' ')[0];
+        const rep = reportOf[key] ? rd(reportOf[key]) : null;
+        groups.set(name, { name, id: key, data_label: label, description: (typeof rep?.experiment === 'string' && rep.experiment) || fallback[key] || '', candidates: candidateLabels(rep), rows: [] });
+      }
+      groups.get(name).rows.push({ model, metric, value: typeof value === 'number' ? value : Number(value) });
+    }
+    const e13 = rd('e13-archive-backtest');
+    const pending = e13?.skipped ? [{ name: 'E13 market weight from the daily signal archive', data_label: e13.label, reason: e13.reason }] : [];
+    // The model the reports were run with (the current-data label names it), not the one installed when the scorecard is rebuilt.
+    const audited = String(rd('cur-meta')?.label || '').match(/model (\d+\.\d+\.\d+)/)?.[1] || loadConfig().model.model_version;
+    write('scorecard', { generated_at: new Date().toISOString(), model_version: audited, note: 'One row per experiment, candidate and metric (scorecard.csv). Full reports: reports/audit/*.json; method and conclusions: docs/MODEL_AUDIT.md.', experiments: [...groups.values()], pending });
+  }
 }
 console.log(`done in ${((Date.now() - t0) / 1000).toFixed(0)}s`);

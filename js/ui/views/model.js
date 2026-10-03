@@ -4,6 +4,7 @@ import { h, append, clear, fmt1, fmtPctPlain } from '../dom.js';
 import { app, getValuations, activeLeague } from '../state.js';
 import { buildModel } from '../../core/settings.js';
 import { lineChart } from '../charts.js';
+import { pivotExperiment, headline, candidateLabel, evidenceKind, metricDirection, fmtMetric } from '../audit-scorecard.js';
 
 const POS_COLORS = { QB: '#dc2626', RB: '#059669', WR: '#2563eb', TE: '#d97706' };
 
@@ -34,6 +35,8 @@ export function renderModel(root) {
       h('p', {}, Object.entries(res.weights).filter(([, w]) => w > 0).map(([k, w]) => `${k} ${Math.round(w * 100)}%`).join(' · ')),
       h('p.small.muted', {}, `Points→value factor ${res.factor.toFixed(2)} · computed in ${res.meta.compute_ms} ms · data ${res.meta.data_version}.`)));
   }
+
+  root.append(auditPanel());
 
   // Calibration
   const calPanel = h('div.panel', {}, h('h2', {}, 'Calibration (from historical data)'));
@@ -79,4 +82,52 @@ export function renderModel(root) {
     }
     if (rep.conclusions) bt.append(h('h3.mt', {}, 'Takeaways'), h('ul', {}, rep.conclusions.map((c) => h('li', {}, c))));
   }).catch(() => { clear(bt).append(h('h2', {}, 'Backtesting'), h('p.muted', {}, 'Backtest report unavailable.')); });
+}
+
+// Model audit scorecard: every experiment of `npm run audit-model` (walk-forward backtests on real historical data,
+// league simulations, checks on current data), as committed in reports/audit/scorecard.json.
+function auditPanel() {
+  const panel = h('section.panel.audit-scorecard', { 'aria-label': 'Model audit scorecard' }, h('h2', {}, 'Model audit scorecard'), h('p.muted', {}, 'Loading audit results…'));
+  fetch('reports/audit/scorecard.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((sc) => {
+    clear(panel).append(h('h2', {}, 'Model audit scorecard'));
+    if (!sc || !Array.isArray(sc.experiments) || !sc.experiments.length) {
+      panel.append(h('p.muted', {}, 'No audit scorecard found. Run `npm run audit-model` (or `npm run audit-model -- --only=scorecard` to rebuild it from existing reports).'));
+      return;
+    }
+    panel.append(
+      h('p.small', {}, 'How the model was tested. Each experiment compares the model (and alternatives, "candidates") against what actually happened, using only information available at the time — the evidence behind the weights and formulas above. ',
+        h('strong', {}, 'Bold'), ' = best candidate for that metric (higher is better for correlations, lower for errors and losses, closest to 0 for bias).'),
+      h('p.small.muted', {}, `Audit outputs for model ${sc.model_version}${sc.generated_at ? `, scorecard written ${new Date(sc.generated_at).toLocaleDateString()}` : ''}. `,
+        h('a', { href: 'reports/audit/scorecard.csv', download: 'model-audit-scorecard.csv' }, 'Download the scorecard (CSV)'), ' · method and conclusions: ', h('a', { href: 'docs/MODEL_AUDIT.md', target: '_blank', rel: 'noopener' }, 'docs/MODEL_AUDIT.md'), '.'));
+    // Summary: one row per experiment.
+    panel.append(h('div.table-wrap', {}, h('table.data.audit-summary', {},
+      h('thead', {}, h('tr', {}, h('th', {}, 'Experiment'), h('th', {}, 'What it tests'), h('th', {}, 'Evidence'), h('th', {}, 'Best result'))),
+      h('tbody', {}, sc.experiments.map((e) => {
+        const hl = headline(e);
+        const lab = hl && candidateLabel(e, hl.model);
+        return h('tr', {},
+          h('td.bold.nowrap', {}, e.name),
+          h('td.small', {}, String(e.description || '').replace(/^E\d+b?\s+/, '')),
+          h('td.small.nowrap', { title: e.data_label }, evidenceKind(e.data_label)),
+          h('td.small', {}, hl ? [h('strong', {}, hl.model), lab ? h('span.muted', {}, ` (${lab})`) : null, ` — ${hl.metric} ${fmtMetric(hl.value)}${hl.tied ? ' (tied)' : ''}`] : h('span.muted', {}, 'Calibration (not a ranking) — see the results below')));
+      }),
+      (sc.pending || []).map((p) => h('tr', {}, h('td.bold', {}, p.name), h('td.small.muted', { colspan: 3 }, `Waiting for data: ${p.reason}`)))))));
+    // Details: candidate × metric per experiment, folded.
+    panel.append(h('h3.mt', {}, 'All results by experiment'));
+    for (const e of sc.experiments) {
+      const p = pivotExperiment(e);
+      panel.append(h('details.audit-exp', {},
+        h('summary', {}, h('strong', {}, e.name), h('span.small.muted', {}, ` · ${p.models.length} candidate${p.models.length === 1 ? '' : 's'} · ${evidenceKind(e.data_label)}`)),
+        h('p.small.muted', {}, e.description, e.data_label ? ` Data: ${e.data_label}.` : ''),
+        h('div.table-wrap', {}, h('table.data', {},
+          h('thead', {}, h('tr', {}, h('th', {}, 'Candidate'), p.metrics.map((m) => {
+            const dir = metricDirection(m);
+            return h('th.num', { title: dir === 'higher' ? 'Higher is better' : dir === 'lower' ? 'Lower is better' : dir === 'zero' ? 'Closest to 0 is better' : 'Not ranked' }, m, dir ? h('span.muted', {}, dir === 'higher' ? ' ↑' : dir === 'lower' ? ' ↓' : ' →0') : null);
+          }))),
+          h('tbody', {}, p.models.map((m) => h('tr', {},
+            h('td', {}, h('span.bold', {}, m), candidateLabel(e, m) ? h('div.tiny.muted', {}, candidateLabel(e, m)) : null),
+            p.metrics.map((metric) => h('td.num', { class: p.best[metric]?.includes(m) ? 'bold best' : '' }, fmtMetric(p.cell(m, metric)))))))))));
+    }
+  }).catch(() => { clear(panel).append(h('h2', {}, 'Model audit scorecard'), h('p.muted', {}, 'Audit scorecard unavailable.')); });
+  return panel;
 }

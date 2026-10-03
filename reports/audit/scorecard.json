@@ -1,0 +1,1476 @@
+{
+  "generated_at": "2026-10-03T15:38:32.616Z",
+  "model_version": "2.3.0",
+  "note": "One row per experiment, candidate and metric (scorecard.csv). Full reports: reports/audit/*.json; method and conclusions: docs/MODEL_AUDIT.md.",
+  "experiments": [
+    {
+      "name": "E1 preseason redraft",
+      "id": "E1",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E1 preseason redraft (season PPR points)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "ecr",
+          "metric": "spearman",
+          "value": 0.505
+        },
+        {
+          "model": "ecr",
+          "metric": "MAE",
+          "value": 57.247
+        },
+        {
+          "model": "prodLastSeason",
+          "metric": "spearman",
+          "value": 0.41
+        },
+        {
+          "model": "prodLastSeason",
+          "metric": "MAE",
+          "value": 61.701
+        },
+        {
+          "model": "prodLastSeasonWithUsage",
+          "metric": "spearman",
+          "value": 0.433
+        },
+        {
+          "model": "prodLastSeasonWithUsage",
+          "metric": "MAE",
+          "value": 61.636
+        },
+        {
+          "model": "blend",
+          "metric": "spearman",
+          "value": 0.505
+        },
+        {
+          "model": "blend",
+          "metric": "MAE",
+          "value": 57.247
+        }
+      ]
+    },
+    {
+      "name": "E1b value scale",
+      "id": "E1b",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E1 preseason redraft (season PPR points)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "det",
+          "metric": "MAE",
+          "value": 27.155
+        },
+        {
+          "model": "det",
+          "metric": "bias ranks 1-6",
+          "value": -14.516
+        },
+        {
+          "model": "det",
+          "metric": "bias ranks 7-18",
+          "value": -12.299
+        },
+        {
+          "model": "det",
+          "metric": "bias ranks 19-36",
+          "value": -14.005
+        },
+        {
+          "model": "det",
+          "metric": "bias ranks 37-99",
+          "value": -13.819
+        },
+        {
+          "model": "exp",
+          "metric": "MAE",
+          "value": 30.413
+        },
+        {
+          "model": "exp",
+          "metric": "bias ranks 1-6",
+          "value": -8.417
+        },
+        {
+          "model": "exp",
+          "metric": "bias ranks 7-18",
+          "value": -0.199
+        },
+        {
+          "model": "exp",
+          "metric": "bias ranks 19-36",
+          "value": -2.006
+        },
+        {
+          "model": "exp",
+          "metric": "bias ranks 37-99",
+          "value": 1.893
+        },
+        {
+          "model": "emp",
+          "metric": "MAE",
+          "value": 29.985
+        },
+        {
+          "model": "emp",
+          "metric": "bias ranks 1-6",
+          "value": -2.508
+        },
+        {
+          "model": "emp",
+          "metric": "bias ranks 7-18",
+          "value": -1.142
+        },
+        {
+          "model": "emp",
+          "metric": "bias ranks 19-36",
+          "value": -1.221
+        },
+        {
+          "model": "emp",
+          "metric": "bias ranks 37-99",
+          "value": 0.231
+        }
+      ]
+    },
+    {
+      "name": "E2 in-season ROS",
+      "id": "E2",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E2 in-season rest-of-season points (walk-forward by season)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "ecr",
+          "metric": "spearman",
+          "value": 0.49
+        },
+        {
+          "model": "ecr",
+          "metric": "MAE",
+          "value": 32.476
+        },
+        {
+          "model": "seasonPPG",
+          "metric": "spearman",
+          "value": 0.443
+        },
+        {
+          "model": "seasonPPG",
+          "metric": "MAE",
+          "value": 37.346
+        },
+        {
+          "model": "last4",
+          "metric": "spearman",
+          "value": 0.416
+        },
+        {
+          "model": "last4",
+          "metric": "MAE",
+          "value": 38.466
+        },
+        {
+          "model": "usageOnly",
+          "metric": "spearman",
+          "value": 0.373
+        },
+        {
+          "model": "usageOnly",
+          "metric": "MAE",
+          "value": 37.618
+        },
+        {
+          "model": "currentModelProd",
+          "metric": "spearman",
+          "value": 0.427
+        },
+        {
+          "model": "currentModelProd",
+          "metric": "MAE",
+          "value": 36.131
+        },
+        {
+          "model": "fittedProd",
+          "metric": "spearman",
+          "value": 0.453
+        },
+        {
+          "model": "fittedProd",
+          "metric": "MAE",
+          "value": 35.685
+        },
+        {
+          "model": "fittedProdNoSOS",
+          "metric": "spearman",
+          "value": 0.459
+        },
+        {
+          "model": "fittedProdNoSOS",
+          "metric": "MAE",
+          "value": 35.563
+        },
+        {
+          "model": "currentBlend",
+          "metric": "spearman",
+          "value": 0.487
+        },
+        {
+          "model": "currentBlend",
+          "metric": "MAE",
+          "value": 35.47
+        },
+        {
+          "model": "fittedBlend",
+          "metric": "spearman",
+          "value": 0.512
+        },
+        {
+          "model": "fittedBlend",
+          "metric": "MAE",
+          "value": 34.485
+        }
+      ]
+    },
+    {
+      "name": "E3 dynasty",
+      "id": "E3",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E3 dynasty: preseason ranking → realized 3-season discounted surplus (leak-free refit per season)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "ecr",
+          "metric": "spearman",
+          "value": 0.581
+        },
+        {
+          "model": "fundamental",
+          "metric": "spearman",
+          "value": 0.508
+        },
+        {
+          "model": "noAgeCurve",
+          "metric": "spearman",
+          "value": 0.484
+        },
+        {
+          "model": "noAttrition",
+          "metric": "spearman",
+          "value": 0.508
+        },
+        {
+          "model": "noDraftPrior",
+          "metric": "spearman",
+          "value": 0.483
+        },
+        {
+          "model": "deterministicSurplus",
+          "metric": "spearman",
+          "value": 0.494
+        },
+        {
+          "model": "year1Only",
+          "metric": "spearman",
+          "value": 0.469
+        },
+        {
+          "model": "blend_ecr25",
+          "metric": "spearman",
+          "value": 0.544
+        },
+        {
+          "model": "blend_ecr50",
+          "metric": "spearman",
+          "value": 0.573
+        },
+        {
+          "model": "blend_ecr75",
+          "metric": "spearman",
+          "value": 0.582
+        },
+        {
+          "model": "fundamental k10_g1",
+          "metric": "spearman",
+          "value": 0.508
+        },
+        {
+          "model": "fundamental k10_g1.5",
+          "metric": "spearman",
+          "value": 0.517
+        },
+        {
+          "model": "fundamental k10_g2",
+          "metric": "spearman",
+          "value": 0.518
+        },
+        {
+          "model": "fundamental k20_g1",
+          "metric": "spearman",
+          "value": 0.521
+        },
+        {
+          "model": "fundamental k20_g1.5",
+          "metric": "spearman",
+          "value": 0.521
+        },
+        {
+          "model": "fundamental k20_g2",
+          "metric": "spearman",
+          "value": 0.518
+        },
+        {
+          "model": "fundamental k40_g1",
+          "metric": "spearman",
+          "value": 0.518
+        },
+        {
+          "model": "fundamental k40_g1.5",
+          "metric": "spearman",
+          "value": 0.517
+        },
+        {
+          "model": "fundamental k40_g2",
+          "metric": "spearman",
+          "value": 0.509
+        }
+      ]
+    },
+    {
+      "name": "E4 rookie slot curve",
+      "id": "E4",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E4 rookie slot value curve (leave-one-class-out)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "isotonicAverage",
+          "metric": "LOO MAE",
+          "value": 40.707
+        },
+        {
+          "model": "isotonicAverage",
+          "metric": "LOO bias",
+          "value": 0
+        },
+        {
+          "model": "exponential",
+          "metric": "LOO MAE",
+          "value": 34.121
+        },
+        {
+          "model": "exponential",
+          "metric": "LOO bias",
+          "value": -21.466
+        },
+        {
+          "model": "power",
+          "metric": "LOO MAE",
+          "value": 35.03
+        },
+        {
+          "model": "power",
+          "metric": "LOO bias",
+          "value": -22.975
+        },
+        {
+          "model": "linear",
+          "metric": "LOO MAE",
+          "value": 32.309
+        },
+        {
+          "model": "linear",
+          "metric": "LOO bias",
+          "value": -25.07
+        },
+        {
+          "model": "logarithmic",
+          "metric": "LOO MAE",
+          "value": 34.741
+        },
+        {
+          "model": "logarithmic",
+          "metric": "LOO bias",
+          "value": -31.082
+        },
+        {
+          "model": "exponentialLS",
+          "metric": "LOO MAE",
+          "value": 37.899
+        },
+        {
+          "model": "exponentialLS",
+          "metric": "LOO bias",
+          "value": -5.236
+        },
+        {
+          "model": "linearLS",
+          "metric": "LOO MAE",
+          "value": 36.732
+        },
+        {
+          "model": "linearLS",
+          "metric": "LOO bias",
+          "value": -10.052
+        }
+      ]
+    },
+    {
+      "name": "E5 lineup value (preseason)",
+      "id": "E5",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E5 hindsight-free lineup value (12-team 1QB PPR)",
+      "candidates": {
+        "det": "deterministic (σ = 0)",
+        "model": "expected surplus, 2.1.x σ (preseason table)",
+        "v22": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+        "fit": "expected surplus, m × model σ, m fitted on earlier seasons",
+        "rate": "expected surplus, rate-only σ (weekly noise removed)",
+        "v22_smooth": "E11: 0.4σ, availability = smooth non-increasing curve by rank",
+        "v22_pos": "E11: 0.4σ, availability = one share per position",
+        "v22_none": "E11: 0.4σ, no availability (every team game, as healthy projections)",
+        "v22_rel": "E11: 0.4σ, within-position availability shape (smooth curve ÷ position starter share)",
+        "v22_reltier": "E11: 0.4σ, within-position shape from the 5-tier table",
+        "v22_relcap": "E11: 0.4σ, within-position shape, held flat beyond 2× 12-team starters (backups: role, not injury)"
+      },
+      "rows": [
+        {
+          "model": "det",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.132
+        },
+        {
+          "model": "det",
+          "metric": "value ratio ranks 1-6",
+          "value": 0.991
+        },
+        {
+          "model": "det",
+          "metric": "value ratio ranks 7-12",
+          "value": 1.014
+        },
+        {
+          "model": "det",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.091
+        },
+        {
+          "model": "det",
+          "metric": "value ratio ranks 25-36",
+          "value": 0.947
+        },
+        {
+          "model": "det",
+          "metric": "value ratio ranks 37-72",
+          "value": 0.706
+        },
+        {
+          "model": "model",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.306
+        },
+        {
+          "model": "model",
+          "metric": "value ratio ranks 1-6",
+          "value": 0.961
+        },
+        {
+          "model": "model",
+          "metric": "value ratio ranks 7-12",
+          "value": 1.063
+        },
+        {
+          "model": "model",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.282
+        },
+        {
+          "model": "model",
+          "metric": "value ratio ranks 25-36",
+          "value": 1.2
+        },
+        {
+          "model": "model",
+          "metric": "value ratio ranks 37-72",
+          "value": 1.574
+        },
+        {
+          "model": "v22",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.02
+        },
+        {
+          "model": "v22",
+          "metric": "value ratio ranks 1-6",
+          "value": 0.984
+        },
+        {
+          "model": "v22",
+          "metric": "value ratio ranks 7-12",
+          "value": 1.026
+        },
+        {
+          "model": "v22",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.138
+        },
+        {
+          "model": "v22",
+          "metric": "value ratio ranks 25-36",
+          "value": 0.978
+        },
+        {
+          "model": "v22",
+          "metric": "value ratio ranks 37-72",
+          "value": 0.953
+        },
+        {
+          "model": "fit",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.073
+        },
+        {
+          "model": "fit",
+          "metric": "value ratio ranks 1-6",
+          "value": 0.989
+        },
+        {
+          "model": "fit",
+          "metric": "value ratio ranks 7-12",
+          "value": 1.018
+        },
+        {
+          "model": "fit",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.102
+        },
+        {
+          "model": "fit",
+          "metric": "value ratio ranks 25-36",
+          "value": 0.955
+        },
+        {
+          "model": "fit",
+          "metric": "value ratio ranks 37-72",
+          "value": 0.781
+        },
+        {
+          "model": "rate",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.075
+        },
+        {
+          "model": "rate",
+          "metric": "value ratio ranks 1-6",
+          "value": 0.978
+        },
+        {
+          "model": "rate",
+          "metric": "value ratio ranks 7-12",
+          "value": 1.035
+        },
+        {
+          "model": "rate",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.163
+        },
+        {
+          "model": "rate",
+          "metric": "value ratio ranks 25-36",
+          "value": 1.032
+        },
+        {
+          "model": "rate",
+          "metric": "value ratio ranks 37-72",
+          "value": 1.25
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.017
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "value ratio ranks 1-6",
+          "value": 1.011
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "value ratio ranks 7-12",
+          "value": 0.983
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.127
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "value ratio ranks 25-36",
+          "value": 0.954
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "value ratio ranks 37-72",
+          "value": 0.978
+        },
+        {
+          "model": "v22_pos",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.028
+        },
+        {
+          "model": "v22_pos",
+          "metric": "value ratio ranks 1-6",
+          "value": 1.011
+        },
+        {
+          "model": "v22_pos",
+          "metric": "value ratio ranks 7-12",
+          "value": 0.983
+        },
+        {
+          "model": "v22_pos",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.157
+        },
+        {
+          "model": "v22_pos",
+          "metric": "value ratio ranks 25-36",
+          "value": 1.026
+        },
+        {
+          "model": "v22_pos",
+          "metric": "value ratio ranks 37-72",
+          "value": 1.079
+        },
+        {
+          "model": "v22_none",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.033
+        },
+        {
+          "model": "v22_none",
+          "metric": "value ratio ranks 1-6",
+          "value": 1.008
+        },
+        {
+          "model": "v22_none",
+          "metric": "value ratio ranks 7-12",
+          "value": 0.987
+        },
+        {
+          "model": "v22_none",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.168
+        },
+        {
+          "model": "v22_none",
+          "metric": "value ratio ranks 25-36",
+          "value": 1.039
+        },
+        {
+          "model": "v22_none",
+          "metric": "value ratio ranks 37-72",
+          "value": 1.09
+        },
+        {
+          "model": "v22_rel",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.018
+        },
+        {
+          "model": "v22_rel",
+          "metric": "value ratio ranks 1-6",
+          "value": 1.008
+        },
+        {
+          "model": "v22_rel",
+          "metric": "value ratio ranks 7-12",
+          "value": 0.987
+        },
+        {
+          "model": "v22_rel",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.138
+        },
+        {
+          "model": "v22_rel",
+          "metric": "value ratio ranks 25-36",
+          "value": 0.966
+        },
+        {
+          "model": "v22_rel",
+          "metric": "value ratio ranks 37-72",
+          "value": 0.986
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.022
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "value ratio ranks 1-6",
+          "value": 0.981
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "value ratio ranks 7-12",
+          "value": 1.031
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.15
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "value ratio ranks 25-36",
+          "value": 0.99
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "value ratio ranks 37-72",
+          "value": 0.962
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.018
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "value ratio ranks 1-6",
+          "value": 1.008
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "value ratio ranks 7-12",
+          "value": 0.987
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "value ratio ranks 13-24",
+          "value": 1.138
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "value ratio ranks 25-36",
+          "value": 0.97
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "value ratio ranks 37-72",
+          "value": 0.996
+        }
+      ]
+    },
+    {
+      "name": "E5 lineup value (from week 5)",
+      "id": "E5",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E5 hindsight-free lineup value (12-team 1QB PPR)",
+      "candidates": {
+        "det": "deterministic (σ = 0)",
+        "model": "expected surplus, 2.1.x σ (preseason table)",
+        "v22": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+        "fit": "expected surplus, m × model σ, m fitted on earlier seasons",
+        "rate": "expected surplus, rate-only σ (weekly noise removed)",
+        "v22_smooth": "E11: 0.4σ, availability = smooth non-increasing curve by rank",
+        "v22_pos": "E11: 0.4σ, availability = one share per position",
+        "v22_none": "E11: 0.4σ, no availability (every team game, as healthy projections)",
+        "v22_rel": "E11: 0.4σ, within-position availability shape (smooth curve ÷ position starter share)",
+        "v22_reltier": "E11: 0.4σ, within-position shape from the 5-tier table",
+        "v22_relcap": "E11: 0.4σ, within-position shape, held flat beyond 2× 12-team starters (backups: role, not injury)"
+      },
+      "rows": [
+        {
+          "model": "det",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.249
+        },
+        {
+          "model": "model",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.579
+        },
+        {
+          "model": "v22",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.16
+        },
+        {
+          "model": "fit",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.249
+        },
+        {
+          "model": "rate",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.28
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.213
+        },
+        {
+          "model": "v22_pos",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.213
+        },
+        {
+          "model": "v22_none",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.213
+        },
+        {
+          "model": "v22_rel",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.21
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.154
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.208
+        }
+      ]
+    },
+    {
+      "name": "E5 lineup value (from week 9)",
+      "id": "E5",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E5 hindsight-free lineup value (12-team 1QB PPR)",
+      "candidates": {
+        "det": "deterministic (σ = 0)",
+        "model": "expected surplus, 2.1.x σ (preseason table)",
+        "v22": "expected surplus, 0.4 × 2.1.x σ (model 2.2.0)",
+        "fit": "expected surplus, m × model σ, m fitted on earlier seasons",
+        "rate": "expected surplus, rate-only σ (weekly noise removed)",
+        "v22_smooth": "E11: 0.4σ, availability = smooth non-increasing curve by rank",
+        "v22_pos": "E11: 0.4σ, availability = one share per position",
+        "v22_none": "E11: 0.4σ, no availability (every team game, as healthy projections)",
+        "v22_rel": "E11: 0.4σ, within-position availability shape (smooth curve ÷ position starter share)",
+        "v22_reltier": "E11: 0.4σ, within-position shape from the 5-tier table",
+        "v22_relcap": "E11: 0.4σ, within-position shape, held flat beyond 2× 12-team starters (backups: role, not injury)"
+      },
+      "rows": [
+        {
+          "model": "det",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.388
+        },
+        {
+          "model": "model",
+          "metric": "tier loss (log ratio²)",
+          "value": 1.81
+        },
+        {
+          "model": "v22",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.665
+        },
+        {
+          "model": "fit",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.388
+        },
+        {
+          "model": "rate",
+          "metric": "tier loss (log ratio²)",
+          "value": 1.022
+        },
+        {
+          "model": "v22_smooth",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.679
+        },
+        {
+          "model": "v22_pos",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.785
+        },
+        {
+          "model": "v22_none",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.806
+        },
+        {
+          "model": "v22_rel",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.691
+        },
+        {
+          "model": "v22_reltier",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.676
+        },
+        {
+          "model": "v22_relcap",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.69
+        }
+      ]
+    },
+    {
+      "name": "E6 league simulation",
+      "id": "E6",
+      "data_label": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+      "description": "E6 historical league simulation (12-team 1QB PPR, 13-man rosters, weekly lineups + waivers)",
+      "candidates": {
+        "current": "2.1.2: σ = model table, healthy games, β .35, package 1/1",
+        "current_raw": "2.1.2 without package adjustment (plain sums)",
+        "s04": "σ × 0.4, healthy games",
+        "s04_avail": "σ × 0.4, expected games (availability)",
+        "s0_avail": "σ = 0 (deterministic), availability",
+        "s04_avail_raw": "σ × 0.4, availability, no package adjustment",
+        "s04_avail_b0": "σ × 0.4, availability, β 0 (no bench value)",
+        "s04_avail_b07": "σ × 0.4, availability, β .7",
+        "s04_avail_pk05": "σ × 0.4, availability, displacement .5",
+        "s04_avail_pk15": "σ × 0.4, availability, displacement 1.5, keep ≥ .1",
+        "s04_avail_slot2": "σ × 0.4, availability, roster-slot cost × 2",
+        "s04_pg_tier": "E11: σ × 0.4, per-game availability (5-tier table)",
+        "s04_pg_smooth": "E11: σ × 0.4, per-game availability (smooth curve by rank)",
+        "s04_pg_pos": "E11: σ × 0.4, per-game availability (one share per position)",
+        "s04_pg_rel": "E11: σ × 0.4, within-position availability shape only",
+        "s04_pg_relcap": "E11: σ × 0.4, within-position availability shape, flat beyond 2× starters (model 2.3.0)",
+        "s1_avail": "σ = model table, availability"
+      },
+      "rows": [
+        {
+          "model": "current",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.542
+        },
+        {
+          "model": "current",
+          "metric": "corr, uneven player counts",
+          "value": 0.54
+        },
+        {
+          "model": "current_raw",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.523
+        },
+        {
+          "model": "current_raw",
+          "metric": "corr, uneven player counts",
+          "value": 0.522
+        },
+        {
+          "model": "s04",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.549
+        },
+        {
+          "model": "s04",
+          "metric": "corr, uneven player counts",
+          "value": 0.547
+        },
+        {
+          "model": "s04_avail",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.527
+        },
+        {
+          "model": "s04_avail",
+          "metric": "corr, uneven player counts",
+          "value": 0.527
+        },
+        {
+          "model": "s0_avail",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.527
+        },
+        {
+          "model": "s0_avail",
+          "metric": "corr, uneven player counts",
+          "value": 0.527
+        },
+        {
+          "model": "s04_avail_raw",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.522
+        },
+        {
+          "model": "s04_avail_raw",
+          "metric": "corr, uneven player counts",
+          "value": 0.523
+        },
+        {
+          "model": "s04_avail_b0",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.529
+        },
+        {
+          "model": "s04_avail_b0",
+          "metric": "corr, uneven player counts",
+          "value": 0.53
+        },
+        {
+          "model": "s04_avail_b07",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.521
+        },
+        {
+          "model": "s04_avail_b07",
+          "metric": "corr, uneven player counts",
+          "value": 0.521
+        },
+        {
+          "model": "s04_avail_pk05",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.53
+        },
+        {
+          "model": "s04_avail_pk05",
+          "metric": "corr, uneven player counts",
+          "value": 0.531
+        },
+        {
+          "model": "s04_avail_pk15",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.521
+        },
+        {
+          "model": "s04_avail_pk15",
+          "metric": "corr, uneven player counts",
+          "value": 0.52
+        },
+        {
+          "model": "s04_avail_slot2",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.526
+        },
+        {
+          "model": "s04_avail_slot2",
+          "metric": "corr, uneven player counts",
+          "value": 0.526
+        },
+        {
+          "model": "s04_pg_tier",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.541
+        },
+        {
+          "model": "s04_pg_tier",
+          "metric": "corr, uneven player counts",
+          "value": 0.54
+        },
+        {
+          "model": "s04_pg_smooth",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.545
+        },
+        {
+          "model": "s04_pg_smooth",
+          "metric": "corr, uneven player counts",
+          "value": 0.544
+        },
+        {
+          "model": "s04_pg_pos",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.541
+        },
+        {
+          "model": "s04_pg_pos",
+          "metric": "corr, uneven player counts",
+          "value": 0.539
+        },
+        {
+          "model": "s04_pg_rel",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.552
+        },
+        {
+          "model": "s04_pg_rel",
+          "metric": "corr, uneven player counts",
+          "value": 0.551
+        },
+        {
+          "model": "s04_pg_relcap",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.552
+        },
+        {
+          "model": "s04_pg_relcap",
+          "metric": "corr, uneven player counts",
+          "value": 0.551
+        },
+        {
+          "model": "s1_avail",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.521
+        },
+        {
+          "model": "s1_avail",
+          "metric": "corr, uneven player counts",
+          "value": 0.52
+        }
+      ]
+    },
+    {
+      "name": "E7 verdict calibration",
+      "id": "E7",
+      "data_label": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+      "description": "E7 trade verdict calibration (share of simulated trades won by the side receiving more value)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "margin 0-5%",
+          "metric": "share won by favoured side",
+          "value": 0.551
+        },
+        {
+          "model": "margin 5-10%",
+          "metric": "share won by favoured side",
+          "value": 0.53
+        },
+        {
+          "model": "margin 10-20%",
+          "metric": "share won by favoured side",
+          "value": 0.571
+        },
+        {
+          "model": "margin 20-30%",
+          "metric": "share won by favoured side",
+          "value": 0.552
+        },
+        {
+          "model": "margin 30-50%",
+          "metric": "share won by favoured side",
+          "value": 0.636
+        },
+        {
+          "model": "margin 50-75%",
+          "metric": "share won by favoured side",
+          "value": 0.724
+        },
+        {
+          "model": "margin 75-100%",
+          "metric": "share won by favoured side",
+          "value": 0.799
+        }
+      ]
+    },
+    {
+      "name": "E8 dynasty spacing",
+      "id": "E8",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E8 dynasty value spacing (3-season hindsight-free lineup value, discount 0.82)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "ecr_on_curve_cv0",
+          "metric": "tier loss (log ratio²)",
+          "value": 13.416
+        },
+        {
+          "model": "fundamental_cv0",
+          "metric": "tier loss (log ratio²)",
+          "value": 2.694
+        },
+        {
+          "model": "ecr_on_curve_cv0.5",
+          "metric": "tier loss (log ratio²)",
+          "value": 1.399
+        },
+        {
+          "model": "fundamental_cv0.5",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.522
+        },
+        {
+          "model": "ecr_on_curve_cv1",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.043
+        },
+        {
+          "model": "fundamental_cv1",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.016
+        },
+        {
+          "model": "ecr_on_curve_cv1.25",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.015
+        },
+        {
+          "model": "fundamental_cv1.25",
+          "metric": "tier loss (log ratio²)",
+          "value": 0.053
+        }
+      ]
+    },
+    {
+      "name": "E9 preseason weights",
+      "id": "E9",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E9 signal weights from leak-free historical archives (Sleeper/Rotowire weekly projections, Sleeper + FFC preseason ADP)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "consensus",
+          "metric": "spearman (season points)",
+          "value": 0.478
+        },
+        {
+          "model": "projection",
+          "metric": "spearman (season points)",
+          "value": 0.472
+        },
+        {
+          "model": "projectionPts",
+          "metric": "spearman (season points)",
+          "value": 0.475
+        },
+        {
+          "model": "adp",
+          "metric": "spearman (season points)",
+          "value": 0.486
+        },
+        {
+          "model": "adpSleeper",
+          "metric": "spearman (season points)",
+          "value": 0.492
+        },
+        {
+          "model": "adpFFC",
+          "metric": "spearman (season points)",
+          "value": 0.417
+        },
+        {
+          "model": "app",
+          "metric": "spearman (season points)",
+          "value": 0.49
+        },
+        {
+          "model": "ecrProj",
+          "metric": "spearman (season points)",
+          "value": 0.489
+        },
+        {
+          "model": "fit",
+          "metric": "spearman (season points)",
+          "value": 0.492
+        },
+        {
+          "model": "fitPts",
+          "metric": "spearman (season points)",
+          "value": 0.491
+        }
+      ]
+    },
+    {
+      "name": "E9 in-season weights",
+      "id": "E9",
+      "data_label": "REAL HISTORICAL DATA",
+      "description": "E9 signal weights from leak-free historical archives (Sleeper/Rotowire weekly projections, Sleeper + FFC preseason ADP)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "consensus",
+          "metric": "MAE (rest-of-season points)",
+          "value": 32.349
+        },
+        {
+          "model": "projection",
+          "metric": "MAE (rest-of-season points)",
+          "value": 31.901
+        },
+        {
+          "model": "production",
+          "metric": "MAE (rest-of-season points)",
+          "value": 32.681
+        },
+        {
+          "model": "app",
+          "metric": "MAE (rest-of-season points)",
+          "value": 31.516
+        },
+        {
+          "model": "ecrProj",
+          "metric": "MAE (rest-of-season points)",
+          "value": 31.52
+        },
+        {
+          "model": "fit",
+          "metric": "MAE (rest-of-season points)",
+          "value": 31.547
+        },
+        {
+          "model": "fitW",
+          "metric": "MAE (rest-of-season points)",
+          "value": 31.519
+        }
+      ]
+    },
+    {
+      "name": "E10 ± calibration",
+      "id": "E10",
+      "data_label": "REAL HISTORICAL outcomes; signal disagreement rebuilt from leak-free archives (consensus, projection, ADP; no market history)",
+      "description": "E10 calibration of the ± range (player outcomes 2021–2025 preseason; E6 simulated trades)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "app ± range",
+          "metric": "share of season outcomes inside ±1",
+          "value": 0.128
+        },
+        {
+          "model": "signal disagreement",
+          "metric": "spearman with outcome error",
+          "value": 0.125
+        }
+      ]
+    },
+    {
+      "name": "E10 win-probability models",
+      "id": "E10",
+      "data_label": "REAL HISTORICAL outcomes; signal disagreement rebuilt from leak-free archives (consensus, projection, ADP; no market history)",
+      "description": "E10 calibration of the ± range (player outcomes 2021–2025 preseason; E6 simulated trades)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "margin",
+          "metric": "test log-likelihood per trade",
+          "value": -0.595
+        },
+        {
+          "model": "zShare",
+          "metric": "test log-likelihood per trade",
+          "value": -0.595
+        },
+        {
+          "model": "zApp",
+          "metric": "test log-likelihood per trade",
+          "value": -0.591
+        },
+        {
+          "model": "zDis",
+          "metric": "test log-likelihood per trade",
+          "value": -0.641
+        }
+      ]
+    },
+    {
+      "name": "E12 roster-specific values",
+      "id": "E12",
+      "data_label": "REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour",
+      "description": "E12 roster-specific trade evaluation (E6 leagues, 12-team 1QB PPR)",
+      "candidates": {
+        "generic": "2.2.0 generic values (σ × 0.4) + package adjustment (the trade verdict)",
+        "lineupValue": "Δ summed generic value of the best starting lineup (My Team \"lineup value\")",
+        "lineupPoints": "Δ starters' projected points per game (My Team)",
+        "expected": "Δ expected season lineup points with availability, bench cover and waiver fill-ins",
+        "blend_expected_x": "standardised generic and expected, weight x on expected"
+      },
+      "rows": [
+        {
+          "model": "generic",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.549
+        },
+        {
+          "model": "lineupValue",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.562
+        },
+        {
+          "model": "lineupPoints",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.538
+        },
+        {
+          "model": "expected",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.576
+        },
+        {
+          "model": "blend_expected_0.25",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.56
+        },
+        {
+          "model": "blend_expected_0.5",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.569
+        },
+        {
+          "model": "blend_expected_0.75",
+          "metric": "corr(predicted margin, realised outcome)",
+          "value": 0.574
+        },
+        {
+          "model": "generic",
+          "metric": "corr(predicted own change, own realised gain)",
+          "value": 0.5
+        },
+        {
+          "model": "lineupValue",
+          "metric": "corr(predicted own change, own realised gain)",
+          "value": 0.526
+        },
+        {
+          "model": "lineupPoints",
+          "metric": "corr(predicted own change, own realised gain)",
+          "value": 0.49
+        },
+        {
+          "model": "expected",
+          "metric": "corr(predicted own change, own realised gain)",
+          "value": 0.547
+        }
+      ]
+    },
+    {
+      "name": "Monotonicity",
+      "id": "Monotonicity",
+      "data_label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
+      "description": "Monotonicity checks on current data (e.g. more projected points or a younger age never lowers a value)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "current",
+          "metric": "failures",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "Package simulation",
+      "id": "Package",
+      "data_label": "CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",
+      "description": "Package-adjustment simulation on current data (does the adjustment track the simulated lineup gain of uneven trades?)",
+      "candidates": {},
+      "rows": [
+        {
+          "model": "raw",
+          "metric": "corr(model diff, simulated lineup gain)",
+          "value": 0.596
+        },
+        {
+          "model": "packageAdjusted",
+          "metric": "corr(model diff, simulated lineup gain)",
+          "value": 0.602
+        }
+      ]
+    }
+  ],
+  "pending": [
+    {
+      "name": "E13 market weight from the daily signal archive",
+      "data_label": "REAL DATA from the app's own daily signal archive (data/archive)",
+      "reason": "The archive has 0 day(s) (— … —) and no completed season with at least 4 archived weeks yet. Keep the app syncing; the first full test is possible after the season ends."
+    }
+  ]
+}

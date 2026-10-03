@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { computeValuations } from '../js/core/valuation/engine.js';
-import { bestLineup, rosterImpact } from '../js/core/roster.js';
+import { bestLineup, rosterImpact, rosterTargets, expectationInputs, expectedLineupPoints } from '../js/core/roster.js';
 import { makeDataset, loadTestConfig, readConfig } from './fixtures/make-dataset.js';
 
 const config = loadTestConfig();
@@ -86,4 +86,45 @@ test('rosterImpact (dynasty): picks count in total value, never in the lineup; d
   assert.equal(r.before.picks, 2);
   assert.equal(r.after.picks, 1, 'one of the two identical picks is traded');
   assert.ok(r.before.lineup.starters.every((a) => a.kind === 'player'));
+});
+
+// Roster-need targeting (FEATURE_AUDIT F46): expected lineup points each candidate would add to this roster.
+test('rosterTargets: gains are exact expected-lineup deltas, sorted, and exclude my roster, NFL free agents and the value band', () => {
+  const ids = team(red);
+  const ex = expectationInputs(red);
+  const T = rosterTargets(red, ids, ex, { maxValue: 3000, limit: 500 });
+  const mine = ids.map((id) => A(red, id));
+  assert.ok(Math.abs(T.base - expectedLineupPoints(mine, red.league, ex)) < 1e-9);
+  assert.ok(T.targets.length > 0);
+  for (const t of T.targets.slice(0, 10)) {
+    assert.ok(!ids.includes(t.asset.id), 'never a player already on my roster');
+    assert.ok(t.asset.team && t.asset.team !== 'FA', 'no NFL free agents');
+    assert.ok(t.asset.value <= 3000 && t.asset.value > 0, 'inside the value band');
+    const exact = expectedLineupPoints([...mine, t.asset], red.league, ex) - T.base;
+    assert.ok(Math.abs(t.gain - exact) < 1e-9, 'gain = expected lineup points with the player − without');
+    assert.ok(Math.abs(t.perThousand - (t.gain / t.asset.value) * 1000) < 1e-9);
+  }
+  for (let i = 1; i < T.targets.length; i++) assert.ok(T.targets[i - 1].gain >= T.targets[i].gain, 'sorted by gain');
+  // byPosition: one row per lineup position, ordered by the best gain; each best is that position's top target.
+  assert.deepEqual([...T.byPosition.map((p) => p.position)].sort(), ['DEF', 'K', 'QB', 'RB', 'TE', 'WR']);
+  for (let i = 1; i < T.byPosition.length; i++) assert.ok((T.byPosition[i - 1].best?.gain ?? 0) >= (T.byPosition[i].best?.gain ?? 0));
+  for (const p of T.byPosition.filter((x) => x.best)) assert.equal(p.best.asset.id, T.targets.find((t) => t.asset.position === p.position).asset.id);
+  assert.equal(T.byPosition.find((p) => p.position === 'TE').rostered, 2);
+  // A tighter band only removes candidates.
+  const lo = rosterTargets(red, ids, ex, { minValue: 500, maxValue: 1500, limit: 500 });
+  assert.ok(lo.targets.every((t) => t.asset.value >= 500 && t.asset.value <= 1500));
+  // Deterministic: same roster, same answer.
+  assert.deepEqual(rosterTargets(red, ids, ex, { maxValue: 3000 }).targets.map((t) => t.asset.id), T.targets.slice(0, 25).map((t) => t.asset.id));
+});
+
+test('rosterTargets: a position with no starter is where an upgrade helps most; an empty roster has no base', () => {
+  const ex = expectationInputs(red);
+  const noTE = team(red).filter((id) => A(red, id).position !== 'TE');
+  const T = rosterTargets(red, noTE, ex, { maxValue: 2500 });
+  const te = T.byPosition.find((p) => p.position === 'TE');
+  assert.equal(te.starters, 0);
+  assert.ok(te.best.gain > T.byPosition.find((p) => p.position === 'RB').best.gain, 'filling an empty TE slot beats another RB');
+  const none = rosterTargets(red, [], ex);
+  assert.ok(none.base !== null, 'an empty roster still has a waiver-level lineup');
+  assert.ok(none.targets.length > 0);
 });
