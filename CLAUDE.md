@@ -9,6 +9,20 @@
   never force-push `main`.
 - Run `npm test` before pushing; push only when tests pass (report failures instead of pushing broken code).
 
+## Target platform: desktop only (standing instruction from the repository owner, 2026-10-03)
+
+- **This analyzer is meant for desktop use only, not for phones or other mobile devices.** It runs in a desktop
+  browser on the same computer as its local server.
+- **Do not make changes or improvements whose only purpose is mobile use**: no new phone layouts, phone-only
+  features, touch-specific work, phone-width polish, or phone access (e.g. LAN/"phone mode" serving). Treat existing
+  backlog items that are mobile-only as out of scope.
+- **Do not delete existing mobile features or responsive CSS just because they are mobile-only.** Remove or simplify
+  them only when that improves the desktop experience (e.g. it simplifies desktop code or fixes a desktop problem).
+- **Prioritize desktop in all future improvements, bug checks and tests.** Verify UI changes first at desktop widths
+  (1360 px primary; narrower desktop/laptop windows down to about 1024 px should stay usable). Existing phone-width
+  E2E checks (390 px) stay as regression guards for what already exists, but add no new phone-only checks; when a
+  desktop improvement changes phone-width behaviour, update those checks to match rather than adding mobile work.
+
 ## Project quick reference
 
 - Start: `npm start` (http://127.0.0.1:5177) · Sync: `npm run sync` · Tests: `npm test`

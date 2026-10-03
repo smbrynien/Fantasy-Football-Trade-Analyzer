@@ -5,9 +5,14 @@
 > the second 2026-10-03 session: the **research batch → model 2.3.0** (docs/MODEL_AUDIT.md §21: E9 signal weights on
 > historical archives + daily signal archive, E10 ± calibration, E11 availability by rank, E12 roster-specific values,
 > E13 archive backtest), then the **second usability audit** (docs/USABILITY_AUDIT.md, FEATURE_AUDIT.md; UI only, no
-> value change) — see §38 for the git state.
+> value change) — see §38 for the git state. Third 2026-10-03 session: start-state verification, then the owner's
+> **desktop-only** decision (§1a).
 > The code is the source of truth. Verify anything here before acting on it, and **update this file** when the
 > project's state changes (see §42 "Maintaining this handoff").
+>
+> **DESKTOP ONLY (permanent owner decision, 2026-10-03; also in `CLAUDE.md`):** the analyzer is meant for desktop use
+> only, not mobile. Make no changes or improvements whose only purpose is mobile use; keep existing mobile features
+> unless removing them improves desktop; prioritize desktop in every improvement, bug check and test. See §1a.
 >
 > Verification tags used below: **[verified]** = run or inspected this session · **[inferred from code]** = read in
 > code, not exercised · **[documented, not independently verified]** · **[unverified]**.
@@ -54,9 +59,31 @@ disappearing, stays transparent, and keeps getting more accurate through evidenc
 | Custom K/DEF scoring, contracts, IDP, best ball, auction, keeper | **Not implemented** |
 | Yahoo / FantasyPros API adapters | **Planned only** (reserved env vars in `.env.example`) |
 
+## 1a. Target platform: desktop only (permanent owner decision, 2026-10-03)
+
+The repository owner decided that the analyzer is **intended for desktop use only** (a desktop/laptop browser on the
+same computer as the local server), **not for phones or other mobile devices**. The rule is recorded in `CLAUDE.md`
+and applies to all future sessions:
+
+* **No mobile-only work.** Do not make changes or improvements whose only purpose is mobile use — no new phone
+  layouts, phone-only features, touch-specific work, phone-width polish, or phone access (LAN / "safe phone mode"
+  serving). Backlog items that are mobile-only are **out of scope** (§34: F45/G-23 safe phone mode, G-27 phone tab
+  rows).
+* **Keep what exists.** Existing mobile features and responsive CSS (phone cards, pinned verdict bar, folded pick
+  picker, phone header, the Help answer "Can I use it on my phone?") are **not** deleted just for being mobile-only.
+  Remove or simplify them only when that improves the desktop experience (simpler desktop code, a desktop bug fix).
+* **Desktop first in improvements, bug checks and tests.** Verify UI changes first at desktop widths: **1360 px is
+  the primary width**; narrower desktop/laptop windows (down to ≈1024 px; the E2E's 721 px header check guards small
+  windows) should stay usable. The E2E's existing 390 px checks stay as regression guards for what already exists;
+  add no new phone-only checks, and when a desktop improvement changes phone-width behaviour, update those checks to
+  match rather than doing mobile work. Usability and bug audits should rank desktop findings first and record
+  phone-only findings as out of scope.
+
 ## 2. Current project status
 
 ```text
+Platform:        DESKTOP ONLY (owner decision 2026-10-03, §1a, CLAUDE.md): no mobile-only work; desktop first in
+                 all improvements, bug checks and tests; existing mobile features kept.
 Overall Status:  Working, tested. Model 2.3.0 (research batch 2026-10-03, MODEL_AUDIT.md §21: redraft availability
                  shape by positional rank, redraft verdict levels from the calibrated outcome frequency, range of
                  outcomes in the player view, My Team expected lineup points, daily signal archive; weights confirmed
@@ -89,7 +116,8 @@ UX Audit:        TWO audits. First (2026-10-02/03; Appendix A of docs/USABILITY_
                  offers, two-asset combinations. SECOND (2026-10-03, after 2.3.0; G-01–G-32): duplicate-safe search,
                  nickname search, mode carry-over, "This trade in other league formats", Compare answer line, player
                  value drivers, model settings folded, Data-quality summary first, phone trims, "/" shortcut, import/
-                 scoring labels. UI only — asset values and trade analyses unchanged by construction.
+                 scoring labels. UI only — asset values and trade analyses unchanged by construction. Since the
+                 desktop-only decision (§1a) future UX audits rank desktop first; phone findings are out of scope.
 Testing:         147/147 node:test tests pass (≈8 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
                  (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
@@ -542,6 +570,7 @@ TE premium (`|tep − bonus_rec_te|` ×5).
 ## 16. Current UI / UX
 
 Verified by Playwright screenshots this session (desktop 1360 px and mobile 390 px); E2E run: no console errors.
+**Desktop only (§1a):** the phone behaviour listed below exists and is kept, but gets no further work.
 
 | Page (route) | Purpose | Main interactions | Data | Known UX issues |
 |---|---|---|---|---|
@@ -803,8 +832,9 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
   * **Not found by the audit, discovered while writing this handoff:** bug #1 (FA ADP-only values). The audit's
     monotonicity and extreme-case checks covered top players, not deep free agents. Fixed in 2.1.0 (§17 item 6).
 * **Second usability audit** (2026-10-03, after 2.3.0) — `docs/USABILITY_AUDIT.md` §1–16 + friction log G-01–G-32 (§17
-  item 22). Open: G-23 phone access (Tier 2 safe phone mode), G-24 merge data-source tables, G-25/26 Players columns,
-  G-27 phone tab rows, G-28 dynasty verdict calibration (model), G-29–G-32 polish.
+  item 22). Open: G-24 merge data-source tables, G-25/26 Players columns, G-28 dynasty verdict calibration (model),
+  G-29–G-32 polish. Out of scope since the desktop-only decision (§1a): G-23 phone access (safe phone mode), G-27
+  phone tab rows.
 * **First usability audit** (2026-10-02/03) — Appendix A of `docs/USABILITY_AUDIT.md` (friction log F-01–F-47) and
   `docs/FEATURE_AUDIT.md` (F1–F40). Open from it: F-34–F-36 done since; F-40 (package charge on a star acquired for
   picks, model question), F-41, F-44 (chart text alternatives).
@@ -822,7 +852,8 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 * Uncertainty over fake precision (values rounded to 10, ± shown, z-based verdicts).
 * Evidence before complexity: change formulas only with walk-forward evidence; keep untestable parts simple and
   labelled as judgment.
-* Simple for non-technical users (double-click start, zero dependencies) and responsive on mobile.
+* Simple for non-technical users (double-click start, zero dependencies). **Desktop only** (owner decision
+  2026-10-03, §1a): existing responsive/phone layouts are kept, but no further mobile-only work is done.
 
 ## 23. Important non-goals
 
@@ -832,6 +863,7 @@ No flaky tests have been observed (66/66 across several runs in the 2.0.0 sessio
 * Does not require advanced settings for basic use (presets + defaults).
 * Does not present projections or dynasty outlooks as precise forecasts.
 * Does not scrape sites whose terms prohibit it.
+* Does not target phones or other mobile devices (§1a): no mobile-only features, layouts or access modes.
 * Does not fold a user's roster into asset values: values stay league-generic; roster context (My Team lineup value and
   expected lineup points, 2.3.0) is shown alongside the verdict, never mixed into it.
 
@@ -868,7 +900,8 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **145 tests, 145 pass, ≈8 s, no network** [verified 2026-10-03, second session]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **147 tests, 147 pass, ≈9 s, no network** [verified 2026-10-03, third session]. **Desktop first
+(§1a):** new UI tests target desktop widths; the existing 390 px E2E checks remain as regression guards only. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
@@ -877,7 +910,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `model-2-2.test.js` | 7 | 2.2.0: calibration shape helpers + shipped curves monotone, dynasty current-season share/tail/discount (offseason unchanged), dynasty games-lost injuries, SoS off but configurable, σ effect on depth vs stars, trade outcome frequency (redraft only) |
 | `history-series.test.js` | 3 | Trends model-version boundaries, markers, within-model change vs raw-series change |
 | `server.test.js` | 6 | HTTP hardening: path traversal, malformed requests, CSRF/DNS rebinding, saved-trade ids, JSON body validation (BUG_AUDIT A1–A6) |
-| `search.test.js` | 3 | asset search de-dup, suffixes, team-code prefixes (SR1–SR3) |
+| `search.test.js` | 4 | asset search de-dup, suffixes, team-code prefixes (SR1–SR3) |
 | `audit-tool.test.js` | 3 | `audit-model` CLI on the synthetic fixture in temp dirs: fresh clone skips, freeze needs data, baseline/data mismatch skips, freeze → baseline → re-sync → compare uses frozen data |
 | `adapters.test.js` | 1 | ESPN ADP undrafted-default collapse (stubbed HTTP; first adapter-level test) |
 | `identity.test.js` | 12 | normalizers, ID/name matching, suffixes/nicknames, team change, ambiguous never merged, conflicts, overrides, DEF, PlayerStore |
@@ -888,7 +921,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `balance.test.js` | 10 | Even it out / Value matches: correct side, exact (= analyzeTrade), sorted, improves the gap, no free agents, generic picks only, one-sided matches, read-only, `only` (my roster); combinations: exact, each asset once, no fillers, player + pick shown, a generic pick doubled only when allowed, none for close/empty trades, read-only |
 | `counteroffers.test.js` | 5 | sameTrade (order, sides, duplicate picks), tradeChanges (multiset), addVariant (incomplete/duplicate/full, labels), rows = analyzeTrade with changes vs the original, lineup impact per variant |
 | `roster.test.js` | 6 | best lineup (dedicated/FLEX/SF, empty slots), lineup impact (starters in/out, points, unchanged starters, not-on-roster, roster overflow), dynasty picks and duplicate generic picks |
-| `trade-helpers.test.js` | 4 | verdict headline wording, market check cases, "B +6,160" formatting, share-link round trip and junk handling |
+| `trade-helpers.test.js` | 5 | verdict headline wording, market check cases, "B +6,160" formatting, share-link round trip and junk handling |
 | `valuation.test.js` | 20 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection, market list QB-format exclusion, TEP list preference |
 | `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
@@ -899,7 +932,7 @@ player), My Team (add → "Trade" → You/Them labels → lineup impact), every 
 
 Gaps: no test for most adapters against recorded real responses (only ESPN ADP, stubbed), the HTTP API routes,
 deeper UI flows (see above), Sleeper league import, history/trends, the audit backtests (E1–E4).
-Manual checks still worth doing after UI changes: trade builder on mobile, import wizard end-to-end in the browser,
+Manual checks still worth doing after UI changes (desktop browser, 1360 px first, §1a): trade builder, import wizard end-to-end,
 Settings overrides round-trip, Sleeper league import with a real league ID.
 
 ## 27. Current validation / benchmark results
@@ -1061,12 +1094,12 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 | Research | In-season deepest tier still over-valued (E5 week 9: ranks 37–72 ratio ≈2.1 even with availability) | redraft depth values late in season | partly addressed by 2.3.0 | E5 harness | `redraft.js`, `scripts/audit/lineup.js` |
 | Research | Package adjustment in dynasty (E6 is redraft-only) | multi-player dynasty trades | E6 validates redraft packages | dynasty simulation | `trade.js`, `scripts/audit/league.js` |
 | Low | Counteroffers: include in share link / text summary; server copy | sharing a negotiation | browser-only | — | `trade.js`, `counteroffers.js` |
-| Medium | Safe phone mode: opt-in read-only LAN serving with a pairing code (FEATURE_AUDIT F45, G-23) | offers arrive on phones; today needs `HOST=0.0.0.0` (no auth) | Help explains the manual route | security design (read-only routes, token) | `server/index.js`, launchers |
+| ~~Medium~~ **Out of scope** (desktop only, §1a) | ~~Safe phone mode: opt-in read-only LAN serving with a pairing code (FEATURE_AUDIT F45, G-23)~~ — do not build | offers arrive on phones; today needs `HOST=0.0.0.0` (no auth) | Help explains the manual route | security design (read-only routes, token) | `server/index.js`, launchers |
 | Medium | Roster-need targeting from My Team (F46) | trade targeting with roster context | not started | E12 `expectedLineupPoints` exists | `roster.js`, `team.js`, `players.js` |
 | Low | Merge Data → Sources into the dashboard (F47); Players: positional rank column, fewer default columns (F48) | simplicity | not started | — | `data.js`, `players.js` |
 | Low | My Team: Sleeper draft picks (`traded_picks`), refresh from Sleeper, server copy of rosters | completeness | players only, browser-only | — | `js/ui/views/team.js`, `server/index.js` |
 | Research | Package charge on a star acquired for picks (usability F-40) | experienced users find it wrong | roster-economics argument supports it (the receiving team's displaced starter loses his surplus — what the charge measures); not testable in E6 (redraft has no picks) | dynasty simulation | `trade.js` `packageAdjustment` |
-| Low | Chart text alternatives (F-44); column-chooser target size (G-30); one import warning instead of one per row (G-31); phone tab rows in dynasty (G-27) | polish / a11y | open (player summary-first and input labels done in the second audit) | — | `charts.js`, `players.js`, `import-service.js`, `css/app.css` |
+| Low | Chart text alternatives (F-44); column-chooser target size (G-30); one import warning instead of one per row (G-31) (phone tab rows in dynasty, G-27: out of scope, §1a) | polish / a11y | open (player summary-first and input labels done in the second audit) | — | `charts.js`, `players.js`, `import-service.js`, `css/app.css` |
 
 ## 35. Recommended next steps
 
@@ -1077,8 +1110,8 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 4. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
     dead weight in redraft). Measure size and valuation time before and after.
 5. *(done 2026-10-03 — counteroffer table and combination value matches, §17 item 19; second usability audit, §17
-   item 22, incl. the advanced-settings toggle)*. Next (FEATURE_AUDIT §8 Tier 2): **safe phone mode** (F45),
-   **roster-need targeting** (F46), **Sleeper draft picks + "refresh from Sleeper"** on My Team, merge Data → Sources
+   item 22, incl. the advanced-settings toggle)*. Next (FEATURE_AUDIT §8 Tier 2, desktop only — safe phone mode F45
+   is out of scope, §1a): **roster-need targeting** (F46), **Sleeper draft picks + "refresh from Sleeper"** on My Team, merge Data → Sources
    into the dashboard (F47).
 6. *(done 2026-10-03 — second model audit → 2.2.0, §17 item 20; research batch → 2.3.0, §17 item 21: archives + E9,
    ± calibration E10, availability E11, roster-specific E12, daily archive + E13)*. Model research next: E13 after the
@@ -1099,10 +1132,13 @@ Current state:            Model 2.3.0 after the research batch (docs/MODEL_AUDIT
                           bug-audit bugs fixed. Two usability audits done (second: duplicate-safe search, other formats, Compare
                           answer, mode carry-over, folded model settings…). 147/147 tests, lint
                           clean (also in CI), E2E pass at 3 widths. All 10 sources sync (2026-10-03).
-Most important unfinished: safe phone mode (FEATURE_AUDIT F45), roster-need targeting (F46), My Team Sleeper picks +
+Platform rule:            DESKTOP ONLY (§1a, CLAUDE.md): no mobile-only work; desktop first in improvements, bug
+                          checks and tests; keep existing mobile features unless removing them helps desktop.
+Most important unfinished: roster-need targeting (F46), My Team Sleeper picks +
                           refresh, §35 items 3–4 (audit scorecard on
                           the Model page; prune ADP-only players), E13 market-weight backtest after the 2026 season,
                           dynasty verdict calibration (owner decision on interim thresholds), byes in expected lineup.
+                          (Safe phone mode F45 dropped: desktop only.)
 Known blockers:           None (no live Sleeper league was available to test the roster import; it was tested
                           against a mocked API).
 Files to inspect first:   model: config/model.json, js/core/valuation/{redraft,dynasty,trade}.js, js/core/roster.js,
@@ -1117,7 +1153,7 @@ Expected immediate action: next item in §35, with tests; update this handoff in
 
 Bug #1 check (run from the repo root after a sync; expected: no `adp`-only weights among free agents. Since 2.2.0's
 σ × 0.4 the corroborated FAs fall below 100, so the count printed is usually **0** — on 2026-10-03 the top FAs were Tyreek
-Hill 87, Zane Gonzalez 22, Odell Beckham 20, all with consensus; raise the threshold to `> 0` to see them):
+Hill 74–87, Zane Gonzalez 21–22, Odell Beckham 18–20 (varies by sync), all with consensus; raise the threshold to `> 0` to see them):
 
 ```bash
 node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
@@ -1146,14 +1182,17 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
 8. The container is ephemeral: `data/` (git-ignored) won't exist in a new session — run `npm run sync`. Lint and E2E
    are in the repo now (`npm run lint`, `npm run test:e2e`); the cloud container has ESLint 10 and Playwright
    installed globally.
-9. Update this file after **any** change to the project (owner's standing instruction in `CLAUDE.md`), in the same
+9. **Desktop only** (owner decision 2026-10-03, §1a, `CLAUDE.md`): make no mobile-only changes; prioritize desktop in
+   every improvement, bug check and test; don't delete existing mobile features unless that improves desktop.
+10. Update this file after **any** change to the project (owner's standing instruction in `CLAUDE.md`), in the same
    commit, and add new bugs, decisions or architectural changes here.
 
 ## 38. Git / version control state
 
 * Remote: `https://github.com/smbrynien/Fantasy-Football-Trade-Analyzer` (public). Default branch `main`.
 * Branches: the 2.0.0 session used `claude/brave-mccarthy-uib8s8`; the 2.1.0 session
-  `claude/funny-heisenberg-v7kjan`; the 2026-10-03 sessions `ccr-b282d622-b6p0w3` and `ccr-2d9e7d22-uuseb6` (2.3.0). Per `CLAUDE.md` every commit is pushed to the session branch **and** to `main`
+  `claude/funny-heisenberg-v7kjan`; the 2026-10-03 sessions `ccr-b282d622-b6p0w3` and `ccr-2d9e7d22-uuseb6` (2.3.0), then
+  `claude/exciting-knuth-7e9bsg` (third 2026-10-03 session: verification + desktop-only rule). Per `CLAUDE.md` every commit is pushed to the session branch **and** to `main`
   (fast-forward; never force-push `main`).
 * Recent commits: `cb8e7ff` initial full app → `f80fcc6` CLAUDE.md → `7ac5d50` non-technical distribution →
   `464841f` model audit + 2.0.0 → `ac054d8` handoff → `a0548bd` CLAUDE.md "update the handoff after any change" →
@@ -1172,12 +1211,19 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   (verdict-first trade result, Even it out / value matches, share, Model − Market, grouped settings, a11y) → My Team
   + lineup impact + "Which side is you?" (`4508193`) → counteroffer table + two-asset combination matches
   (`4f85c0d`) → second model audit + model 2.2.0 (`55d5e88`, release tag `v1.0.0-build.26`) → research batch + model
-  2.3.0 (`938a023`, release build 27) → second usability audit (this update; UI only). CI (release.yml) succeeded for
+  2.3.0 (`938a023`, release build 27) → second usability audit (`e464f5b`; UI only) → desktop-only rule in CLAUDE.md
+  and this handoff (§1a; docs only). CI (release.yml) succeeded for
   every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 
 ## 39. Confidence in this handoff
+
+* **Verified in the third 2026-10-03 session (start, before the desktop-only note):** HEAD = origin/main at `e464f5b`,
+  clean tree; `npm test` 147/147; lint clean; E2E pass; `npm run sync` 10/10 OK (10.0 s, 92.6 MB, `2026-10-03-19640cbc`,
+  2,206 players, 266 pick values, unresolved 24 / ambiguous 2); `npm start` + headless Chromium on all 9 routes at
+  1360/390 px (no console errors, no page overflow); bug #1 check: 0 ADP-only FAs, top FAs Tyreek Hill 74, Zane Gonzalez
+  21, Odell Beckham 18 (all corroborated). Corrected stale counts in §26 (145 → 147; search 3 → 4, trade-helpers 4 → 5).
 
 * **Verified in the second usability audit (same session, after 2.3.0):** 72 crawled renders (0 console errors, 0 page
   overflow, 0 nameless buttons/unlabeled inputs after the fixes), real Sync All + Force full refresh from the UI (10/10
