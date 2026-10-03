@@ -1,6 +1,8 @@
 # Feature Audit — opportunity matrix and priorities
 
-*Companion to `docs/USABILITY_AUDIT.md` (friction log, findings, validation). Date: 2026-10-02/03, model 2.1.2.*
+*Companion to `docs/USABILITY_AUDIT.md` (friction log, findings, validation). First audit 2026-10-02/03 (model 2.1.2);
+**second audit 2026-10-03 (model 2.3.0)** — statuses below are current, new candidates are F41–F50, and §8 holds the
+second audit's priorities (the first audit's are kept under §8.1).*
 
 Every feature here was treated as **guilty until demonstrated useful**. There is deliberately **no overall score**:
 each feature is judged on the dimensions below and then classified in words.
@@ -32,11 +34,11 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
 | F8 | Perspective labels ("Your team / Their team" vs Team A/B) | Medium | every trade | Low | Low–Medium (wording in core notes + UI) | Low | none | Low | Positive | **Medium** | **Implemented** ("Which side is you?", roster-detected) |
 | F9 | Trade history with then/now | Medium | occasional | Medium (reproducible re-check) | — | — | snapshots | Medium (hindsight ≠ proof) — dialog says so | Neutral | Medium | Exists; improved (Then/Now as "B +6,160") |
 | F10 | "Why did this change?" (player Trends; saved trades) | High (trust) | occasional | High | — | — | history/snapshots | Low | Neutral | **High** | Exists; saved-trade version now a dialog with drivers |
-| F11 | Trade-target explorer (filters: position, value band, age) | Medium | weekly | Low | Low | Low | none | Low | Neutral | Medium | Covered by Players filters + Model − Market sort; "excess at position" needs F1 |
+| F11 | Trade-target explorer (filters: position, value band, age) | Medium | weekly | Low | Low | Low | none | Low | Neutral | Medium | Covered by Players filters + Model − Market sort; the roster-aware version is F46 |
 | F12 | Watchlist / bookmarked players | Low–Medium | weekly | Low | Low | Low | none | Low | Neutral | **Low** | Tier 3 |
 | F13 | Biggest movers (value/market change over 7 days, objective) | Medium | weekly | Medium | Low–Medium (history exists per player) | Low | history (exists) | Medium (must not read as buy/sell) | Neutral | **Medium** | Tier 3 |
 | F14 | Scenario analysis ("what if workload −20%?") | Low–Medium | rare | Medium | High (needs a per-player override layer through both engines) | High | none | High (easily read as a forecast) | Negative (complex UI) | **Low** | Do not build now |
-| F15 | Settings what-if ("this trade in Superflex") | Medium | occasional | Medium | Low–Medium (re-value with another profile; cache exists) | Low | none | Low | Neutral | **Medium** | Tier 3 |
+| F15 | Settings what-if ("this trade in Superflex") | **High** (second audit: Scenario F — a format change flipped the verdict unexplained) | occasional–frequent (dynasty) | Medium | Low (re-value with each saved profile; computed on open) | Low | none | Low | Neutral (collapsed) | **High** | **Implemented** as F41 |
 | F16 | Source disagreement view | Medium (experts) | occasional | Medium | — | — | — | — | — | Medium | Exists (player → Market & sources) |
 | F17 | Dynasty timeline / team age profile | Medium | occasional | Medium | Medium | Low | needs F1 | Low | Neutral | Medium | Tier 3 (after F1) |
 | F18 | Age-curve visualization | Low–Medium | rare | Low | — | — | — | — | — | Low | Exists (Model page, Compare overlay) — keep, don't expand |
@@ -46,9 +48,9 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
 | F22 | Replacement-level explainer | Low–Medium | rare | Low | — | — | — | — | — | Low | Exists (Model → league structure); add a plain-language tooltip (Tier 3) |
 | F23 | Contender / rebuild context | Medium | occasional | Medium | — | — | — | Medium | — | Medium | Exists as a dynasty setting + now-vs-future split; a view needs F1 |
 | F24 | Multiple saved leagues | Medium | every session (switching) | Low | — | — | — | — | — | Medium | Exists (profiles; dropdown now grouped by mode) |
-| F25 | Keyboard shortcut "/" to search; Esc to clear | Low | every trade (power users) | Low | Low | Low | none | Low | Positive | **Low** | Tier 3 |
+| F25 | Keyboard shortcut "/" to search; Esc to clear | Low | every trade (power users) | Low | Low | Low | none | Low | Positive | **Low** | **Implemented** (second audit; 21 Tab presses → 1 key) |
 | F26 | Recent players / favourites in search | Low | frequent | Low | Low | Low | none | Low | Slightly positive | **Low** | Tier 3 |
-| F27 | Separate "Quick Trade" mode | Medium (need is real) | — | — | — | Medium (two UIs) | — | High (two places to do one thing) | — | **Avoid** | The verdict-first layout gives the quick answer on the one trade page |
+| F27 | Separate "Quick Trade" mode | Medium (need is real) | — | — | — | Medium (two UIs) | — | High (two places to do one thing) | — | **Avoid** | Re-checked in the second audit: the trade page *is* the quick path (6 taps + typing to a pinned verdict on a phone) |
 | F28 | Dashboard home page (Build / Compare / Values / Sync tiles) | Low | every visit | Low | Low | Low | — | Medium | **Negative** (extra click before the core task) | **Avoid** | Trade stays home; context line states mode/league/meaning |
 | F29 | Buy / sell / accept / decline recommendations | Looks high, is low | — | — | Low | High (credibility) | — | **High** — presents an uncertain model as advice | — | **Avoid** | — |
 | F30 | Acceptance-probability prediction | Low | — | — | High | High | data that doesn't exist | High | — | **Avoid** | — |
@@ -62,8 +64,23 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
 | F38 | Command palette | Low | — | — | Medium | Low | — | Low | — | **Low** | Not now |
 | F39 | Trade side "perspective" remembered | Low | — | — | Low | Low | — | Low | — | Low | Implemented with F8 (stored with the trade) |
 | F40 | "From my roster" quick-add; roster-restricted "Even it out" | Medium–High | every trade (with a roster) | Medium | Low | Low | F1 | Low | Positive | **High** | **Implemented** |
+| F41 | **This trade in other league formats** — same assets in every saved league/preset of the mode: totals, verdict, who leads | High | occasional–frequent | Medium–High (answers "why does site X disagree?") | Low | Low | none | Low (labelled as the same assets re-valued) | Neutral (collapsed, 273 ms on open) | **High** | **Implemented** (second audit) |
+| F42 | **Compare answer line** — leader, gaps, "about the same" when inside the combined ± | High | every comparison | Medium | Low | Low | none | Low | Positive | **High** | **Implemented** (second audit) |
+| F43 | **Mode carry-over** — switching Redraft ↔ Dynasty fills the other mode's *empty* trade (players only) | Medium | occasional | Low | Low | Low | none | Low (never overwrites) | Positive | **High** (cheap, removes rework) | **Implemented** (second audit) |
+| F44 | Nickname search by capital letters ("cmc", "jsn", "arsb") | Low–Medium | frequent | Low | Low | Low (generic rule, no list) | none | Low | Positive | **Medium** | **Implemented** (second audit) |
+| F45 | **Safe phone mode** — opt-in read-only LAN serving with a pairing code from the start window (no sync/import/settings writes) | High (the phone is where offers arrive) | frequent | Medium | Medium (server mode + pairing token + read-only routes) | Medium | none | Medium (security must be obvious) | Positive | **High** | Tier 2 — Help explains the manual `HOST=0.0.0.0` route and its risk meanwhile |
+| F46 | Roster-need targeting — from My Team: positions where an upgrade raises expected lineup points most, with Players filtered to that position and value band | Medium–High | weekly | Medium | Medium (E12 expected-lineup function exists) | Low | F1 | Medium (must not read as "you should trade for X") | Neutral | **Medium–High** | Tier 2 |
+| F47 | Merge Data → Sources into the Sync dashboard (expandable rows) | Low–Medium | rare | Low | Medium | Low (one table) | none | Low | Neutral | **Medium** | Tier 2 |
+| F48 | Players: positional rank column ("5 · WR3"), fewer default columns ≤1360 px | Low–Medium | weekly | Low | Low | Low | none | Low | Neutral | **Medium** | Tier 2 |
+| F49 | Duplicate-safe search (assets already in the trade/roster/comparison shown as unavailable) | High (correctness) | every trade | — | Low | Low | none | Low | Positive | **High** | **Implemented** (second audit) |
+| F50 | Data-quality summary first; batch table collapsed | Medium | rare | Low | Low | Low | none | Low | Neutral | **Medium** | **Implemented** (second audit) |
 
 ## 2. High priority
+
+Second audit: **F49** duplicate-safe search, **F41** other formats, **F42** compare answer, **F43** mode carry-over —
+implemented; **F45** safe phone mode — Tier 2 (needs a small security design).
+
+First audit:
 
 * **F2 Even it out**, **F3 Value matches**, **F5 Share**, **F6 Model − Market**, **F10 Why changed** (improved) —
   implemented this session.
@@ -71,6 +88,11 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
   implemented in the second batch of this session.
 
 ## 3. Medium priority
+
+Second audit: F44 nickname search and F50 data-quality summary (implemented); F46 roster-need targeting, F47 merge of the
+data-source tables, F48 Players columns (Tier 2); F13 biggest movers, F17 team age profile (Tier 3).
+
+First audit:
 
 ~~F4 combination matches, F7 counteroffer table~~ (implemented, §8 Tier 2), F13 biggest movers, F15 settings what-if, F17 dynasty age profile
 (F1 now exists), F11 position-excess targeting (F1 now exists).
@@ -105,9 +127,13 @@ F22 replacement-level tooltip.
 | Package math open by default | Collapsed; the verdict notes when totals include it | **Done** |
 | Welcome card (long, permanent once dismissed) | 3 lines; restorable from Help | **Done** |
 | Settings: 10 flat tabs | Groups: Your league / Model — advanced / App | **Done** |
-| Model parameters for normal users | Next step: hide "Model — advanced" behind one "Show advanced model settings" toggle (remembered) | Recommended |
-| "Data Refresh" settings tab (read-only freshness table) | Merge into Data → Sources (it only links there) | Recommended |
-| Player dialog: 6 tabs | Overview with the 3 biggest value drivers; "Dynasty outlook" → "Long-term" in redraft | Recommended |
+| Model parameters for normal users | Hide "Model — advanced" behind one "Show model settings" toggle (remembered) | **Done** (second audit; auto-shown when a profile overrides a parameter) |
+| "Data Refresh" settings tab (read-only freshness table) | Remove; the dashboard shows each source's target | **Done** (second audit; old links → dashboard) |
+| Player dialog: 6 tabs | Overview with the 3 biggest value drivers; "Dynasty outlook" → "Long-term" in redraft | **Done** (second audit) |
+| Data quality: 21 "ok" rows first | Summary first, table collapsed unless something failed | **Done** (second audit) |
+| Phone: pick picker (2 rows per side) and long context line | Fold / shorten on phones | **Done** (second audit) |
+| Data → Sources vs dashboard (same table twice) | Merge as expandable rows | Recommended (Tier 2) |
+| Players: 12 default columns | Fewer defaults, positional rank | Recommended (Tier 2) |
 | Export = two downloads | Keep (CSV for spreadsheets, JSON for reproducibility) | Kept |
 | Rookies & Picks tab | Keep (dynasty-only, distinct job) | Kept |
 | Model page backtest tables (long) | Keep, but collapse by season (low traffic page) | Recommended (Low) |
@@ -121,16 +147,42 @@ Open app → Choose league → Build trade → See quick result → Expand expla
 
 | Step | Current app | Deviation |
 |---|---|---|
-| Open app | Opens on Trade; data auto-syncs on start; pill shows freshness | — |
+| Open app | Opens on Trade; data auto-syncs on start; pill shows freshness | On a phone the app must be reached over the LAN (F45, Tier 2) |
 | Choose league | Header dropdown (grouped by mode) + context line with "Change league" | Fine. Exact-league setup (Sleeper import) is in Settings, one click away |
-| Build trade | Search + Enter per asset; pick adder; keyboard-only works | — |
+| Build trade | Search + Enter per asset ("/" to jump to search); duplicate-safe; nicknames; pick adder (folded on phones); keyboard-only works; mode switch keeps the trade | — |
 | See quick result | **Verdict headline** + bars; pinned on phones | — (was the biggest deviation) |
-| Expand explanation | "Full breakdown"; click any asset for "Why this value?" | Component names still model-centric |
+| Expand explanation | "Full breakdown"; click any asset for "Why this value?"; player Overview leads with the 3 biggest value drivers; **other formats** table | Component names still model terms (tooltips) |
 | Review roster/context | Dynasty now-vs-future and age; positions received; **lineup impact** with My Team | Roster must be set up once (optional) |
 | Explore alternatives | Even it out / Value matches (single assets and two-asset combinations); counteroffer table; Swap; saved trades | — (F7, F4 implemented) |
 | Save/export | Save (with reproducibility record), Share text/link, CSV+JSON, print | — |
 
-## 8. Implementation priorities
+## 8. Implementation priorities (second audit, 2026-10-03)
+
+### Tier 1 — implement now (**done**)
+Duplicate-safe search in trade, My Team and Compare (F49) · paste-roster duplicates reported · nickname search (F44) ·
+redraft pick-query hint and shorter placeholders · mode carry-over (F43) · this trade in other league formats
+(F41 = F15) · Compare answer line (F42) · player Overview value drivers, "Long-term" tab name, schedule row only when
+applied · Rookies & Picks explanation in redraft · header sync progress · model settings folded, Data Refresh tab
+removed · Data quality summary first (F50) · import stray "null" and labels · scoring bonus labels · inline custom pick
+range · phone: pick picker folded, context line shortened · "/" shortcut (F25) · Help: phone use. Details and
+measurements: `USABILITY_AUDIT.md` §15.
+
+### Tier 2 — implement soon
+1. **Safe phone mode** (F45): opt-in, read-only LAN serving with a pairing code; share links that use the LAN address.
+2. **Roster-need targeting** (F46) from My Team using the expected-lineup function.
+3. **My Team: Sleeper draft picks + "Refresh from Sleeper"** (carried over).
+4. **Merge Data → Sources into the dashboard** (F47); **Players columns** (F48).
+
+### Tier 3 — future
+Biggest movers (F13), team age profile (F17), watchlist (F12), recent players (F26), chart text alternatives,
+column-chooser target size, import warning summary, shorter phone tab labels in dynasty.
+
+### Do Not Build
+Unchanged (§5): Quick Trade mode (F27, re-checked), dashboard home (F28), buy/sell/accept advice (F29), acceptance
+probability (F30), push alerts (F31), per-player overrides (F32), AI chat (F33), start/sit (F34), scenario sliders
+(F14), decorative charts.
+
+## 8.1 First-audit priorities (2026-10-02/03, kept for the record)
 
 ### Tier 1 — implement now (**done this session**)
 Verdict-first result with progressive disclosure · consistent (package-adjusted) totals · Even it out / Value
@@ -147,7 +199,7 @@ measurements: `USABILITY_AUDIT.md` §15.
 2. ~~**Combination value matches** (F4)~~ — **done**: "Two assets together" under Even it out / Value matches
    (`comboSuggestions` in `balance.js`; exact, package-aware, computed only when opened).
 3. Sleeper draft picks (`traded_picks`) and a "refresh from Sleeper" button on My Team.
-4. Hide "Model — advanced" settings behind a toggle; merge "Data Refresh" into Data.
+4. ~~Hide "Model — advanced" settings behind a toggle; merge "Data Refresh" into Data~~ — **done in the second audit**.
 
 ### Tier 3 — future
 Biggest movers (F13), settings what-if (F15), team age profile (F17), watchlist (F12), keyboard shortcut (F25),

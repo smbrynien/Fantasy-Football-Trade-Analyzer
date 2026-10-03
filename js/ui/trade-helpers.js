@@ -98,3 +98,22 @@ export function tradeHash(mode, a, b) {
   const enc = (ids) => ids.map(encodeURIComponent).join(',');
   return `#/trade?m=${mode}&a=${enc(a)}&b=${enc(b)}`;
 }
+
+/**
+ * Compare page headline: the highest-valued asset and, for every other one, how far behind it is and whether that gap
+ * is inside the two assets' combined ± (then "about the same" — the comparison's actual answer).
+ * assets: [{name, value, sigma}] → { leader, rows: [{name, gap, pct, close}] } (rows in value order), or null.
+ */
+export function compareSummary(assets) {
+  const xs = (assets || []).filter((a) => a && Number.isFinite(a.value)).sort((x, y) => y.value - x.value);
+  if (xs.length < 2) return null;
+  const top = xs[0];
+  return {
+    leader: top,
+    rows: xs.slice(1).map((a) => {
+      const gap = top.value - a.value;
+      const sd = Math.sqrt((top.sigma || 0) ** 2 + (a.sigma || 0) ** 2);
+      return { name: a.name, value: a.value, gap, pct: top.value > 0 ? gap / top.value : 0, close: gap <= sd };
+    }),
+  };
+}

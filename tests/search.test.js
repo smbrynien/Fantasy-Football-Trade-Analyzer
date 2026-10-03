@@ -37,3 +37,16 @@ test('search: a team code also matches names while typing; positions stay strict
   assert.deepEqual(names('zzzz'), []);
   assert.deepEqual(names('<script>'), []);
 });
+
+test('search: capital-letter nicknames ("cmc", "jsn", "arsb") find the player first; ordinary queries unchanged', async () => {
+  const { capsKey } = await import('../js/ui/search.js');
+  assert.equal(capsKey('Christian McCaffrey'), 'cmc');
+  assert.equal(capsKey('Jaxon Smith-Njigba'), 'jsn');
+  assert.equal(capsKey('Amon-Ra St. Brown'), 'arsb');
+  assert.equal(capsKey('Brian Thomas Jr.'), 'btj');
+  // In the fixture "Kenneth Walker III" → "kwiii": a nickname hit is listed first.
+  assert.equal(names('kwiii')[0], 'Kenneth Walker III');
+  // A partial nickname is not a nickname match (exact capital letters only), and nonsense still finds nothing.
+  assert.ok(!names('kwi').includes('Kenneth Walker III'));
+  assert.deepEqual(names('zzz'), []);
+});

@@ -1,7 +1,7 @@
 // Trade-page wording and share-link helpers (usability audit). Pure functions over analyzeTrade() output.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { leadText, verdictHeadline, marketCheck, tradeFromHash, tradeHash } from '../js/ui/trade-helpers.js';
+import { leadText, verdictHeadline, marketCheck, tradeFromHash, tradeHash, compareSummary } from '../js/ui/trade-helpers.js';
 
 const ana = (diff, level, { sigma = 1000, pct = 0.2, z = 2.5, market } = {}) => ({
   diff, pct: diff > 0 ? pct : -pct, sigmaDiff: sigma, z, assessment: { level },
@@ -42,4 +42,16 @@ test('share links round-trip ids (players and picks) and ignore junk', () => {
   assert.deepEqual(tradeFromHash('#/trade?a=,,%E0%A4%A,x&b='), { a: ['x'], b: [] }); // malformed escape dropped
   assert.equal(tradeFromHash(`#/trade?a=${'x,'.repeat(100)}`).a.length, 25);
   assert.deepEqual(tradeFromHash(`#/trade?a=${'y'.repeat(200)}`).a, []);
+});
+
+test('compareSummary: leader, gaps in value order, and "about the same" when the gap is inside the combined ±', () => {
+  assert.equal(compareSummary([{ name: 'A', value: 100, sigma: 10 }]), null, 'needs two assets');
+  const s = compareSummary([{ name: 'Pick', value: 3170, sigma: 1330 }, { name: 'Chase', value: 10200, sigma: 2010 }, { name: 'Nabers', value: 6680, sigma: 450 }]);
+  assert.equal(s.leader.name, 'Chase');
+  assert.deepEqual(s.rows.map((r) => r.name), ['Nabers', 'Pick']);
+  assert.equal(s.rows[0].gap, 3520);
+  assert.ok(Math.abs(s.rows[0].pct - 3520 / 10200) < 1e-9);
+  assert.equal(s.rows[0].close, false, '3,520 > √(2,010² + 450²) ≈ 2,060');
+  const near = compareSummary([{ name: 'X', value: 5000, sigma: 400 }, { name: 'Y', value: 4700, sigma: 300 }]);
+  assert.equal(near.rows[0].close, true, '300 ≤ 500');
 });

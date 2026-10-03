@@ -1,7 +1,7 @@
 // TRADE CALCULATOR — the central experience.
 
 import { h, clear, fmtValue, fmtSigned, fmtPct, fmtRange, fmtAge, posBadge, confBadge, injuryBadge, toast, download, fmtTime, copyText, openModal } from '../dom.js';
-import { app, getValuations, load, save, activeProfile, playerData, isPlainObject, isStringArray, myRoster } from '../state.js';
+import { app, getValuations, load, save, activeProfile, allProfiles, playerData, isPlainObject, isStringArray, myRoster } from '../state.js';
 import { analyzeTrade } from '../../core/valuation/trade.js';
 import { balanceSuggestions, comboSuggestions } from '../../core/valuation/balance.js';
 import { compareCounteroffers, addVariant, sameTrade, variantLabel, MAX_VARIANTS } from '../../core/counteroffers.js';
@@ -49,6 +49,10 @@ export function renderTrade(root) {
     history.replaceState(null, '', '#/trade'); // the link was consumed; later edits must not fight the URL
     toast('Loaded the trade from the link.');
   }
+  if (app.carriedTrade) {
+    const c = app.carriedTrade; app.carriedTrade = null;
+    toast(`Same trade, ${app.mode} values (carried over from ${c.from}${c.droppedPicks ? `; ${c.droppedPicks} draft pick${c.droppedPicks === 1 ? '' : 's'} left out — picks are valued in dynasty only` : ''}).`);
+  }
   // Drop assets that no longer exist (e.g. data changed) but keep custom pick ids (valued on demand) — and say which.
   const dropped = [];
   for (const side of ['a', 'b']) trade[side] = trade[side].filter((id) => result.getAsset(id) || (dropped.push(id), false));
@@ -77,13 +81,13 @@ export function renderTrade(root) {
   const contextEl = h('div');
   const drawContext = () => clear(contextEl).append(
     h('div.trade-context.no-print', {}, h('span.mode-badge', { class: app.mode }, app.mode === 'dynasty' ? 'Dynasty' : 'Redraft'), ' ',
-      h('strong', {}, activeProfile().name), h('span.muted', {}, ` — ${MODE_TEXT[app.mode]} `), h('a', { href: '#/settings' }, 'Change league'),
+      h('strong', {}, activeProfile().name), h('span.muted.mode-text', {}, ` — ${MODE_TEXT[app.mode]}`), ' · ', h('a', { href: '#/settings' }, 'Change league'),
       h('div.side-picker', {},
         h('label', {}, 'Which side is you? ', h('select', { 'aria-label': 'Which side is your team', onchange: (e) => { trade.me = e.target.value || undefined; rerender(); } },
           h('option', { value: '' }, 'Neither (neutral)'), h('option', { value: 'a', selected: trade.me === 'a' ? true : null }, 'Team A'), h('option', { value: 'b', selected: trade.me === 'b' ? true : null }, 'Team B'))),
         roster.ids.length
           ? h('span.muted', {}, ` · My Team: ${roster.ids.length} assets — `, h('a', { href: '#/team' }, 'edit'))
-          : h('span.muted', {}, ' · ', h('a', { href: '#/team' }, 'Add your roster'), ' to see how a trade changes your starting lineup (optional).'))));
+          : h('span.muted', {}, ' · ', h('a', { href: '#/team' }, 'Add your roster'), h('span.mode-text', {}, ' to see how a trade changes your starting lineup (optional)'), '.'))));
   root.append(
     contextEl,
     h('div.print-only', {}, h('h2', {}, `Trade analysis — ${app.mode.toUpperCase()} — ${activeProfile().name}`)),
@@ -130,8 +134,8 @@ export function renderTrade(root) {
       getResult: () => result,
       onPick: (a) => addAsset(side, a),
       includePicks: app.mode === 'dynasty',
-      exclude: () => new Set([...trade.a, ...trade.b].filter((id) => !repeatable(id))),
-      placeholder: app.mode === 'dynasty' ? 'Add player or pick (e.g. "jefferson", "det rb", "2027 1st", "1.04")' : 'Add player (name, team or position)',
+      taken: () => new Map([...trade.a.map((id) => [id, `${N().A}'s side`]), ...trade.b.map((id) => [id, `${N().B}'s side`])].filter(([id]) => !repeatable(id))),
+      placeholder: app.mode === 'dynasty' ? 'Add player or pick (e.g. "chase", "det rb", "2027 1st")' : 'Add player (e.g. "chase", "det rb", "cmc")',
     }));
     if (app.mode === 'dynasty' && result.picks) panel.append(pickAdder((a) => addAsset(side, a)));
     // The other side receives what I give: offer my roster as a list instead of making me search for my own players.
@@ -174,6 +178,11 @@ export function renderTrade(root) {
     const year = h('select', { 'aria-label': 'Pick year' }, p.seasons.map((s) => h('option', { value: s }, s)));
     const round = h('select', { 'aria-label': 'Round' }, Array.from({ length: p.rounds }, (_, i) => h('option', { value: i + 1 }, `Round ${i + 1}`)));
     const slot = h('select', { 'aria-label': 'Slot' });
+    // Custom slot range: two inline fields instead of a blocking prompt() box (F-46).
+    const rFrom = h('input', { type: 'number', min: 1, max: result.league.teams, value: 4, 'aria-label': 'Range from slot', style: { width: '3.6rem' } });
+    const rTo = h('input', { type: 'number', min: 1, max: result.league.teams, value: 8, 'aria-label': 'Range to slot', style: { width: '3.6rem' } });
+    const rangeBox = h('span.range-box', { hidden: true }, 'slots ', rFrom, '–', rTo);
+    slot.addEventListener('change', () => { rangeBox.hidden = slot.value !== 'range'; });
     const fillSlots = () => {
       clear(slot);
       const r = Number(round.value);
@@ -187,15 +196,18 @@ export function renderTrade(root) {
       const v = slot.value;
       if (v === 'early' || v === 'mid' || v === 'late') d.bucket = v;
       else if (v === 'range') {
-        const txt = prompt(`Projected slot range for ${d.season} round ${d.round}, e.g. "3-7" (1–${result.league.teams})`, '4-8');
-        const m = txt && txt.match(/(\d+)\s*[-–]\s*(\d+)/);
-        if (!m) return;
-        d.range = [Math.max(1, Math.min(+m[1], +m[2])), Math.min(result.league.teams, Math.max(+m[1], +m[2]))];
+        const x = Math.round(Number(rFrom.value)), y = Math.round(Number(rTo.value));
+        if (!Number.isFinite(x) || !Number.isFinite(y)) { toast(`Enter a slot range between 1 and ${result.league.teams}.`, 'warn'); return; }
+        d.range = [Math.max(1, Math.min(x, y)), Math.min(result.league.teams, Math.max(x, y))];
       } else if (v !== 'unknown') d.slot = Number(v);
       const a = result.getAsset(pickAssetId(d));
       if (a) onAdd(a); else toast('No value available for that pick.', 'warn');
     };
-    return h('div.pick-adder', {}, h('span.muted', {}, 'Add pick:'), year, round, slot, h('button.btn.btn-sm', { onclick: add }, '+ Add'));
+    // On phones the four controls took two rows on both sides before anyone needed them: folded behind one button there.
+    const box = h('div.pick-adder', {},
+      h('button.btn.btn-sm.pick-toggle', { type: 'button', 'aria-expanded': 'false', onclick: (e) => { const open = box.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', String(open)); } }, '+ Draft pick'),
+      h('span.pick-fields', {}, h('span.muted', {}, 'Add pick:'), year, round, slot, rangeBox, h('button.btn.btn-sm', { onclick: add }, '+ Add')));
+    return box;
   }
 
   function drawSummary() {
@@ -312,12 +324,42 @@ export function renderTrade(root) {
         h('dt', {}, 'League'), h('dd', {}, `${l.name} · ${l.teams} teams · ${l.qb_format.toUpperCase()} · ${starterSlotsSummary(l)} · bench ${l.roster.BENCH} · ${describeScoring(result.scoring)}`),
         h('dt', {}, 'Season phase'), h('dd', {}, `${result.phase.season} week ${result.phase.week} (${result.phase.phase}, in-season weight ${Math.round(result.phase.alpha * 100)}%)`),
         h('dt', {}, 'Reference league'), h('dd', {}, result.meta.reference_league)));
-    panel.append(breakdown);
+    panel.append(otherFormatsBlock(), breakdown);
     summary.append(panel);
   }
 
   function currentAnalysis() {
     return analyzeTrade(result, trade.a, trade.b, { names: assetName, dataSources: Object.fromEntries(Object.entries(app.dataset.sources).map(([k, v]) => [k, v.last_success])) });
+  }
+
+  /**
+   * "Same trade in other league formats" (Scenario F: 1QB → Superflex changed the verdict with no explanation, and "why
+   * does site X disagree?" is usually a format difference). Computed only when opened: one valuation per format.
+   */
+  function otherFormatsBlock() {
+    const cur = activeProfile();
+    const others = allProfiles().filter((p) => p.id !== cur.id && (p.mode || 'redraft') === app.mode).slice(0, 8);
+    if (!others.length) return null;
+    const body = h('div.mt-s');
+    let filled = false;
+    const fill = () => {
+      filled = true;
+      body.append(h('p.small.muted', {}, 'Calculating…'));
+      setTimeout(() => {
+        const n = N();
+        const row = (p, r, isCur) => {
+          const a = analyzeTrade(r, trade.a, trade.b);
+          return h('tr', { class: isCur ? 'current-row' : '' }, h('td', {}, p.name, isCur ? h('span.tiny.muted', {}, ' (current)') : null),
+            h('td.num', {}, fmtValue(a.sides[0].adjusted)), h('td.num', {}, fmtValue(a.sides[1].adjusted)),
+            h('td', {}, h('span.verdict-pill', { class: a.assessment.level }, verdictHeadline(a, n).label), ' ', h('span.small.muted', {}, leadText(a.diff, n))));
+        };
+        clear(body).append(h('div.table-wrap', {}, h('table.data', {},
+          h('thead', {}, h('tr', {}, h('th', {}, 'League format'), h('th.num', {}, n.A), h('th.num', {}, n.B), h('th', {}, 'Verdict'))),
+          h('tbody', {}, row(cur, result, true), others.map((p) => row(p, getValuations(app.mode, p), false))))),
+        h('p.small.muted', {}, 'Same assets valued in each saved league and preset of this mode. Formats change values a lot — QBs in Superflex, TEs with TE premium, depth in deeper leagues — and are the most common reason two sites disagree.'));
+      }, 20);
+    };
+    return h('details.mt', { ontoggle: (e) => { if (e.target.open && !filled) fill(); } }, h('summary', {}, 'This trade in other league formats (Superflex, league size, scoring)'), body);
   }
 
   /** My Team: how the trade changes my best starting lineup (objective; only with a roster and "which side is you"). */

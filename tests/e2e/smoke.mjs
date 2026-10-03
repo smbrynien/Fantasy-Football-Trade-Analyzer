@@ -238,6 +238,47 @@ try {
     check((await page.locator('.trade-side').first().locator('.asset-list > *').count()) === 1, 'dynasty: removing one duplicate pick keeps the other');
     await page.evaluate(() => { localStorage.setItem('ffta.mode', '"redraft"'); });
 
+    // Second usability audit (2026-10-03): search duplicates, "/" shortcut, other formats, mode carry-over, rookies in
+    // redraft, compare answer, folded model settings.
+    await page.evaluate(() => { localStorage.setItem('ffta.mode', '"redraft"'); localStorage.setItem('ffta.trade.redraft', '{"a":["TWR1"],"b":["TRB1"]}'); localStorage.setItem('ffta.trade.dynasty', '{"a":[],"b":[]}'); });
+    await page.goto(`${base}/#/trade`); await page.reload();
+    const bBox = page.locator('.trade-side').nth(1).locator('input[type=search]');
+    await bBox.waitFor({ timeout: 15000 });
+    await bBox.fill('Test WR 1');
+    await page.locator('.search-results [role=option]').first().waitFor({ timeout: 5000 });
+    const firstOpt = await page.locator('.search-results [role=option]').first().innerText();
+    await bBox.press('Enter'); await page.waitForTimeout(200);
+    const bAfter = await page.locator('.trade-side').nth(1).locator('.asset-list > *').count();
+    check(/already on Team A/.test(firstOpt) && bAfter === 1, `search: a player already in the trade is marked, and Enter does not add another (${firstOpt.replace(/\s+/g, ' ').slice(0, 80)}; side B rows ${bAfter})`);
+    await bBox.fill('');
+    await page.evaluate(() => document.activeElement && document.activeElement.blur());
+    await page.keyboard.press('/');
+    check(await page.evaluate(() => document.activeElement?.getAttribute('role') === 'combobox'), '"/" focuses a search box');
+    await page.evaluate(() => document.activeElement && document.activeElement.blur());
+    const other = page.locator('details', { has: page.locator('summary', { hasText: 'other league formats' }) });
+    if (await other.count()) {
+      await other.locator('summary').click();
+      await page.waitForTimeout(1000);
+      const n = await other.locator('tbody tr').count();
+      check(n >= 2, `other formats: the same trade in ≥2 leagues (${n} rows)`);
+    } else check(false, 'other formats: block present');
+    await page.locator('header button', { hasText: /^Dynasty$/i }).first().click();
+    await page.waitForTimeout(700);
+    check(/Test WR 1\b/.test(await page.locator('.trade-side').nth(0).innerText()), 'mode switch: the trade is carried over into the empty dynasty trade');
+    await page.locator('header button', { hasText: /^Redraft$/i }).first().click();
+    await page.waitForTimeout(400);
+    await page.goto(`${base}/#/rookies`); await page.waitForTimeout(400);
+    check(/Rookies & Picks is a dynasty view/.test(await page.locator('#view').innerText()), 'rookies in redraft: explains and offers the switch');
+    await page.evaluate(() => localStorage.setItem('ffta.compare.redraft', '["TWR1","TWR2"]'));
+    await page.goto(`${base}/#/compare`); await page.reload(); await page.waitForTimeout(500);
+    check(/has the highest redraft value/.test(await page.locator('.compare-summary').innerText().catch(() => '')), 'compare: the answer is stated above the table');
+    await page.evaluate(() => localStorage.removeItem('ffta.settings.showModel'));
+    await page.goto(`${base}/#/settings`); await page.reload(); await page.waitForTimeout(300);
+    const st = await page.locator('nav.subtabs').innerText();
+    check(/Show model settings/.test(st) && !/Source Weights/.test(st), 'settings: model parameters folded away by default');
+    await page.goto(`${base}/#/settings/refresh`); await page.waitForTimeout(300);
+    check(/#\/data$/.test(page.url()), 'settings: old Data Refresh link goes to the sync dashboard');
+
     check(errors.length === 0, `no console/page errors${errors.length ? `: ${errors.slice(0, 5).join(' | ')}` : ''}`);
     await page.close();
   }

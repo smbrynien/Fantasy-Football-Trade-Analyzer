@@ -218,8 +218,16 @@ table.data tfoot td { font-weight: 700; background: var(--panel-2); }
 .search-results button { display: grid; grid-template-columns: auto 1fr auto; gap: .5rem; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: .45rem .6rem; font: inherit; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); }
 .search-results button:last-child { border-bottom: 0; }
 .search-results button.hl, .search-results button:hover { background: var(--accent-soft); }
+.search-results button.taken { opacity: .6; cursor: not-allowed; }
 .pick-adder { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-top: .5rem; font-size: .82rem; }
 .pick-adder select { padding: .3rem .4rem; font-size: .82rem; }
+.pick-fields { display: contents; }
+.pick-toggle { display: none; }
+.range-box[hidden] { display: none; }
+@media (max-width: 720px) {
+  .pick-toggle { display: inline-block; }
+  .pick-adder:not(.open) .pick-fields { display: none; }
+}
 .trade-summary { margin-top: 1rem; }
 .verdict { padding: .75rem 1rem; border-radius: 8px; background: var(--panel-2); border-left: 4px solid var(--faint); font-size: .95rem; }
 .verdict.even { border-left-color: var(--good); }
@@ -435,3 +443,15 @@ details.qa p { margin: .4rem 0 .2rem 1rem; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Compare: the answer above the table */
+.compare-summary { padding: .2rem 0 .8rem; border-bottom: 1px solid var(--border); margin-bottom: .6rem; }
+.compare-gaps { margin: .35rem 0 0; padding-left: 1.2rem; font-size: .92rem; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; text-decoration: underline; }
+.link-btn.small { font-size: .85rem; }
+
+.quality-summary { list-style: none; padding: 0; margin: .4rem 0 0; display: grid; gap: .3rem; }
+details.panel > summary { cursor: pointer; }
+
+/* Phones: the mode badge + league name are enough above the builder; the explanation stays in Help and on wider screens. */
+@media (max-width: 720px) { .trade-context .mode-text { display: none; } }

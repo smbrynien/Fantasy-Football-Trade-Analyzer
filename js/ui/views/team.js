@@ -53,7 +53,7 @@ export function renderTeam(root) {
       assetSearchBox({
         getResult: () => result,
         includePicks: app.mode === 'dynasty',
-        exclude: () => new Set(roster.ids.filter((id) => !/^pick:\d{4}:\d+(?::(?:early|mid|late))?$/.test(id))),
+        taken: () => new Map(roster.ids.filter((id) => !/^pick:\d{4}:\d+(?::(?:early|mid|late))?$/.test(id)).map((id) => [id, 'your roster'])),
         placeholder: app.mode === 'dynasty' ? 'Add a player or pick to your roster (e.g. "chase", "2027 1st")' : 'Add a player to your roster',
         onPick: (a) => setIds([...roster.ids, a.id], { source: roster.source || 'manual' }),
       }));
@@ -135,15 +135,19 @@ export function renderTeam(root) {
       const ta = h('textarea', { rows: 12, 'aria-label': 'Player names, one per line', placeholder: 'Justin Jefferson\nBijan Robinson\nDET RB …', style: { width: '100%', fontFamily: 'inherit' } });
       const run = () => {
         const index = buildSearchIndex(result);
-        const added = [], notFound = [];
+        const added = [], notFound = [], already = [];
         const ids = [...roster.ids];
+        const generic = (id) => /^pick:\d{4}:\d+(?::(?:early|mid|late))?$/.test(id);
         for (const line of ta.value.split(/\n|;/).map((x) => x.replace(/^[\s\d.)-]+|\s*\(.*\)\s*$/g, '').trim()).filter(Boolean)) {
-          const hit = searchAssets(index, line, { limit: 1, includePicks: app.mode === 'dynasty', result, exclude: new Set(ids) })[0];
-          if (hit) { ids.push(hit.id); added.push(`${line} → ${hit.name}`); } else notFound.push(line);
+          // Best match WITHOUT excluding the roster: a repeated line must not quietly add the next-best name.
+          const hit = searchAssets(index, line, { limit: 1, includePicks: app.mode === 'dynasty', result })[0];
+          if (!hit) notFound.push(line);
+          else if (ids.includes(hit.id) && !generic(hit.id)) already.push(hit.name);
+          else { ids.push(hit.id); added.push(`${line} → ${hit.name}`); }
         }
         setIds(ids, { source: roster.source || 'paste' });
         close();
-        toast(`Added ${added.length}.${notFound.length ? ` Not found: ${notFound.slice(0, 8).join(', ')}${notFound.length > 8 ? ' …' : ''}.` : ''} Check the matches below.`, notFound.length ? 'warn' : 'ok', 8000);
+        toast(`Added ${added.length}.${already.length ? ` Already on your roster: ${already.slice(0, 6).join(', ')}${already.length > 6 ? ' …' : ''}.` : ''}${notFound.length ? ` Not found: ${notFound.slice(0, 8).join(', ')}${notFound.length > 8 ? ' …' : ''}.` : ''} Check the matches below.`, notFound.length ? 'warn' : 'ok', 8000);
       };
       return h('div.modal-body', {},
         h('div.flex-between', {}, h('h3', { style: { margin: 0 } }, 'Paste your roster'), h('button.btn.btn-sm', { onclick: close, 'aria-label': 'Close' }, '×')),

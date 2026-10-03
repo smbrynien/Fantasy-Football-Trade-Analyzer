@@ -1,10 +1,13 @@
 // COMPARISON TOOL — side-by-side players (and picks in dynasty).
 
 import { h, clear, fmtValue, fmt1, fmtAge, fmtPctPlain, posBadge, confBadge, fmtRange } from '../dom.js';
-import { app, getValuations, load, save, playerData, isStringArray } from '../state.js';
+import { app, getValuations, load, save, playerData, isStringArray, activeProfile } from '../state.js';
+
+const activeName = () => activeProfile().name;
 import { assetSearchBox } from '../search.js';
 import { openPlayer, openPickDetail } from './player-modal.js';
 import { lineChart } from '../charts.js';
+import { compareSummary } from '../trade-helpers.js';
 
 const COLORS = ['#2563eb', '#ea580c', '#059669', '#7c3aed', '#dc2626', '#0891b2', '#ca8a04', '#db2777'];
 
@@ -16,7 +19,7 @@ export function renderCompare(root) {
   const host = h('div');
   root.append(h('div.panel', {},
     h('div.panel-head', {}, h('h2', {}, 'Compare'), h('span.small.muted', {}, app.mode === 'dynasty' ? 'Players and picks — player vs player, player vs pick, pick vs pick.' : 'Up to 8 players side by side.')),
-    assetSearchBox({ getResult: () => res, includePicks: app.mode === 'dynasty', exclude: () => new Set(ids), onPick: (a) => { if (ids.length >= 8) return; ids.push(a.id); draw(); } })), host);
+    assetSearchBox({ getResult: () => res, includePicks: app.mode === 'dynasty', taken: () => new Map(ids.map((id) => [id, 'the comparison'])), onPick: (a) => { if (ids.length >= 8) return; ids.push(a.id); draw(); } })), host);
 
   function draw() {
     save(`compare.${app.mode}`, ids);
@@ -59,9 +62,15 @@ export function renderCompare(root) {
     const table = h('div.table-wrap', {}, h('table.data', {},
       h('thead', {}, h('tr', {}, h('th', {}, ''), assets.map((a, i) => h('th.num', { style: { borderTop: `3px solid ${COLORS[i % COLORS.length]}` } },
         h('div.flex', { style: { justifyContent: 'flex-end' } }, posBadge(a.position), h('a', { href: 'javascript:void 0', onclick: () => (a.kind === 'player' ? openPlayer(a.id) : openPickDetail(a.id)) }, a.name),
-          h('button.btn.btn-xs.btn-ghost', { onclick: () => { ids = ids.filter((x) => x !== a.id); draw(); }, title: 'Remove' }, '×')))))),
+          h('button.btn.btn-xs.btn-ghost', { onclick: () => { ids = ids.filter((x) => x !== a.id); draw(); }, title: 'Remove', 'aria-label': `Remove ${a.name}` }, '×')))))),
       h('tbody', {}, rows)));
-    host.append(h('div.panel.mt', {}, table));
+    // The answer first ("who has more value, and is the gap bigger than the uncertainty?"), then the evidence.
+    const sum = compareSummary(assets);
+    const head = sum ? h('div.compare-summary', { role: 'status' },
+      h('div', {}, h('strong', {}, sum.leader.name), ` has the highest ${app.mode} value (${fmtValue(sum.leader.value)}) in ${activeName()}.`),
+      h('ul.compare-gaps', {}, sum.rows.map((r) => h('li', {}, h('span.bold', {}, r.name), `: ${fmtValue(r.gap)} less (−${Math.round(r.pct * 100)}%) — `,
+        r.close ? h('span', {}, 'about the same: the gap is within their combined ± range') : h('span', {}, 'a real gap: bigger than their combined ± range'))))) : null;
+    host.append(h('div.panel.mt', {}, head, table));
     if (dyn) {
       const series = assets.filter((a) => a.details?.years).map((a) => ({ label: a.name, color: COLORS[ids.indexOf(a.id) % COLORS.length], points: a.details.years.map((y) => [y.season, y.ppg]) }));
       if (series.length) host.append(h('div.panel.mt', {}, h('h3', {}, 'Projected points per game by season (aging curve)'), lineChart(series, { yMin: 0, yFormat: (v) => v.toFixed(0), height: 240 }), h('p.small.muted', {}, 'Multi-year projections are uncertain; see each player\'s Dynasty tab for ranges.')));

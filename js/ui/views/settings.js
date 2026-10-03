@@ -7,12 +7,15 @@ import { buildLeague, buildModel, validateLeague, settingsHash } from '../../cor
 import { resolveScoring } from '../../core/scoring.js';
 import { deepClone } from '../../core/util/objects.js';
 
-const SECTIONS = [['league', 'League'], ['scoring', 'Scoring'], ['roster', 'Roster'], ['redraft', 'Redraft Model'], ['dynasty', 'Dynasty Model'], ['picks', 'Rookie Pick Model'], ['sources', 'Source Weights'], ['package', 'Trade Package Adjustments'], ['refresh', 'Data Refresh'], ['advanced', 'Advanced / Debug']];
+const SECTIONS = [['league', 'League'], ['scoring', 'Scoring'], ['roster', 'Roster'], ['redraft', 'Redraft Model'], ['dynasty', 'Dynasty Model'], ['picks', 'Rookie Pick Model'], ['sources', 'Source Weights'], ['package', 'Trade Package Adjustments'], ['advanced', 'Display & reset']];
 
 function getPath(o, path) { return path.split('.').reduce((x, k) => (x === null || x === undefined ? undefined : x[k]), o); }
 function setPath(o, path, v) { const ks = path.split('.'); let x = o; for (const k of ks.slice(0, -1)) x = x[k] ||= {}; x[ks[ks.length - 1]] = v; }
 
 export function renderSettings(root, args) {
+  // "Data Refresh" was a read-only table of freshness targets; the sync dashboard shows each source's target next to
+  // its age, so old links go there.
+  if (args[0] === 'refresh') { location.hash = '#/data'; return; }
   const sec = SECTIONS.some(([k]) => k === args[0]) ? args[0] : 'league';
   const profile = deepClone(activeProfile());
   const league = buildLeague(profile, app.config.leagueDefaults);
@@ -42,13 +45,24 @@ export function renderSettings(root, args) {
   const modelNum = (label, path, opts) => numField(label, modelVal(path), (v) => setModel(path, v), opts);
 
   // Basic vs advanced: most people only need the league itself; model parameters are calibrated defaults.
-  const GROUPS = [['Your league', ['league', 'scoring', 'roster']], ['Model — advanced', ['redraft', 'dynasty', 'picks', 'sources', 'package']], ['App', ['refresh', 'advanced']]];
+  const GROUPS = [['Your league', ['league', 'scoring', 'roster']], ['Model — advanced', ['redraft', 'dynasty', 'picks', 'sources', 'package']], ['App', ['advanced']]];
   const label = Object.fromEntries(SECTIONS);
   const touched = new Set(Object.keys(profile.overrides || {}).flatMap((k) => (k === 'source_weights' ? ['sources'] : k === 'phase' ? ['redraft'] : [k])));
-  const nav = h('nav.subtabs.grouped', { 'aria-label': 'Settings sections' }, GROUPS.map(([g, keys]) => h('div.subtab-group', {}, h('span.subtab-group-label', {}, g),
-    h('div.subtab-row', {}, keys.map((k) => h('button', { 'aria-current': k === sec ? 'page' : null, class: k === sec ? 'active' : '', title: touched.has(k) ? 'Changed from the defaults in this profile' : null, onclick: () => { location.hash = `#/settings/${k}`; } }, label[k], touched.has(k) ? ' •' : ''))))));
-  const body = h('div.panel');
   const isModel = GROUPS[1][1].includes(sec);
+  // Most people only need their league: the ~80 model parameters stay folded away until asked for (remembered), and
+  // are always shown when this profile already changes one or a link points at them.
+  const showModel = isModel || touched.size > 0 || load('settings.showModel', false) === true;
+  const toggleModel = (v) => {
+    save('settings.showModel', v);
+    const target = !v && isModel ? '#/settings/league' : `#/settings/${sec}`;
+    if (location.hash === target) window.dispatchEvent(new Event('hashchange')); else location.hash = target;
+  };
+  const nav = h('nav.subtabs.grouped', { 'aria-label': 'Settings sections' }, GROUPS.map(([g, keys], gi) => h('div.subtab-group', {}, h('span.subtab-group-label', {}, g),
+    gi === 1 && !showModel
+      ? h('div.subtab-row', {}, h('button', { onclick: () => toggleModel(true), title: 'Weights and parameters of the valuation model. The defaults are calibrated on historical data.' }, 'Show model settings ▸'))
+      : h('div.subtab-row', {}, keys.map((k) => h('button', { 'aria-current': k === sec ? 'page' : null, class: k === sec ? 'active' : '', title: touched.has(k) ? 'Changed from the defaults in this profile' : null, onclick: () => { location.hash = `#/settings/${k}`; } }, label[k], touched.has(k) ? ' •' : '')),
+        gi === 1 && !touched.size ? h('button.muted', { onclick: () => toggleModel(false), title: 'Fold the model settings away again' }, 'Hide ◂') : null))));
+  const body = h('div.panel');
   append(root, [profileBar(), nav,
     isModel ? h('div.banner-inline.mb', {}, h('strong', {}, 'Advanced: '), 'these settings change how values are calculated. The defaults are calibrated and documented under Model; changes apply only to the active profile (• marks changed sections). ',
       Object.keys(profile.overrides || {}).length ? h('button.btn.btn-xs', { onclick: () => { commit((p) => { p.overrides = {}; }); toast('Model settings reset to the defaults for this profile.'); } }, 'Reset all model settings') : null) : null,
@@ -149,7 +163,7 @@ export function renderSettings(root, args) {
         h('h3.mt', {}, 'Premiums'), h('div.fields', {}, f('TE premium (pts/rec)', 'bonus_rec_te'), f('TE 1st-down bonus', 'bonus_fd_te'), f('RB reception bonus', 'bonus_rec_rb'), f('WR reception bonus', 'bonus_rec_wr')),
         h('h3.mt', {}, 'Bonuses (per game)'),
         h('table.data', {}, h('tbody', {}, (sc.bonuses || []).map((b, i) => h('tr', {}, h('td', {}, b.stat), h('td', {}, `≥ ${b.threshold}`),
-          h('td', {}, h('input', { type: 'number', step: 'any', value: b.points, onchange: (e) => commit((p) => { const arr = deepClone(sc.bonuses); arr[i].points = Number(e.target.value) || 0; p.scoring = { ...(p.scoring || {}), bonuses: arr }; }) }), ' pts'))))),
+          h('td', {}, h('input', { type: 'number', step: 'any', value: b.points, 'aria-label': `Bonus points for ${b.stat} ≥ ${b.threshold}`, onchange: (e) => commit((p) => { const arr = deepClone(sc.bonuses); arr[i].points = Number(e.target.value) || 0; p.scoring = { ...(p.scoring || {}), bonuses: arr }; }) }), ' pts'))))),
         h('p.small.muted', {}, 'Bonuses are exact for actual weekly stats; for projections they are estimated per game from the projected average (normal approximation). K and DEF use the source\'s own fantasy points (custom K/DST scoring is not modelled yet).'));
     },
     roster() {
@@ -222,12 +236,6 @@ export function renderSettings(root, args) {
           modelNum('Roster-slot cost multiplier', `package.${m}.roster_slot_cost`, { step: 0.05, min: 0, max: 3 }),
           modelNum('Minimum retained fraction', `package.${m}.min_retained_fraction`, { step: 0.05, min: 0, max: 1 })))),
         h('p.small.muted.mt', {}, 'For the side receiving more players, each extra (lowest-valued) player is charged: strength × min(its value, value of the average team\'s worst starter at its position) + cost × value of the last rostered player — but keeps at least the minimum retained fraction. Picks are exempt. The trade screen shows the full arithmetic.'));
-    },
-    refresh() {
-      const fr = app.config.sources.freshness_hours;
-      return h('div', {}, h('h3', {}, 'Freshness targets (hours)'), h('p.small.muted', {}, 'Data becomes "stale" at twice the target. Targets live in config/sources.json (freshness_hours); per-source refresh frequency in each source entry.'),
-        h('table.data', {}, h('tbody', {}, Object.entries(fr).map(([k, v]) => h('tr', {}, h('td', {}, k), h('td.num', {}, v))))),
-        h('p.mt', {}, h('a.btn.btn-sm', { href: '#/data' }, 'Open sync dashboard')));
     },
     advanced() {
       const theme = load('theme', 'auto');

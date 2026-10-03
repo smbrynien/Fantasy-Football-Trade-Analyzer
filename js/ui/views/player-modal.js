@@ -60,7 +60,7 @@ export function openPlayer(cid) {
   const cur = app.mode === 'dynasty' ? ad : ar;
   const tabsEl = h('div.subtabs');
   const body = h('div');
-  const tabs = [['overview', 'Overview'], ['why', 'Why this value?'], ['dynasty', 'Dynasty outlook'], ['sources', 'Market & sources'], ['stats', 'Statistics'], ['trends', 'Trends']];
+  const tabs = [['overview', 'Overview'], ['why', 'Why this value?'], ['dynasty', app.mode === 'dynasty' ? 'Dynasty outlook' : 'Long-term'], ['sources', 'Market & sources'], ['stats', 'Statistics'], ['trends', 'Trends']];
   const show = (t) => { for (const b of tabsEl.children) b.classList.toggle('active', b.dataset.t === t); clear(body); body.append(TAB[t]()); };
   for (const [t, label] of tabs) tabsEl.append(h('button', { dataset: { t }, onclick: () => show(t) }, label));
 
@@ -81,6 +81,11 @@ export function openPlayer(cid) {
         h('div.value-card', {}, h('div.k', {}, 'Confidence'), h('div.v', {}, confBadge(cur?.confidence)), h('div.s', {}, (cur?.confidence?.reasons || []).join('; ') || 'good source coverage and agreement')));
       const d = ar?.details;
       const rows = [];
+      // Summary first: the three components that make up most of this mode's value ("Why this value?" has the rest).
+      if (cur?.components) {
+        const top = Object.entries(cur.components).filter(([, v]) => Math.abs(v) >= 1).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 3);
+        if (top.length) rows.push([`Biggest value drivers (${app.mode})`, h('span', {}, top.map(([k, v], i) => [i ? ' · ' : '', h('strong', {}, COMPONENT_LABELS[k] || k), ` ${v < 0 ? '−' : ''}${fmtValue(Math.abs(v))}`]), ' ', h('button.link-btn.small', { onclick: () => show('why') }, 'why? →'))]);
+      }
       if (d) {
         rows.push(['Projected points (ROS)', d.projection.points !== null ? `${fmt1(d.projection.points)} in ${fmtGames(d.projection.games)} games${d.projection.zeroedForInjury ? ' (no projection while on IR → 0)' : ''}` : 'Unavailable']);
         if (d.outcomeRange) {
@@ -91,7 +96,9 @@ export function openPlayer(cid) {
         if (d.weeklyRange) rows.push(['Weekly floor / median / ceiling', `${fmt1(d.weeklyRange.floor)} / ${fmt1(d.weeklyRange.median)} / ${fmt1(d.weeklyRange.ceiling)} (10th/50th/90th pct of ${d.weeklyRange.n} games)`]);
         if (d.lastSeason) rows.push([`Last season (${d.lastSeason.season})`, `${fmt1(d.lastSeason.ppg)} PPG in ${d.lastSeason.gp} games`]);
         rows.push(['Remaining games', d.production.remGames === null || d.production.remGames === undefined ? '—' : fmtGames(d.production.remGames)]);
-        if (d.production.sosDetail) rows.push(['Remaining schedule', `${d.production.sos > 1 ? 'easier' : 'harder'} than average (×${d.production.sos.toFixed(3)} applied to production)`]);
+        // Only when it changes something: with schedule strength off (model 2.2.0+) the factor is ×1.000 and "harder than
+        // average (×1.000 applied)" read as a contradiction.
+        if (d.production.sosDetail && Math.abs((d.production.sos ?? 1) - 1) > 0.0005) rows.push(['Remaining schedule', `${d.production.sos > 1 ? 'easier' : 'harder'} than average (×${d.production.sos.toFixed(3)} applied to production)`]);
         rows.push(['Replacement level', `${fmt1(d.replacement)} pts (starter) · ${fmt1(d.waiver)} pts (waiver)`]);
       }
       if (inj && (inj.status || inj.official_status)) {

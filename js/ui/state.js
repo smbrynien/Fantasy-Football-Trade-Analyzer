@@ -90,6 +90,19 @@ export function deleteUserProfile(id) {
 
 export function setMode(mode) {
   if (mode === app.mode) return;
+  // "How does this trade look in the other mode?" used to mean re-typing it: carry the trade over when the other
+  // mode's trade is empty (players only — picks are valued in dynasty only). An existing trade there is never touched.
+  const okTrade = (t) => isPlainObject(t) && isStringArray(t.a) && isStringArray(t.b);
+  const from = load(`trade.${app.mode}`, { a: [], b: [] }, okTrade), to = load(`trade.${mode}`, { a: [], b: [] }, okTrade);
+  app.carriedTrade = null;
+  if (!to.a.length && !to.b.length && (from.a.length || from.b.length)) {
+    const keep = (ids) => (mode === 'dynasty' ? ids : ids.filter((id) => !String(id).startsWith('pick:')));
+    const t = { a: keep(from.a), b: keep(from.b) };
+    if (t.a.length || t.b.length) {
+      save(`trade.${mode}`, t);
+      app.carriedTrade = { from: app.mode, droppedPicks: from.a.length + from.b.length - t.a.length - t.b.length };
+    }
+  }
   app.mode = mode;
   save('mode', mode);
   const remembered = load(`profile.${mode}`, null, (v) => typeof v === 'string');

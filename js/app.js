@@ -15,7 +15,17 @@ import { renderModel } from './ui/views/model.js';
 import { openPlayer } from './ui/views/player-modal.js';
 import { renderHelp } from './ui/views/help.js';
 
-const VIEWS = { trade: renderTrade, team: renderTeam, players: renderPlayers, compare: renderCompare, rookies: renderRookies, data: renderData, settings: renderSettings, model: renderModel, help: renderHelp };
+// A link to Rookies & Picks while in redraft used to show the Trade page under the #/rookies address, unexplained.
+function renderRookiesInRedraft(root) {
+  root.append(h('div.panel.center', { style: { padding: '2rem 1rem' } },
+    h('h2', {}, 'Rookies & Picks is a dynasty view'),
+    h('p.muted', {}, 'Rookie prospects and draft picks are valued for keeper/dynasty leagues. Redraft values cover this season only.'),
+    h('div.flex', { style: { justifyContent: 'center' } },
+      h('button.btn.btn-primary', { onclick: () => setMode('dynasty') }, 'Switch to Dynasty'),
+      h('a.btn', { href: '#/trade' }, 'Back to Trade'))));
+}
+
+const VIEWS = { rookiesInRedraft: renderRookiesInRedraft, trade: renderTrade, team: renderTeam, players: renderPlayers, compare: renderCompare, rookies: renderRookies, data: renderData, settings: renderSettings, model: renderModel, help: renderHelp };
 const viewEl = document.getElementById('view');
 let current = null;
 let cleanup = null;
@@ -24,7 +34,7 @@ function route() {
   const hash = location.hash.replace(/^#\/?/, '').split('?')[0] || 'trade';
   const [name, ...rest] = hash.split('/');
   let view = VIEWS[name] ? name : 'trade';
-  if (view === 'rookies' && app.mode !== 'dynasty') view = 'trade';
+  if (view === 'rookies' && app.mode !== 'dynasty') view = 'rookiesInRedraft';
   if (name === 'player' && rest[0]) { openPlayer(decodeURIComponent(rest[0])); }
   current = { view, args: rest };
   document.querySelectorAll('#tabs a').forEach((a) => a.classList.toggle('active', a.dataset.view === view));
@@ -146,6 +156,16 @@ async function boot() {
   document.getElementById('sync-btn').addEventListener('click', () => startSync({}));
   document.getElementById('data-pill').addEventListener('click', () => { location.hash = '#/data'; });
   window.addEventListener('hashchange', route);
+  // "/" jumps to the page's search box (the first empty trade side on the Trade page), as on most search-led sites.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    if (t && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) || document.querySelector('.modal-backdrop, [role=dialog]')) return;
+    const boxes = [...document.querySelectorAll('main input[role=combobox]')];
+    const empty = boxes.find((b) => b.closest('.trade-side')?.querySelector('.empty-side'));
+    const box = empty || boxes[0];
+    if (box) { e.preventDefault(); box.focus(); box.scrollIntoView({ block: 'center' }); }
+  });
   window.addEventListener('online', () => toast('Back online.', 'ok'));
   window.addEventListener('offline', () => toast('You are offline — cached values remain available.', 'warn'));
 
@@ -154,7 +174,12 @@ async function boot() {
       const btn = document.getElementById('sync-btn');
       btn.classList.toggle('spinning', Boolean(detail && detail.running));
       btn.disabled = Boolean(detail && detail.running);
-      btn.querySelector('.lbl').textContent = detail && detail.running ? 'Syncing…' : 'Sync All';
+      // Real progress, as the Data dashboard shows it ("Syncing 3/10…"), instead of a bare "Syncing…".
+      const all = Object.values(detail?.sources || {});
+      const done = all.filter((x) => !['queued', 'fetching'].includes(x.phase)).length;
+      const lbl = !detail?.running ? 'Sync All' : detail.phase === 'building' ? 'Building…' : all.length ? `Syncing ${done}/${all.length}…` : 'Syncing…';
+      btn.querySelector('.lbl').textContent = lbl;
+      btn.title = detail?.running ? `Sync in progress — ${lbl.replace('…', '')}. Details: Data → Sync dashboard.` : 'Refresh all data sources';
       lastProgress = detail;
       if (!app.dataset && current && !['data', 'settings', 'model', 'help'].includes(current.view)) render();
       return;
@@ -164,6 +189,7 @@ async function boot() {
       renderHeader();
       renderBanner();
       if (evt === 'mode' && current.view === 'rookies' && app.mode !== 'dynasty') { location.hash = '#/trade'; return; }
+      if (evt === 'mode' && current.view === 'rookiesInRedraft' && app.mode === 'dynasty') { route(); return; }
       render();
     }
   });

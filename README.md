@@ -11,7 +11,8 @@ website's trade values — tuned to **your** league's scoring, roster and size.
 * Trade results lead with a plain verdict ("Close — roughly fair", "Team B clearly ahead") and a market cross-check;
   **"Even it out"** lists the single players/picks — and two-asset combinations such as a player plus a pick — that
   would balance a lopsided trade (package-aware); **"Compare counteroffers"** keeps the original offer and its variants
-  side by side with their verdicts; share a trade as text or as a link; full breakdown one click away
+  side by side with their verdicts; **"This trade in other league formats"** shows the same deal in 1QB vs Superflex
+  and your other leagues; share a trade as text or as a link; full breakdown one click away
 * Optional **My Team**: add your roster (search, paste, or Sleeper import) and every trade shows your starting lineup
   before → after (lineup value, expected lineup points per week — injuries and bench cover included — and who moves
   in/out), in "your team / their team" terms

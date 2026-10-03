@@ -146,15 +146,15 @@ function importView(body) {
 
   const drawLeft = () => {
     clear(left);
-    const sel = h('select', { onchange: (e) => { spec = specs.find((s) => s.id === e.target.value); fileText = null; preview = null; mapping = null; for (const k of Object.keys(options)) delete options[k]; drawLeft(); drawRight(); } }, specs.map((s) => h('option', { value: s.id, selected: s.id === spec.id ? true : null }, s.name)));
+    const sel = h('select', { 'aria-label': 'What are you importing?', onchange: (e) => { spec = specs.find((s) => s.id === e.target.value); fileText = null; preview = null; mapping = null; for (const k of Object.keys(options)) delete options[k]; drawLeft(); drawRight(); } }, specs.map((s) => h('option', { value: s.id, selected: s.id === spec.id ? true : null }, s.name)));
     const src = app.config.sources.sources.find((x) => x.id === spec.source_id);
     const optEls = Object.entries(spec.format_options || {}).map(([k, o]) => h('label.field', {}, o.label, h('select', { onchange: (e) => { const ch = o.choices[e.target.selectedIndex]; options[k] = ch.value; if (fileText) runPreview(); } }, o.choices.map((c) => h('option', { selected: (options[k] ?? o.default) === c.value ? true : null }, c.label)))));
-    const fileInput = h('input', { type: 'file', accept: '.csv,.json,.txt,.tsv', onchange: (e) => readFile(e.target.files[0]) });
+    const fileInput = h('input', { type: 'file', 'aria-label': 'CSV or JSON file to import', accept: '.csv,.json,.txt,.tsv', onchange: (e) => readFile(e.target.files[0]) });
     const drop = h('div.drop', {}, h('div', {}, 'Drop a CSV/JSON file here or '), fileInput, fileName ? h('div.small.mt-s', {}, `Loaded: ${fileName}`) : null);
     drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
     drop.addEventListener('dragleave', () => drop.classList.remove('over'));
     drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); readFile(e.dataTransfer.files[0]); });
-    const paste = h('textarea', { placeholder: '…or paste CSV text here', oninput: () => { fileText = paste.value; fileName = 'pasted.csv'; } });
+    const paste = h('textarea', { placeholder: '…or paste CSV text here', 'aria-label': 'Paste CSV text', oninput: () => { fileText = paste.value; fileName = 'pasted.csv'; } });
     left.append(
       h('div.panel-head', {}, h('h2', {}, 'Manual import'), sel),
       h('h3', {}, `MANUAL IMPORT — ${spec.name.toUpperCase()}`),
@@ -214,12 +214,13 @@ function importView(body) {
     right.append(h('h2', {}, 'Preview & validation'));
     if (!preview) { right.append(h('p.muted', {}, 'Load a file to see the detected columns, a preview, validation results and the unmatched-player report before anything is saved.')); return; }
     if (preview.headers) {
-      right.append(h('h3', {}, 'Column mapping'), h('p.small.muted', {}, 'Detected automatically (exact or alias match). Adjust if needed, then re-validate.'),
+      // (native append() writes null as the text "null": keep the optional line out instead)
+      right.append(...[h('h3', {}, 'Column mapping'), h('p.small.muted', {}, 'Detected automatically (exact or alias match). Adjust if needed, then re-validate.'),
         h('div.table-wrap', {}, h('table.data', {}, h('tbody', {}, spec.columns.map((c) => h('tr', {}, h('td.mono', {}, c.key, c.required ? ' *' : ''),
-          h('td', {}, h('select', { onchange: (e) => { mapping = { ...mapping, [c.key]: e.target.value || undefined }; if (!e.target.value) delete mapping[c.key]; } }, h('option', { value: '' }, '— not mapped —'), preview.headers.map((hd) => h('option', { value: hd, selected: mapping && mapping[c.key] === hd ? true : null }, hd)))),
+          h('td', {}, h('select', { 'aria-label': `File column for ${c.key}`, onchange: (e) => { mapping = { ...mapping, [c.key]: e.target.value || undefined }; if (!e.target.value) delete mapping[c.key]; } }, h('option', { value: '' }, '— not mapped —'), preview.headers.map((hd) => h('option', { value: hd, selected: mapping && mapping[c.key] === hd ? true : null }, hd)))),
           h('td.tiny.muted', {}, preview.auto?.method?.[c.key] ? `${preview.auto.method[c.key]} match` : '')))))),
         preview.auto?.unmapped?.length ? h('p.tiny.muted', {}, `Ignored columns: ${preview.auto.unmapped.join(', ')}`) : null,
-        h('button.btn.btn-sm.mt-s', { onclick: runPreview }, 'Re-validate with this mapping'));
+        h('button.btn.btn-sm.mt-s', { onclick: runPreview }, 'Re-validate with this mapping')].filter(Boolean));
     }
     if (!preview.ok) { right.append(h('div.banner.bad.mt', {}, preview.fatal || 'Invalid file.')); return; }
     const id = preview.identity;
@@ -256,13 +257,24 @@ function qualityView(body) {
     let q;
     try { q = await api.get('/api/quality'); } catch (e) { clear(host).append(h('p.err', {}, e.message)); return; }
     clear(host);
+    // Summary first: what (if anything) needs attention. The all-"ok" batch table used to fill the first 6,000 px and
+    // pushed the one actionable part — ambiguous players to resolve — far below the fold.
+    const batches = q.sources.flatMap((s) => Object.values(s.types || {}));
+    const bad = batches.filter((v) => v.quarantined || v.error).length, warn = batches.filter((v) => !v.quarantined && !v.error && v.verdict === 'warning').length;
+    const idq = q.identity || {};
+    const nAmb = (idq.ambiguous || []).length, nUnres = Object.values(idq.unresolved || {}).reduce((a, l) => a + l.length, 0);
     host.append(h('div.panel', {}, h('div.panel-head', {}, h('h2', {}, 'Data quality'), h('span.small.muted', {}, `Generated ${fmtTime(q.generated_at)} for ${q.data_version || '—'}`)),
+      h('ul.quality-summary', {},
+        h('li', { class: bad ? 'err' : '' }, bad ? `⛔ ${bad} of ${batches.length} data batches failed validation — the previous good data is in use (details below).` : `✓ All ${batches.length} data batches passed validation${warn ? ` (${warn} with warnings)` : ''}.`),
+        h('li', { class: nAmb ? 'warn-text' : '' }, nAmb ? `⚠ ${nAmb} player record${nAmb === 1 ? '' : 's'} could match more than one player — choose the right one below (never merged automatically).` : '✓ No ambiguous player matches to review.'),
+        h('li.muted', {}, `${nUnres} source record${nUnres === 1 ? '' : 's'} not in the player database (usually prospects or retired players) — listed below, nothing to do unless a name you care about is there.`))));
+    const batchPanel = h('details.panel', { open: bad + warn > 0 ? true : null }, h('summary', {}, h('strong', {}, `Validation by source and data type (${batches.length} batches)`)),
       h('p.small.muted', {}, 'Every batch is validated before use (schema drift, duplicates, invalid teams/positions/ages, duplicated ranks, record-count drops, sudden extreme value changes). Batches with errors are quarantined and the previous good data is kept.'),
       h('div.table-wrap', {}, h('table.data', {}, h('thead', {}, h('tr', {}, ['Source', 'Type', 'Records', 'Verdict', 'Issues'].map((c) => h('th', {}, c)))),
         h('tbody', {}, q.sources.flatMap((s) => Object.entries(s.types || {}).map(([t, v]) => h('tr', {},
           h('td.bold', {}, s.name), h('td', {}, t), h('td.num', {}, fmtInt(v.records)),
           h('td', {}, v.quarantined ? h('span.badge.bad', {}, 'quarantined') : v.error ? h('span.badge.bad', {}, 'error') : v.verdict === 'warning' ? h('span.badge.warn', {}, 'warning') : h('span.badge.good', {}, v.verdict || 'ok')),
-          h('td.small', {}, [...(v.issues || []), ...(v.quarantine_issues || [])].map((i) => h('div', { class: i.level === 'error' ? 'err' : '' }, i.message, i.expected ? h('div.tiny.muted', {}, `Expected: ${i.expected.join(', ')} · Received: ${(i.received || []).slice(0, 15).join(', ')}`) : null)), v.error ? h('div.err', {}, v.error) : null)))))))));
+          h('td.small', {}, [...(v.issues || []), ...(v.quarantine_issues || [])].map((i) => h('div', { class: i.level === 'error' ? 'err' : '' }, i.message, i.expected ? h('div.tiny.muted', {}, `Expected: ${i.expected.join(', ')} · Received: ${(i.received || []).slice(0, 15).join(', ')}`) : null)), v.error ? h('div.err', {}, v.error) : null))))))));
 
     // identity
     const id = q.identity || {};
@@ -276,6 +288,7 @@ function qualityView(body) {
         h('td', {}, h('div.flex', {}, a.candidates.map((c) => h('button.btn.btn-xs', { title: `Map to ${c.name} (${c.cid})`, onclick: () => resolve(a, c.cid) }, `${c.name} · ${c.team} · ${c.birth_date || 'dob ?'}`)), h('button.btn.btn-xs.btn-ghost', { onclick: () => resolve(a, null) }, 'Ignore'))))))))) : null,
       unresolved.length ? h('details.mt', {}, h('summary', {}, `Unmatched records (${unresolved.length}) — usually prospects or players not in the player database`), h('ul.small', {}, unresolved.slice(0, 300).map((u) => h('li', {}, `${u.src}: ${u.name} ${u.position || ''} ${u.team || ''}`)))) : null,
       Object.keys(id.fuzzy || {}).length ? h('details.mt', {}, h('summary', {}, 'Fuzzy matches (review)'), h('ul.small', {}, Object.entries(id.fuzzy).flatMap(([src, l]) => l.map((x) => h('li', {}, `${src}: ${x.name} → ${x.matched_to}`))))) : null));
+    host.append(batchPanel);
 
     host.append(h('div.panel', {}, h('h2', {}, 'Player database events'),
       h('p.small.muted', {}, 'Team changes, name variants, multi-position players and ID conflicts detected while merging authoritative player sources.'),

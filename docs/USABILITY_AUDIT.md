@@ -1,5 +1,393 @@
 # Usability, UX & Workflow Audit
 
+*Second audit: 2026-10-03 · App 1.0.0 · Model 2.3.0 (unchanged by this audit) · Data `2026-10-03` (NFL week 4)*
+
+This is the **product / usability** audit; the quantitative model audit is `docs/MODEL_AUDIT.md`. Feature-by-feature
+evaluation (opportunity matrix, priorities, remove/simplify, ideal journey) is in `docs/FEATURE_AUDIT.md`.
+
+The **first** usability audit (2026-10-02/03, friction log F-01–F-47, verdict-first result, Even it out, Share, My
+Team, counteroffers…) is kept unchanged as **Appendix A** below. This second pass started from its conclusions and
+re-audited the whole application as it stands after model 2.3.0, looking for what the first pass missed and for
+problems introduced since.
+
+**Method.** The app ran locally on the real synced dataset (2,206 players, 10/10 sources) and was driven with
+Playwright (Chromium): every route × both modes × 1360 px and 390 px (72 page renders, measured for height, overflow,
+unlabeled controls, nameless buttons, tap-target size and console errors), every player-dialog tab, 13 search queries
+per mode and width, duplicate and cross-side adds, a real Sync All from the header and a Force full refresh from the
+Data page (progress captured every 300–400 ms), manual import of a malformed and a valid KTC-style CSV, a share link
+with unknown ids, corrupted browser storage, keyboard-only reach, and scenarios A–F (§5.3). Timings and positions were
+measured by script. Not testable here: Safari/Firefox, real phones, screen readers, a live Sleeper league.
+
+Severity: **High** = blocks or misleads a core job · **Medium** = slows a core job or erodes trust · **Low** = polish.
+
+---
+
+## 1. Executive summary
+
+The first audit fixed the big structural problems (answer buried, numbers disagreeing, no way to balance or share a
+trade, no roster context). The core trade workflow is now fast: a 1-for-2 trade on a phone takes **6 taps plus
+typing**, the verdict is pinned on screen, and search answers in **≈1 ms per keystroke**.
+
+This pass found a different class of problem: **places where the app quietly did something other than what the user
+meant, or answered with data instead of an answer.**
+
+* **Search could add the wrong player.** Search hid assets already in the trade, so typing "chase" + Enter a second
+  time silently added **Chase Brown** instead of saying Ja'Marr Chase was already there; on the other side the same
+  query just said "No matches". Pasting a roster with a repeated name did the same.
+* **Switching mode threw the trade away** (trades are stored per mode): "how does this look in redraft?" meant
+  re-typing every player.
+* **Changing the league format changed the verdict with no explanation.** Josh Allen for Bijan Robinson is "Team B
+  clearly ahead" in 1QB dynasty and "Close" in Superflex — the user only saw numbers jump (Scenario F).
+* **Compare listed 18 rows of facts but never said who was ahead or whether the gap mattered.**
+* **Small trust leaks**: "Remaining schedule: harder than average (×1.000 applied)" (schedule strength has been off
+  since model 2.2.0), a literal "null" in the import preview, a silent redirect from #/rookies in redraft.
+* **Phones**: the first search box sat at the bottom edge of the first screen; the dynasty pick picker added two rows
+  per side before anyone needed it.
+* **Information overload in the back office**: ~80 model parameters at the same level as "Teams"; Data quality opened
+  with a 21-row table of "ok" batches, and the two items that needed a decision started at 1,495 px.
+
+All of these were fixed (§15), with no change to any value or trade calculation (no file under `js/core`, `config` or
+`server` changed in this batch). What remains is mostly polish plus two larger items: using the app from a phone
+(it runs on the user's computer, §6) and merging the two near-duplicate data-source tables.
+
+## 2. Current strengths
+
+* **The trade answer comes first** and is honest: verdict levels follow how often trades with that margin actually
+  worked out (redraft, model 2.3.0), with a market cross-check and the package arithmetic one click away.
+* **"Next question" tools exist**: Even it out (single assets and two-asset combinations), counteroffer comparison,
+  share as text or link, saved trades with Then/Now and "Why changed?".
+* **Roster context is optional and objective**: My Team shows lineup value and expected lineup points before → after
+  with a historical frequency, never "accept/decline".
+* **Transparency**: every value decomposes into components; every source shows its timestamp; every analysis carries
+  model version, data snapshot and settings hash.
+* **Speed**: first usable trade screen 558 ms (52 requests, 823 KB), search 0.5–4 ms per keystroke over ~2,200
+  players, mode switch 271 ms, Players page 161 ms.
+* **Robustness**: corrupt storage recovered, unknown ids in a link dropped with a named toast, malformed CSV reported
+  plainly ("Malformed CSV: unterminated quoted field"), failing sources quarantined while the last good data stays.
+* **Sync dashboard** shows real per-source progress ("3/10 sources done", fetching/queued/ok per source).
+
+## 3. Major usability problems
+
+| # | Problem | Severity | Status |
+|---|---|---|---|
+| 1 | Search hid assets already in the trade, so Enter silently added a different player (G-01, G-02, G-03) | High | **Fixed** |
+| 2 | League-format changes (1QB ↔ Superflex, league size, scoring) changed verdicts with no explanation (G-08) | Medium–High | **Fixed** ("This trade in other league formats") |
+| 3 | Switching Redraft ↔ Dynasty discarded the trade being built (G-07) | Medium | **Fixed** (carried into the empty trade) |
+| 4 | Compare gave data, not an answer (G-09) | Medium | **Fixed** |
+| 5 | Settings presented model internals at the same level as league setup (G-19; first audit Tier 2 #4) | Medium | **Fixed** (folded away) |
+| 6 | Data quality opened with a table of "ok" batches; the two decisions needed started at 1,495 px (G-21) | Medium | **Fixed** (summary first) |
+| 7 | Phones: first search box at the bottom edge; pick picker clutter (G-17, G-18) | Medium | **Fixed** |
+| 8 | Using it from a phone at all needs a terminal command documented in one README line (G-23) | Medium | **Partly** (Help explains; a safe "phone mode" is Tier 2) |
+
+## 4. Major missing features
+
+1. **Format comparison** — the same trade across saved leagues/presets (1QB vs Superflex is the most common reason
+   two sites disagree). **Added** (lazy, 273 ms on real data).
+2. **A stated answer on Compare** — who leads, by how much, and whether the gap is inside the combined ± range.
+   **Added**.
+3. **Mode carry-over** — see the same trade in the other mode in one click. **Added**.
+4. **Nickname search** ("cmc", "jsn", "arsb", "btj") — **added** with a generic capital-letter rule (no hand-made list
+   to maintain).
+5. **Safe phone access** — the app runs on the user's computer; reaching it from a phone needs `HOST=0.0.0.0` (no
+   authentication). Help now explains the steps and the risk; a read-only LAN mode is Tier 2 (FEATURE_AUDIT F45).
+6. **Biggest movers / watchlist** — still not built (Tier 3); per-player Trends exist.
+
+## 5. Workflow problems
+
+### 5.1 Primary user jobs — how well they are supported now
+
+| Job | Support | Remaining gap |
+|---|---|---|
+| Quick trade check | Verdict headline + historical frequency, pinned on phones; 6 taps + typing for a 1-for-2 | Phone access itself (G-23) |
+| Deep analysis | Full breakdown, package math, per-asset "Why this value?"; player Overview now starts with the 3 biggest value drivers | Component names are still model terms (tooltips explain them) |
+| Player comparison | Compare states the answer first (G-09) | No "show only rows where they differ" |
+| Dynasty decision (player vs picks) | Value matches incl. picks; now-vs-future; age; pick search "2027 1st", "1.04"; inline custom slot range (G-16) | — |
+| Trade exploration | Even it out, two-asset combinations, counteroffer table, other formats | — |
+| Trade targeting | Players: Model − Market column, filters | No "positions where my roster is thin" view (F11, Tier 2) |
+| Roster-aware analysis | My Team: lineup value, expected lineup points/week with frequency, starters in/out, depth | Sleeper draft picks not imported; byes not modelled |
+| Weekly decision support | Player dialog (projection, range of outcomes, injury, usage) | Start/sit is out of scope (Do Not Build) |
+
+### 5.2 Personas
+
+* **Casual redraft manager** — reads one headline ("Leans your team — trades with this margin went your way about
+  65% of the time") and stops. Unchanged; already good.
+* **Serious redraft manager** — now gets the format comparison and the player's value drivers without opening the
+  full breakdown.
+* **Dynasty manager** — pick picker folded on phones, inline custom range, mode carry-over to check "win-now" value in
+  redraft, other formats (1QB vs SF is the dynasty question).
+* **Experienced dynasty manager** — Model − Market, sources, model settings still one click away ("Show model
+  settings").
+* **New user** — fewer things to read before the first search on a phone (context line shortened), a hint when a pick
+  is searched in redraft, an explanation instead of a silent redirect for Rookies & Picks.
+* **Mobile user** — see §6; the remaining blocker is reaching the app from the phone.
+
+### 5.3 Scenarios A–F (walked in the browser)
+
+| Scenario | What happened (before this pass) | After |
+|---|---|---|
+| **A** — trade offer on a phone | 6 taps + typing; pinned verdict "Close — roughly fair · A +760"; first search box at ≈810 px on first visit. Real-world caveat: the phone must reach the computer running the app (`HOST=0.0.0.0`), documented only in the README | First search box at 714 px; Help explains phone access and its risk; "Share → Copy text" works from any device |
+| **B** — are two dynasty players close? | Compare: 18 rows, no answer | First line: "Ja'Marr Chase has the highest dynasty value (10,200)… Malik Nabers: 3,520 less (−34%) — a real gap: bigger than their combined ± range" |
+| **C** — player vs several future picks | Search "2027 1st" (dynasty) works; in redraft "No matches" with no reason; custom range via a blocking prompt() | Redraft says picks are valued in Dynasty; inline range fields |
+| **D** — stale data | Pill shows age; banner after 72 h; header button said only "Syncing…" | Header shows "Syncing 3/10…" / "Building…" with a tooltip pointing to the dashboard |
+| **E** — one source fails | Unchanged and good: quarantine keeps last good data; dashboard and banner name it | Data quality now opens with a one-line verdict ("⛔ 1 of 21 batches failed… previous good data in use") |
+| **F** — 1QB → Superflex | Values update instantly, verdict flips, no explanation | "This trade in other league formats": 1QB "Team B clearly ahead B +3,980" vs Superflex "Close A +570", one click |
+
+### 5.4 Other workflow findings
+
+* Mode switching keeps each mode's own trade; only an **empty** destination trade is filled (players only — picks are
+  dynasty-only, and the toast says how many were left out). An existing trade in the other mode is never overwritten.
+* Keyboard: reaching the first search box took **21 Tab presses**; **"/"** now jumps to the first empty side's search.
+* The import wizard's sequence (choose source → instructions → file → mapping → validation → preview → import →
+  rebuild) already matches the ideal; it printed a literal "null" after the mapping table and had unlabeled controls
+  (both fixed). It warns once per row that KTC rows have no position (noise; open, Low).
+
+## 6. Mobile problems
+
+| Finding | Before | After |
+|---|---|---|
+| First search box on a first visit (390 × 844) | ≈810 px — at the bottom edge | 714 px (context description hidden on phones; badge + league + "Change league" stay) |
+| Dynasty pick picker | 2 rows of selects on **each** side before use | Folded behind "+ Draft pick" (phones only; desktop unchanged) |
+| Dynasty trade, verdict position (1-for-1) | 1,730 px | 1,372 px (and the pinned bar) |
+| Search placeholder | Truncated mid-example | Shorter examples |
+| Header in dynasty | Tabs wrap to 3 rows (≈210 px), not sticky | Open (Low) — "Rookies & Picks" could be shortened on phones |
+| Reaching the app from a phone | Needs `HOST=0.0.0.0` from a terminal; no launcher option; link copies `localhost` | Help Q&A with steps and the security caveat; a safe read-only phone mode is Tier 2 |
+| Horizontal page scroll | none on any of 36 phone renders | unchanged (E2E guards it) |
+
+## 7. Accessibility issues
+
+| Finding | Severity | Status |
+|---|---|---|
+| Import: source select, file input and paste box unlabeled; column-mapping selects unlabeled | Medium | **Fixed** (aria-labels naming the column) |
+| Scoring: bonus-point inputs unlabeled (first audit F-42) | Low | **Fixed** ("Bonus points for rec_yd ≥ 100") |
+| Search results: a disabled-looking entry must not be selectable | — | Marked `aria-disabled`, explained in the row text ("— already on Team A's side") |
+| Compare remove "×" buttons had only a title | Low | **Fixed** (aria-label "Remove Ja'Marr Chase") |
+| Keyboard reach to the first search: 21 Tabs | Low | **Fixed** ("/" shortcut; also in Help) |
+| Compare answer and Data-quality summary | — | Announced (`role=status`) |
+| Column-chooser checkboxes 13 px (WCAG 2.2 target size) | Low | Open |
+| Charts have no text alternative (F-44) | Low | Open (Compare now states the result in text above the chart) |
+| Nameless buttons / unlabeled inputs, all 72 renders | — | 0 after the fixes (crawl) |
+| Real screen-reader pass | — | Not done (not available here) |
+
+## 8. Performance issues
+
+Measured on the local server with the real dataset (Chromium, desktop):
+
+| Measure | Result |
+|---|---|
+| First usable trade screen | 558 ms (DOMContentLoaded 124 ms; 52 requests, 823 KB) |
+| Search per keystroke | 4.2 ms first (builds the index), then 0.5–0.9 ms |
+| Mode switch (re-valuation) | 271 ms |
+| Players page | 161 ms |
+| "This trade in other league formats" | 273 ms on first open (one valuation per format, cached afterwards); computed only when opened |
+| Full sync (Force full refresh) | ≈10 s, per-source progress shown |
+
+No performance problem affects a user. The new features were designed not to cost anything on the default path
+(other formats and combinations are computed only when their section is opened).
+
+## 9. Trust / transparency issues
+
+| Finding | Status |
+|---|---|
+| "Remaining schedule: harder than average (×1.000 applied to production)" — contradicts itself since schedule strength was switched off (model 2.2.0) | **Fixed** (shown only when it changes something) |
+| Literal "null" in the import preview | **Fixed** (and the cause — `append()` writing `null` — documented at the call) |
+| Verdict flips between formats with no explanation | **Fixed** (other formats table) |
+| Search silently substituting a different player | **Fixed** |
+| ± vs range of outcomes (model 2.3.0) — the ± is source disagreement; the player view shows the calibrated range of outcomes | Already done in 2.3.0; Help explains both |
+| Dynasty verdict still z-based ("about 2.3× the uncertainty") while redraft is outcome-based | Open — model question (no multi-season outcome data); wording is consistent within each mode |
+| Ambiguous identity candidates sometimes show "dob ?" for one of two same-named players | Open (data) |
+
+## 10. Information architecture issues
+
+| Page | First | Second | Under "details" | Change in this pass |
+|---|---|---|---|---|
+| Trade | Verdict + totals | Market check, notes, Even it out, lineup impact (My Team) | Package math, **other formats**, full breakdown | + other formats; shorter context line on phones |
+| Compare | **Who leads and whether the gap is real** | The comparison table | Aging chart (dynasty) | + answer line |
+| Player dialog | Values, rank, ± and confidence | **Biggest value drivers**, projection, range of outcomes | Why / sources / stats / trends tabs | + drivers line; "Long-term" tab name in redraft; schedule row only when applied |
+| Settings | Your league (League, Scoring, Roster) | — | **"Show model settings"** (auto-shown when a profile changes one) | Model group folded; "Data Refresh" tab removed (link → sync dashboard) |
+| Data → Quality | **What needs attention** (failed batches, ambiguous players) | Identity resolution | Batch-by-batch table (collapsed unless something failed) | Summary first |
+| Data → Sources | Duplicates the dashboard's per-source table with technical columns | — | — | Open: merge into the dashboard as expandable rows (Tier 2) |
+
+## 11. Recommended improvements
+
+Implemented items: §15. Recommended next (details in `FEATURE_AUDIT.md` §8):
+
+1. **Safe phone access** (Tier 2): an opt-in "phone mode" that serves the app read-only on the LAN with a one-time
+   pairing code shown in the start window, so a phone can check trades without exposing sync/import/settings.
+2. **Merge Data → Sources into the Sync dashboard** (expandable rows: URL, method, fallback, terms).
+3. **My Team: Sleeper draft picks and "Refresh from Sleeper"** (carried over from the first audit).
+4. **Positional rank column on Players** (e.g. "5 · WR3"); show fewer default columns at ≤1360 px.
+5. **Roster-need targeting**: from My Team, list positions where your expected lineup gains most from an upgrade.
+
+## 12. Features worth adding
+
+See `FEATURE_AUDIT.md` §2–§3: format comparison, compare answer, mode carry-over, nickname search (all added); safe
+phone mode, roster-need targeting, biggest movers, merge of the data-source tables.
+
+## 13. Features not worth adding
+
+`FEATURE_AUDIT.md` §5 (unchanged conclusions, re-checked): a separate Quick Trade mode (the trade page already *is*
+the quick path: 6 taps to a pinned verdict), a dashboard home page, buy/sell or accept/decline advice, acceptance
+probabilities, push alerts, per-player value overrides, scenario sliders, AI chat, start/sit, decorative charts.
+
+## 14. Features to simplify / remove
+
+Done in this pass: ~80 model parameters folded behind one toggle; "Data Refresh" settings tab removed; Data quality's
+all-"ok" table collapsed; phone context line shortened; phone pick picker folded; Compare's 18-row table now preceded
+by its one-line answer. Recommended: merge Data → Sources into the dashboard; trim default Players columns.
+
+## 15. Changes actually implemented
+
+No valuation formula, default, engine or server file changed (`git diff -- js/core config server` is empty for this
+batch): every asset value and trade calculation is unchanged by construction, so `model_version` stays 2.3.0.
+
+| Change | Files | Measured effect |
+|---|---|---|
+| Search keeps assets already in the trade in the list, marked "— already on Team A's side" / "your roster" / "the comparison", not selectable; Enter on them explains instead of adding the next match | `js/ui/search.js` (`taken`), `trade.js`, `team.js`, `compare.js`, `css/app.css` | "chase" + Enter twice: Chase Brown added → nothing added, message shown |
+| Paste roster: a repeated name is reported "already on your roster" instead of matching the next-best player | `team.js` | — |
+| Nickname search by capital letters ("cmc", "jsn", "arsb", "btj"), ranked first; generic, no hand-made list | `search.js` (`capsKey`) | "cmc" → Christian McCaffrey (was: no results) |
+| Redraft pick queries explain that picks are valued in Dynasty; shorter placeholders with examples | `search.js`, `trade.js` | — |
+| Mode switch carries the trade into the other mode's **empty** trade (players only; toast says how many picks were left out) | `js/ui/state.js` (`setMode`), `trade.js` | re-typing a trade → 0 actions |
+| **This trade in other league formats** — the same assets in every saved league and preset of the mode: totals, verdict, who leads; computed on open | `trade.js` | Allen for Bijan: 1QB "Team B clearly ahead B +3,980" vs SF "Close A +570"; 273 ms |
+| **Compare answer**: leader, every gap (value, %), "about the same" when the gap is inside the combined ± | `js/ui/trade-helpers.js` (`compareSummary`), `compare.js` | Scenario B answered in the first line |
+| Player dialog: "Biggest value drivers" first on Overview (with "why? →"); "Long-term" tab name in redraft; schedule row only when it changes something | `player-modal.js` | removes the "×1.000 … harder than average" contradiction |
+| #/rookies in redraft: an explanation with "Switch to Dynasty" instead of a silent Trade page | `js/app.js` | — |
+| Header Sync button shows real progress ("Syncing 3/10…", "Building…") | `js/app.js` | — |
+| Settings: model parameters folded behind "Show model settings ▸" (remembered; always shown when the profile overrides one or a link targets them); "Data Refresh" tab removed, old links → sync dashboard; "Advanced / Debug" → "Display & reset" | `settings.js` | visible settings sections 10 → 4 by default |
+| Data quality: summary first (batches, ambiguous players to resolve, unmatched records), identity resolution next, batch table collapsed unless something failed | `data.js`, `css/app.css` | ambiguous players to resolve: 1,495 → 742 px, and named in the first lines |
+| Import: stray "null" removed; labels on the source select, file input, paste box and every column-mapping select | `data.js` | 3 unlabeled controls → 0 |
+| Scoring: labels on bonus inputs | `settings.js` | 6 unlabeled inputs → 0 |
+| Pick picker: inline custom slot range instead of `prompt()`; folded behind "+ Draft pick" on phones | `trade.js`, `css/app.css` | dynasty verdict on a phone 1,730 → 1,372 px |
+| Phone context line: badge, league and "Change league" only | `trade.js`, `css/app.css` | first search box 810 → 714 px |
+| "/" focuses the first empty trade side's search (or the page's search) | `js/app.js` | 21 Tab presses → 1 key |
+| Help: "Can I use it on my phone?" (LAN steps, security caveat, share-text alternative, "/" tip) | `help.js` | — |
+
+**Validation** (Part III below): unit tests 145 → 147 (`tests/search.test.js` nickname search,
+`tests/trade-helpers.test.js` compare summary); E2E extended with 10 checks at 1360/721/390 px (duplicate search, "/",
+other formats, mode carry-over, rookies in redraft, compare answer, folded settings, old Data Refresh link) — all pass;
+lint clean; no console errors on any of 72 crawled renders.
+
+## 16. Remaining opportunities
+
+* Safe phone mode (read-only LAN with a pairing code) — Tier 2.
+* Merge Data → Sources into the dashboard; trim Players' default columns; positional rank column.
+* My Team: Sleeper draft picks + refresh; roster-need targeting.
+* Dynasty verdict calibration (model audit); bye weeks in expected lineup points (model audit).
+* Column-chooser checkbox size; chart text alternatives; phone tab rows in dynasty.
+* Import: one summary line instead of a "no position" warning per row for sources without positions.
+* Real-device, Safari/Firefox and screen-reader testing.
+
+---
+
+# Part II — Friction log (second audit)
+
+Fields: **Where** · **Why it matters** · **Severity** · **Suggested improvement** · **Difficulty** · **Benefit** ·
+**Status**. (First-audit items F-01–F-47 are in Appendix A.)
+
+| ID | Issue | Where | Why it matters | Sev. | Suggested improvement | Diff. | Benefit | Status |
+|---|---|---|---|---|---|---|---|---|
+| G-01 | Search hid assets already in the trade; typing the same name + Enter added the *next* match (Ja'Marr Chase → Chase Brown) | Trade search | A wrong player silently enters the trade | High | Keep them listed, marked and unselectable | Low | High | **Fixed** |
+| G-02 | A player already on the other side: "No matches" | Trade search | Looks like the player doesn't exist | Medium | "— already on Team A's side" | Low | Medium | **Fixed** |
+| G-03 | Paste roster: a repeated line matched the next-best name | My Team → Paste | Wrong player on the roster | Medium | Report "already on your roster" | Low | Medium | **Fixed** |
+| G-04 | Nicknames ("cmc", "jsn", "arsb", "btj") found nothing | All searches | Common fantasy shorthand | Low–Med | Capital-letter rule, exact, ≥3 letters | Low | Medium | **Fixed** |
+| G-05 | "2027 1st" in redraft: "No matches" | Trade search | Dead end without a reason | Low | Explain picks are dynasty-only | Low | Low | **Fixed** |
+| G-06 | Redraft placeholder had no examples; dynasty's was cut off on phones | Trade search | Discoverability | Low | Short examples | Low | Low | **Fixed** |
+| G-07 | Switching mode showed an empty trade (trades stored per mode) | Header toggle | Re-typing every player to compare modes | Medium | Carry players into an empty trade | Low | Medium | **Fixed** |
+| G-08 | Changing league format changed the verdict silently | Trade | "Why did it change / why does site X disagree?" unanswered | Med–High | Same trade in other formats, on demand | Low–Med | High | **Fixed** |
+| G-09 | Compare showed 18 rows, no answer | Compare | Scenario B needs reading every row | Medium | Leader, gaps, within-± test, first | Low | High | **Fixed** |
+| G-10 | "harder than average (×1.000 applied)" | Player Overview | Self-contradiction erodes trust | Low | Hide when not applied | Low | Low | **Fixed** |
+| G-11 | Overview had facts but no "why" summary (F-33) | Player dialog | Most users never open the second tab | Low–Med | Top-3 value drivers + link | Low | Medium | **Fixed** |
+| G-12 | #/rookies in redraft rendered the Trade page silently | Router | Confusing link target | Low | Explain + "Switch to Dynasty" | Low | Low | **Fixed** |
+| G-13 | Header sync showed only "Syncing…" | Header | No idea how long it takes | Low–Med | "Syncing 3/10…" | Low | Medium | **Fixed** |
+| G-14 | Literal "null" after the mapping table | Data → Import | Looks broken | Low | Filter optional nodes | Low | Low | **Fixed** |
+| G-15 | Import controls and mapping selects unlabeled; bonus inputs unlabeled (F-42) | Import, Scoring | Screen readers | Low | aria-labels | Low | Low | **Fixed** |
+| G-16 | Custom pick range via `prompt()` (F-46) | Pick picker | Blocking dialog, poor on phones | Low | Inline fields | Low | Low | **Fixed** |
+| G-17 | Pick picker: 2 rows per side on phones before use | Trade, 390 px | Pushes the result down | Low–Med | Fold behind "+ Draft pick" on phones | Low | Medium | **Fixed** |
+| G-18 | First search box at ≈810 px on a phone's first visit | Trade, 390 px | Primary action at the fold | Medium | Shorter context line on phones | Low | Medium | **Fixed** |
+| G-19 | ~80 model parameters beside league settings (first audit Tier 2 #4) | Settings | Accidental model changes; overwhelming | Medium | Fold behind a toggle | Low | Medium | **Fixed** |
+| G-20 | "Data Refresh" tab: a read-only table that only links to Data | Settings | Redundant navigation | Low | Remove; redirect | Low | Low | **Fixed** |
+| G-21 | Data quality: a 21-row "ok" table first; the 2 ambiguous players at 1,495 px | Data → Quality | Actionable item below the fold | Medium | Summary first; collapse the table | Low | Medium | **Fixed** (742 px, and in the summary) |
+| G-22 | 21 Tab presses to the first search; no shortcut (F-43) | Trade | Power users, keyboard users | Low | "/" shortcut | Low | Low | **Fixed** |
+| G-23 | Phone use needs `HOST=0.0.0.0` (one README line); copied links say `localhost` | Whole app | Scenario A in real life | Medium | Help now; safe read-only phone mode later | Medium | High | **Partly** (Help) |
+| G-24 | Data → Sources repeats the dashboard's source table with technical columns | Data | Two places, same job | Low | Expandable rows in the dashboard | Medium | Low | Open (Tier 2) |
+| G-25 | Players: 12 default columns; the last is cut at 1360 px | Players | Scanning effort | Low | Fewer defaults | Low | Low | Open |
+| G-26 | Players: overall rank only; no positional rank column | Players | Fantasy users think "WR12" | Low | "5 · WR3" | Low | Low | Open |
+| G-27 | Dynasty header: 3 rows of tabs on phones (≈210 px) | Header, 390 px | Space | Low | Shorter tab labels on phones | Low | Low | Open |
+| G-28 | Dynasty verdict is z-based, redraft outcome-based | Trade | Different meaning of "clearly" across modes | Low | Calibrate dynasty (needs outcome data) | High | Medium | Open (model audit) |
+| G-29 | Data-page sync buttons stay enabled while a sync runs | Data | A second click only gets "already running" | Low | Re-render on progress | Low | Low | Open |
+| G-30 | Column-chooser checkboxes 13 px | Players | Target size | Low | Larger hit area | Low | Low | Open |
+| G-31 | KTC-style import: a "no recognised position" warning per row | Import | Noise hides real warnings | Low | One summary line | Low | Low | Open |
+| G-32 | Ambiguous identity candidates sometimes "dob ?" | Data → Quality | Harder to choose | Low | Show team/draft year instead | Low | Low | Open (data) |
+
+---
+
+# Part III — Before/after validation
+
+| Area | How validated | Result |
+|---|---|---|
+| Desktop + phone, both modes | Crawl of 18 routes × 2 modes × 2 widths before and after | 0 console errors, 0 page overflow, 0 nameless buttons, 0 unlabeled inputs after |
+| First-time user (phone) | Cleared storage, 390 × 844 | First search box 810 → 714 px |
+| Power user | Keyboard: "/" to search (E2E), Enter on a taken result (E2E) | ✓ |
+| Redraft / dynasty | Mode carry-over (E2E), rookies-in-redraft panel (E2E), dynasty pick picker on phones | ✓ |
+| Trade construction | Duplicate search (E2E), paste with a repeated name, nickname search (unit) | ✓ |
+| Player comparison | Compare answer (E2E fixture; real data: Chase vs Nabers "a real gap") | ✓ |
+| Draft picks | Inline custom range, search "2027 1st"/"1.04", redraft hint | ✓ |
+| Sync | Real header Sync All and Force full refresh on real sources (10/10 ok, ≈10 s), header progress label | ✓ |
+| Manual import | Malformed CSV (clear message), KTC-style CSV (2 matched, 1 unmatched, 1 pick), no stray "null" | ✓ |
+| Saved data / corrupt storage | Existing E2E (corrupt localStorage, saved trades) | ✓ |
+| Trade calculations | No file under `js/core`, `config` or `server` changed → values and analyses identical by construction; `npm test` 147/147 | ✓ |
+| Responsive / stray text | E2E at 1360/721/390 px on every route | ✓ |
+| Lint | `npm run lint` | clean |
+
+---
+
+# Product-management summary
+
+**The 5 biggest usability problems (this pass)**
+1. Search could silently put the wrong player into a trade or roster. *Fixed.*
+2. League-format changes flipped verdicts with no explanation. *Fixed (other formats table).*
+3. Switching mode threw away the trade being built. *Fixed.*
+4. Compare and Data quality showed data instead of an answer. *Fixed.*
+5. Using the app from a phone requires exposing the local server from a terminal. *Partly (Help); Tier 2.*
+
+**The 5 highest-value features to add**
+1. Same trade in other league formats — *added*.
+2. A stated answer on Compare — *added*.
+3. Safe read-only phone mode with a pairing code — Tier 2.
+4. Roster-need targeting from My Team (positions where an upgrade raises expected lineup points most) — Tier 2.
+5. Biggest movers (objective 7-day value/market changes; no buy/sell labels) — Tier 3.
+
+**5 things simplified / to simplify**
+1. Model parameters folded behind "Show model settings" (*done*).
+2. "Data Refresh" settings tab removed (*done*).
+3. Data quality: summary first, "ok" table collapsed (*done*).
+4. Phone: context line and pick picker trimmed (*done*).
+5. Merge Data → Sources into the dashboard; fewer default Players columns (recommended).
+
+**What would make the trade workflow dramatically faster?** It is already near the floor (search + Enter per asset,
+verdict pinned). What remained was *rework*: re-typing a trade to see the other mode (fixed), re-building it in another
+league to understand a format difference (fixed), and recovering from a silently wrong search pick (fixed). Next:
+reaching it from the phone where offers arrive.
+
+**Dynasty managers** — the format comparison (1QB vs Superflex is *the* dynasty pricing question), pick search and
+inline ranges, now-vs-future, and mode carry-over to see win-now value; next: a calibrated dynasty verdict and Sleeper
+picks on My Team.
+
+**Redraft managers** — the outcome-based verdict and expected lineup points/week with My Team; next: roster-need
+targeting and phone access.
+
+**What most improves trust in the numbers?** Never doing something other than what the user asked (search), saying why
+a number changed (formats, "why changed?"), and no self-contradicting lines (schedule ×1.000, "null"). Keep the ± /
+range-of-outcomes distinction explicit.
+
+**What should NOT be built** — a separate Quick Trade mode, a dashboard home page, buy/sell or accept/decline advice,
+acceptance predictions, push alerts, per-player overrides, scenario sliders, AI chat, start/sit, decorative charts
+(`FEATURE_AUDIT.md` §5).
+
+---
+
+
+# Appendix A — First usability audit (2026-10-02/03, model 2.1.2)
+
 *Date: 2026-10-02/03 · App 1.0.0 · Model 2.1.2 (unchanged by this audit) · Data 2026-10-02 (NFL week 4)*
 
 This is the **product / usability** audit. The quantitative model audit is separate (`docs/MODEL_AUDIT.md`); where a
@@ -18,7 +406,7 @@ Severity: **High** = blocks or misleads a core job · **Medium** = slows a core 
 
 ---
 
-## 1. Executive summary
+### 1. Executive summary
 
 The analytical core is strong: league-specific values, explicit uncertainty, a package adjustment, separate market
 and model signals, a reproducibility record and "why did this change". The weaknesses were in **presentation and
@@ -46,7 +434,7 @@ starting lineup value 31,940 → 33,290; projected points/game 97.9 → 102.0; i
 The largest remaining gaps are a side-by-side counteroffer view and multi-asset value matches — see §16 and
 `FEATURE_AUDIT.md`.
 
-## 2. Current strengths
+### 2. Current strengths
 
 * **League-specific values** with clear provenance: every value is decomposed ("Why this value?"), every source is
   visible with its timestamp, and every saved trade records model version, data snapshot and settings hash.
@@ -62,7 +450,7 @@ The largest remaining gaps are a side-by-side counteroffer view and multi-asset 
 * **Pick model UX**: exact slot, early/mid/late, unknown, custom range; generic picks can be added twice.
 * Saved trades re-check themselves against today's data ("Then / Now", "Why changed?").
 
-## 3. Major usability problems
+### 3. Major usability problems
 
 (Detail and status for each in the friction log, Part II.)
 
@@ -77,7 +465,7 @@ The largest remaining gaps are a side-by-side counteroffer view and multi-asset 
 | 7 | Settings: model internals presented as peers of league setup (F-19) | Medium | **Fixed** (grouped) |
 | 8 | No share/export path suited to a league chat (F-06) | Medium | **Fixed** |
 
-## 4. Major missing features
+### 4. Major missing features
 
 1. **Roster context / My Team** (brief §9–11): which of *my* starters change, starting-lineup value before/after,
    positional depth. Was not present at all — **added** (optional; manual, paste or Sleeper import; lineup impact
@@ -91,9 +479,9 @@ The largest remaining gaps are a side-by-side counteroffer view and multi-asset 
 7. **Watchlist / value-movement view** (§26) — Tier 3; history exists per player, there is no cross-player
    "biggest movers" list.
 
-## 5. Workflow problems
+### 5. Workflow problems
 
-### 5.1 Primary user jobs — how well they are supported
+#### 5.1 Primary user jobs — how well they are supported
 
 | Job | Before | After | Remaining gap |
 |---|---|---|---|
@@ -106,7 +494,7 @@ The largest remaining gaps are a side-by-side counteroffer view and multi-asset 
 | Roster-aware analysis | **Not supported** | My Team: best lineup, lineup value and projected points before → after, starters in/out, depth, roster-limit warning | Picks owned aren't imported from Sleeper (add by search) |
 | Weekly decision support | Player dialog (projection, injury, trends) | unchanged | Start/sit is out of scope (Do Not Build) |
 
-### 5.2 Personas
+#### 5.2 Personas
 
 * **Casual redraft manager** — wants one sentence. Previously had to parse five KPIs; now reads a headline
   ("Team B clearly ahead — receives 6,160 more (53%)…") and can stop.
@@ -120,7 +508,7 @@ The largest remaining gaps are a side-by-side counteroffer view and multi-asset 
   explains the verdict words, "Even it out" and sharing.
 * **Mobile user** — see §6.
 
-### 5.3 Scenarios A–F (walked in the browser)
+#### 5.3 Scenarios A–F (walked in the browser)
 
 | Scenario | Before | After |
 |---|---|---|
@@ -131,14 +519,14 @@ The largest remaining gaps are a side-by-side counteroffer view and multi-asset 
 | **E** — one source fails | Verified in the bug audit: banner names stale sources, last good data used, Data page shows the failure. Clear. | unchanged |
 | **F** — 1QB → Superflex | Change the dropdown; values update instantly. No "what changed" view across settings. | Dropdown grouped by mode; context line names the active league above the trade. A settings-comparison view is Tier 3 (scenario analysis). |
 
-### 5.4 Other workflow findings
+#### 5.4 Other workflow findings
 
 * Building a normal trade takes **one search + Enter per asset**, keyboard-only — already near the ideal in brief §5.
 * Opening a shared link while building another trade asked nothing and would have overwritten it — now confirms.
 * "Why changed?" was a 12-second toast with several lines of text — now a dialog with a Then/Now/Drivers table.
 * Export downloaded two files at once (CSV + JSON) — kept (reproducibility), but moved into a labelled Share menu.
 
-## 6. Mobile problems
+### 6. Mobile problems
 
 | Finding | Before | After |
 |---|---|---|
@@ -153,7 +541,7 @@ The largest remaining gaps are a side-by-side counteroffer view and multi-asset 
 Remaining: the player dialog's six tabs scroll horizontally on a phone (acceptable, but "Overview / Why this value?"
 are the only two most people need); settings forms are long on phones.
 
-## 7. Accessibility issues
+### 7. Accessibility issues
 
 | Finding | Severity | Status |
 |---|---|---|
@@ -171,7 +559,7 @@ are the only two most people need); settings forms are long on phones.
 | Charts have no text alternative | Low | Open (values are also in tables next to them) |
 | Screen-reader pass with a real reader | — | **Not done** (not available here) |
 
-## 8. Performance issues
+### 8. Performance issues
 
 Measured on the local server with the real dataset (2,208 players), Chromium, desktop:
 
@@ -187,7 +575,7 @@ No performance problem affects a user. Minor waste: the trade view recomputes th
 (two side headers + summary) — negligible (<5 ms) and kept for simplicity. The dataset (638 KB) is the only large
 transfer and is cached by the valuation cache.
 
-## 9. Trust / transparency issues
+### 9. Trust / transparency issues
 
 | Finding | Status |
 |---|---|
@@ -204,7 +592,7 @@ transfer and is cached by the valuation cache.
 Already good: per-source timestamps, model version and data snapshot on every analysis and export, confidence
 badges with reasons, the stale-source banner, quarantine messages.
 
-## 10. Information architecture issues
+### 10. Information architecture issues
 
 What each page should communicate first, second, and what can hide (✓ = now true):
 
@@ -223,7 +611,7 @@ brand link returns to Trade, which is the right home: it *is* "Build a Trade", a
 mode, league and what the values mean. A separate dashboard home page was rejected (Do Not Build: an extra click
 before the primary task).
 
-## 11. Recommended improvements
+### 11. Recommended improvements
 
 Implemented items are in §15. Recommended next (detail and rationale in `FEATURE_AUDIT.md`):
 
@@ -235,25 +623,25 @@ Implemented items are in §15. Recommended next (detail and rationale in `FEATUR
    `prompt()` with inline fields.
 5. **Sleeper draft picks** in the roster import (`traded_picks`), and roster refresh from Sleeper on demand.
 
-## 12. Features worth adding
+### 12. Features worth adding
 
 See `FEATURE_AUDIT.md` §2–§3 (High/Medium). In short: roster context and perspective labels (both now added),
 counteroffer comparison, pick + player value matches, a biggest-movers view, settings comparison ("what if
 Superflex?").
 
-## 13. Features not worth adding
+### 13. Features not worth adding
 
 See `FEATURE_AUDIT.md` §5 (Do Not Build): buy/sell recommendations, acceptance-probability predictions, a dashboard
 home page, real-time alerts/push, social features, user-adjustable per-player overrides of model values,
 start/sit advice, AI chat, more chart types.
 
-## 14. Features to simplify / remove
+### 14. Features to simplify / remove
 
 Done: five KPI cards → one headline (KPIs moved to the breakdown); four action buttons → "Share" menu; flat
 10-tab settings → three groups; long welcome card → three lines; `prompt()` for team count → number field.
 Recommended: see `FEATURE_AUDIT.md` §6.
 
-## 15. Changes actually implemented
+### 15. Changes actually implemented
 
 All in this session; no valuation formula or default changed (`model_version` stays 2.1.2).
 
@@ -289,7 +677,7 @@ link, Even it out, totals = bars, keyboard row → player, My Team → "Trade" �
 stray-text check on 13 routes) — all pass; lint clean; full value snapshot 24,892/24,892 identical; 2,393 random
 complete trades identical before/after.
 
-## 16. Remaining opportunities
+### 16. Remaining opportunities
 
 * ~~Counteroffer table, combination value matches (Tier 2)~~ — done (§15, last rows).
 * My Team: Sleeper draft picks and one-click refresh; roster per league is browser-only (not synced to the local
@@ -301,7 +689,7 @@ complete trades identical before/after.
 
 ---
 
-# Part II — Friction log
+## Part II — Friction log
 
 Fields: **Where** · **Why it matters** · **Severity** · **Suggested improvement** · **Difficulty** · **Benefit** ·
 **Status**.
@@ -358,7 +746,7 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 
 ---
 
-# Part III — Before/after validation
+## Part III — Before/after validation
 
 | Area | How validated | Result |
 |---|---|---|
@@ -380,7 +768,7 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 
 ---
 
-# Product-management summary
+## Product-management summary
 
 **5 biggest usability problems (found)**
 1. The answer was buried under data (and two screens down on a phone). *Fixed.*
