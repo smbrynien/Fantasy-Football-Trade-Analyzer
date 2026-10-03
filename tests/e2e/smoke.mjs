@@ -117,6 +117,33 @@ try {
     const totals = await page.evaluate(() => ({ side: [...document.querySelectorAll('.side-total')].map((x) => x.firstChild.textContent.trim()), bars: [...document.querySelectorAll('.bar-row .num')].map((x) => x.textContent.trim()) }));
     check(JSON.stringify(totals.side) === JSON.stringify(totals.bars), `trade: side totals equal the bars (${totals.side} vs ${totals.bars})`);
 
+    // Counteroffers (F7) and two-asset combinations (F4): keep the original, add a pair with one click, compare the
+    // two versions side by side, load the original back.
+    await page.evaluate(() => localStorage.removeItem('ffta.counters.redraft'));
+    page.once('dialog', (d) => d.accept());
+    await page.goto(`${base}/#/trade?m=redraft&a=TWR30&b=TWR1`);
+    await page.locator('.verdict-head').waitFor({ timeout: 8000 });
+    const sideACount = () => page.locator('.trade-side').first().locator('.asset-list > *').count();
+    const nA0 = await sideACount();
+    await page.locator('button', { hasText: '＋ Compare' }).click();
+    await page.locator('details.combos > summary').click();
+    const combo = page.locator('.chip.combo').first();
+    const hasCombo = await combo.waitFor({ timeout: 3000 }).then(() => true, () => false);
+    check(hasCombo, 'combinations: two-asset matches offered');
+    if (hasCombo) { await combo.click(); await page.waitForTimeout(300); }
+    check(hasCombo && (await sideACount()) === nA0 + 2, 'combinations: one click adds both assets');
+    const crow = page.locator('.counter-table tbody tr');
+    check((await crow.count()) === 2 && /Current \(not added\)/.test(await crow.nth(1).innerText()), 'counteroffers: original and the current version side by side');
+    await page.locator('button', { hasText: '＋ Compare' }).click();
+    await page.waitForTimeout(200);
+    const ctext = await page.locator('.counter-table').innerText();
+    check((await crow.count()) === 2 && /Original/.test(ctext) && /Counter 1/.test(ctext) && (await page.locator('.counter-table .verdict-pill').count()) === 2 && (await page.locator('.counter-table li.added').count()) === 2,
+      'counteroffers: counter added with its verdict and the two added assets marked');
+    await crow.first().locator('button', { hasText: 'Load' }).click();
+    await page.waitForTimeout(300);
+    check((await sideACount()) === nA0 && /shown above/.test(await crow.first().innerText()), 'counteroffers: Load brings the original back into the builder');
+    await page.evaluate(() => { localStorage.removeItem('ffta.counters.redraft'); localStorage.removeItem('ffta.trade.combosOpen'); });
+
     // My Team: add two players, "Trade" one away → it lands on the other side, perspective labels and lineup impact.
     await page.evaluate(() => { for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.trade.')) localStorage.removeItem(k); });
     await page.goto(`${base}/#/team`);

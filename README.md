@@ -9,8 +9,9 @@ website's trade values — tuned to **your** league's scoring, roster and size.
 * Manual CSV/JSON import as a first-class path (KeepTradeCut, FantasyPros exports, any projections/rankings/ADP/values)
 * Canonical player identity resolution across 15+ ID systems; ambiguous players are never silently merged
 * Trade results lead with a plain verdict ("Close — roughly fair", "Team B clearly ahead") and a market cross-check;
-  **"Even it out"** lists the single players/picks that would balance a lopsided trade (package-aware); share a trade
-  as text or as a link; full breakdown one click away
+  **"Even it out"** lists the single players/picks — and two-asset combinations such as a player plus a pick — that
+  would balance a lopsided trade (package-aware); **"Compare counteroffers"** keeps the original offer and its variants
+  side by side with their verdicts; share a trade as text or as a link; full breakdown one click away
 * Optional **My Team**: add your roster (search, paste, or Sleeper import) and every trade shows your starting lineup
   before → after (lineup value, projected points per game, who moves in/out), in "your team / their team" terms
 * Every value explains itself: **"Why this value?"**, **"Why did this value change?"**, uncertainty ranges, confidence

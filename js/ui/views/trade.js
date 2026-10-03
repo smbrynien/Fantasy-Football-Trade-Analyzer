@@ -3,7 +3,8 @@
 import { h, clear, fmtValue, fmtSigned, fmtPct, fmtRange, fmtAge, posBadge, confBadge, injuryBadge, toast, download, fmtTime, copyText, openModal } from '../dom.js';
 import { app, getValuations, load, save, activeProfile, playerData, isPlainObject, isStringArray, myRoster } from '../state.js';
 import { analyzeTrade } from '../../core/valuation/trade.js';
-import { balanceSuggestions } from '../../core/valuation/balance.js';
+import { balanceSuggestions, comboSuggestions } from '../../core/valuation/balance.js';
+import { compareCounteroffers, addVariant, sameTrade, variantLabel, MAX_VARIANTS } from '../../core/counteroffers.js';
 import { leadText, verdictHeadline, marketCheck, tradeFromHash, tradeHash, sideNames, relabel, mid } from '../trade-helpers.js';
 import { rosterImpact } from '../../core/roster.js';
 import { pointsPerGame } from './team.js';
@@ -24,6 +25,11 @@ function getTrade() { return load(tradeKey(), { a: [], b: [] }, (t) => isPlainOb
 const isSavedTrade = (t) => isPlainObject(t) && isStringArray(t.a) && isStringArray(t.b);
 const localTrades = () => load('trades', [], Array.isArray).filter(isSavedTrade);
 function setTrade(t) { save(tradeKey(), t); }
+// Counteroffer table: the original offer and its variants, per mode (asset ids only; re-analyzed on every render).
+const countersKey = () => `counters.${app.mode}`;
+const getVariants = () => load(countersKey(), [], Array.isArray).filter(isSavedTrade).slice(0, MAX_VARIANTS)
+  .map((v) => ({ a: v.a, b: v.b, ...(typeof v.label === 'string' && v.label ? { label: v.label.slice(0, 40) } : {}) }));
+const setVariants = (list) => save(countersKey(), list);
 const assetName = (id) => playerData(id)?.name || (String(id).startsWith('pick:') && parsePickAssetId(id) ? pickDisplayName(parsePickAssetId(id)) : id);
 // Generic picks (slot unknown, early/mid/late, projected range) can legitimately appear more than once — e.g. two
 // 2027 1sts owned from different teams. Players and exact slots (2027 1.04) are unique.
@@ -59,6 +65,7 @@ export function renderTrade(root) {
   const sides = h('div.trade-layout');
   const summary = h('div.trade-summary');
   const historyEl = h('div.panel.mt.no-print');
+  const countersEl = h('section.panel.mt.no-print.counters', { 'aria-label': 'Compare counteroffers', hidden: true });
   const sticky = h('div.trade-sticky.no-print', { hidden: true, role: 'status' });
   if (!load('welcomeDismissed', false)) {
     const card = welcomeCard(() => { save('welcomeDismissed', true); card.remove(); });
@@ -80,7 +87,7 @@ export function renderTrade(root) {
   root.append(
     contextEl,
     h('div.print-only', {}, h('h2', {}, `Trade analysis — ${app.mode.toUpperCase()} — ${activeProfile().name}`)),
-    sides, summary, historyEl, sticky,
+    sides, summary, countersEl, historyEl, sticky,
   );
 
   const detectMe = () => {
@@ -96,11 +103,15 @@ export function renderTrade(root) {
     clear(sides);
     sides.append(sidePanel('a'), sidePanel('b'));
     drawSummary();
+    drawCounters();
   };
 
-  function addAsset(side, a) {
-    if (!repeatable(a.id) && (trade.a.includes(a.id) || trade.b.includes(a.id))) { toast(`${a.name} is already in this trade.`, 'warn'); return; }
-    trade[side].push(a.id);
+  function addAsset(side, a) { addAssets(side, [a]); }
+  function addAssets(side, list) {
+    for (const a of list) {
+      if (!repeatable(a.id) && (trade.a.includes(a.id) || trade.b.includes(a.id))) { toast(`${a.name} is already in this trade.`, 'warn'); return; }
+    }
+    trade[side].push(...list.map((a) => a.id));
     rerender();
   }
 
@@ -216,6 +227,7 @@ export function renderTrade(root) {
         h('div.flex.no-print', {},
           h('button.btn.btn-sm', { onclick: () => { [trade.a, trade.b] = [trade.b, trade.a]; rerender(); }, title: 'Swap the two sides' }, '⇄ Swap'),
           h('button.btn.btn-sm', { onclick: () => saveTrade(ana) }, '★ Save'),
+          h('button.btn.btn-sm', { onclick: addToComparison, title: 'Keep this version in the counteroffer table below and compare it with others' }, '＋ Compare'),
           h('details.menu', {}, h('summary.btn.btn-sm', {}, 'Share ▾'),
             h('div.menu-panel', { onclick: (e) => { if (e.target.closest('button')) e.currentTarget.parentElement.open = false; } },
               h('button.btn.btn-sm', { onclick: () => copyText(tradeText(ana), 'Trade summary copied — paste it into your league chat.') }, 'Copy summary (text)'),
@@ -336,8 +348,9 @@ export function renderTrade(root) {
     let bal = balanceSuggestions(result, trade.a, trade.b, { limit: 4 });
     // The side to top up receives MY assets: suggest from my roster (what I could actually add), if it has any.
     let fromRoster = false;
+    const myIds = roster.ids.filter((id) => !(trade.a.includes(id) || trade.b.includes(id)) || repeatable(id));
     if (bal.side && roster.ids.length && trade.me && bal.side !== trade.me) {
-      const mine = balanceSuggestions(result, trade.a, trade.b, { limit: 4, only: roster.ids.filter((id) => !(trade.a.includes(id) || trade.b.includes(id)) || repeatable(id)) });
+      const mine = balanceSuggestions(result, trade.a, trade.b, { limit: 4, only: myIds });
       if (mine.suggestions.length) { bal = mine; fromRoster = true; }
     }
     if (!bal.suggestions.length) return null;
@@ -352,7 +365,114 @@ export function renderTrade(root) {
         type: 'button',
         title: `Adds ${s.name} to the side "${team} receives". Afterwards: ${leadText(s.diffAfter, n)}.`,
         onclick: () => addAsset(bal.side, result.getAsset(s.id)),
-      }, posBadge(s.position), ' ', s.name, s.team ? h('span.muted', {}, ` ${s.team}`) : null, ' ', h('span.muted', {}, `${fmtValue(s.value)} · after: ${leadText(s.diffAfter, n)}`)))));
+      }, posBadge(s.position), ' ', s.name, s.team ? h('span.muted', {}, ` ${s.team}`) : null, ' ', h('span.muted', {}, `${fmtValue(s.value)} · after: ${leadText(s.diffAfter, n)}`)))),
+      comboBlock(bal.side, team, fromRoster ? myIds : null, n));
+  }
+
+  /** Two-asset combinations (player + pick, two picks, two players) — computed only when opened (≈50–90 ms). */
+  function comboBlock(side, team, only, n) {
+    const body = h('div.chips.mt-s');
+    const fill = () => {
+      if (body.dataset.filled) return;
+      body.dataset.filled = '1';
+      const c = comboSuggestions(result, trade.a, trade.b, { limit: 4, only });
+      if (!c.combos.length) { body.append(h('span.small.muted', {}, 'No two-asset combination comes closer — try the single assets above.')); return; }
+      body.append(...c.combos.map((x) => h('button.chip.suggest.combo', {
+        type: 'button',
+        title: `Adds ${x.assets.map((a) => a.name).join(' and ')} to the side "${team} receives". Afterwards: ${leadText(x.diffAfter, n)}.`,
+        onclick: () => addAssets(side, x.ids.map((id) => result.getAsset(id))),
+      }, x.assets.flatMap((a, i) => [i ? h('span.muted', {}, ' + ') : null, posBadge(a.position), ' ', a.name]), ' ',
+        h('span.muted', {}, `${fmtValue(x.value)} · after: ${leadText(x.diffAfter, n)}`))));
+    };
+    const box = h('details.combos.mt-s', { ontoggle: (e) => { save('trade.combosOpen', e.target.open); if (e.target.open) fill(); } },
+      h('summary.small', {}, h('strong', {}, 'Two assets together'), app.mode === 'dynasty' ? ' — e.g. a player plus a pick, or two picks' : ' — two players instead of one'),
+      body);
+    if (load('trade.combosOpen', false)) { box.open = true; fill(); }
+    return box;
+  }
+
+  function addToComparison() {
+    const r = addVariant(getVariants(), trade);
+    if (r.added) {
+      setVariants(r.list);
+      toast(r.index === 0 ? 'Kept as the original offer. Change the trade, then ＋ Compare again to add a counteroffer.' : `Added as ${variantLabel(r.list[r.index], r.index)} to the comparison.`);
+      drawCounters();
+      return;
+    }
+    toast({ incomplete: 'Add assets to both sides first.', duplicate: `This trade is already in the comparison (${r.index >= 0 ? variantLabel(getVariants()[r.index], r.index) : ''}).`, full: `The comparison holds up to ${MAX_VARIANTS} trades — remove one first.` }[r.reason], 'warn');
+  }
+
+  /** Counteroffer table: original + variants side by side, re-analyzed with today's values and settings. */
+  function drawCounters() {
+    clear(countersEl);
+    const list = getVariants();
+    const complete = trade.a.length > 0 && trade.b.length > 0;
+    countersEl.hidden = !list.length && !complete;
+    if (countersEl.hidden) return;
+    const n = N();
+    countersEl.append(h('div.panel-head', {}, h('h3', {}, 'Compare counteroffers'),
+      h('span.small.muted', {}, 'The original offer and your variants side by side, re-checked with today\'s values and league settings.')));
+    if (!list.length) {
+      countersEl.append(h('p.small', {}, 'Negotiating? Keep this trade as the original, then change it (or use Even it out) and add each counteroffer — every version stays on screen with its verdict', roster.ids.length && trade.me ? ' and its effect on your lineup' : '', '.'),
+        h('button.btn.btn-sm', { onclick: addToComparison }, '＋ Add this trade as the original'));
+      return;
+    }
+    const at = list.findIndex((v) => sameTrade(v, trade));
+    const live = complete && at < 0;
+    const rows = compareCounteroffers(result, live ? [...list, { a: trade.a, b: trade.b, label: 'Current (not added)' }] : list, { me: trade.me, rosterIds: roster.ids, points: pointsPerGame, names: assetName });
+    const showLineup = rows.some((r) => r.lineup);
+    const cell = (ids, ch, label) => {
+      const added = [...(ch ? ch.added : [])];
+      const items = ids.map((id) => {
+        const k = added.indexOf(id);
+        if (k >= 0) { added.splice(k, 1); return h('li.added', { title: 'Added compared with the original' }, '+ ', assetName(id)); }
+        return h('li', {}, assetName(id));
+      });
+      const gone = (ch ? ch.removed : []).map((id) => h('li.removed', { title: 'In the original, not in this version' }, h('del', {}, assetName(id))));
+      return h('td.small', { 'data-label': label }, h('ul.variant-assets', {}, items, gone));
+    };
+    const rename = (i) => {
+      const cur = getVariants();
+      const name = prompt('Name this version (e.g. "Their counter")', variantLabel(cur[i], i));
+      if (name === null) return;
+      cur[i] = { ...cur[i], label: name.trim().slice(0, 40) || undefined };
+      if (!cur[i].label) delete cur[i].label;
+      setVariants(cur); drawCounters();
+    };
+    const load1 = (r) => {
+      if (live && !confirm('The trade you are building is not in the comparison yet. Replace it anyway?')) return;
+      trade.a = [...r.a]; trade.b = [...r.b];
+      rerender();
+      document.getElementById('trade-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    const remove = (i) => { const cur = getVariants(); cur.splice(i, 1); setVariants(cur); drawCounters(); };
+    const tbody = h('tbody', {}, rows.map((r) => {
+      const isLive = live && r.index === rows.length - 1;
+      const editing = !live ? r.index === at : isLive;
+      const head = verdictHeadline(r.analysis, n);
+      return h('tr', { class: [editing ? 'editing' : '', isLive ? 'live' : ''].filter(Boolean).join(' ') || null },
+        h('td.nowrap', {}, isLive ? h('span.bold', {}, r.label) : h('button.linklike.bold', { type: 'button', title: 'Rename', onclick: () => rename(r.index) }, r.label),
+          editing ? h('div.tiny.muted', {}, isLive ? 'being edited above' : '● shown above') : null),
+        cell(r.a, r.changes?.a, `${n.A} receives`), cell(r.b, r.changes?.b, `${n.B} receives`),
+        h('td', { 'data-label': 'Verdict' }, h('span.verdict-pill', { class: r.level, title: relabel(head.sub, n) }, head.label)),
+        h('td.num.nowrap', { 'data-label': 'Who gets more' }, h('span.bold', {}, leadText(r.diff, n)), h('div.tiny.muted', {}, `${n.a} ${fmtValue(r.totals[0])} · ${n.b} ${fmtValue(r.totals[1])}`)),
+        showLineup ? h('td.num.nowrap', { 'data-label': 'Your lineup' }, r.lineup
+          ? [h('span.bold', { class: r.lineup.valueDelta > 0 ? 'trend-up' : r.lineup.valueDelta < 0 ? 'trend-down' : '' }, fmtSigned(r.lineup.valueDelta)),
+            r.lineup.pointsDelta !== null ? h('div.tiny.muted', {}, `${r.lineup.pointsDelta > 0 ? '+' : ''}${r.lineup.pointsDelta.toFixed(1)} pts/game`) : null]
+          : '—') : null,
+        h('td.nowrap', {}, isLive
+          ? h('button.btn.btn-xs', { onclick: addToComparison, disabled: list.length >= MAX_VARIANTS ? true : null }, '＋ Add')
+          : [editing ? null : h('button.btn.btn-xs', { onclick: () => load1(r) }, 'Load'), ' ',
+            h('button.btn.btn-xs.btn-danger', { onclick: () => remove(r.index), title: `Remove ${r.label}`, 'aria-label': `Remove ${r.label} from the comparison` }, '✕')]));
+    }));
+    countersEl.append(
+      h('div.table-wrap', {}, h('table.data.counter-table', {},
+        h('thead', {}, h('tr', {}, h('th', {}, 'Version'), h('th', {}, `${n.A} receives`), h('th', {}, `${n.B} receives`), h('th', {}, 'Verdict'), h('th.num', {}, 'Who gets more'),
+          showLineup ? h('th.num', { title: 'Change in your best starting lineup (value, projected points per game)' }, 'Your lineup') : null, h('th', {}, ''))),
+        tbody)),
+      h('div.flex.mt-s', {},
+        h('span.tiny.muted', {}, `+ added / struck through = removed, compared with ${variantLabel(list[0], 0).toLowerCase() === 'original' ? 'the original' : `"${variantLabel(list[0], 0)}"`}. Click a name to rename it. Up to ${MAX_VARIANTS} versions per mode, kept in this browser.`),
+        h('button.btn.btn-xs.btn-danger', { onclick: () => { if (confirm('Remove every version from the comparison?')) { setVariants([]); drawCounters(); } } }, 'Clear comparison')));
   }
 
   // Phone: the verdict sits far below the two lists, so keep a one-line verdict pinned to the bottom of the screen.

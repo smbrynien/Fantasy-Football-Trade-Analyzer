@@ -227,8 +227,8 @@ before the primary task).
 
 Implemented items are in §15. Recommended next (detail and rationale in `FEATURE_AUDIT.md`):
 
-1. **Counteroffer table**: keep the original, list variants with their verdicts (and lineup impact) side by side.
-2. **Value matches with combinations** (player + pick) in dynasty.
+1. ~~**Counteroffer table**~~ — *done* (§15).
+2. ~~**Value matches with combinations**~~ (player + pick) — *done* (§15).
 3. **Player dialog**: put "Why this value?" content summary on Overview; rename "Dynasty outlook" to "Long-term"
    in redraft.
 4. **Label the remaining unlabeled number fields** (Scoring/Import tables); replace the pick "Custom range…"
@@ -280,6 +280,8 @@ All in this session; no valuation formula or default changed (`model_version` st
 | **Lineup impact** on the trade page: lineup value and projected points/game before → after, starters into/out of the lineup, depth changes, "not on your roster" and roster-limit warnings | `trade.js` | e.g. "31,940 → 33,290 (+1,350) · 97.9 → 102.0 (+4.1) · Into your lineup: Puka Nacua · Out: Justin Jefferson" |
 | **"Which side is you?"** (detected from the roster): every label becomes "Your team / Their team" (bars: You / Them), including engine notes; "From my roster" quick-add list on the side receiving your assets; "Even it out" suggests from your roster when you are the one who should add | `trade.js`, `js/ui/trade-helpers.js` (`sideNames`, `relabel`), `balance.js` (`only`) | adding your own players: pick from a list instead of typing |
 | Polish bugs: "-0" values, "14.000000000000002 games", "null" on the Model page | `js/ui/dom.js`, `player-modal.js`, `model.js`, `settings.js` | E2E now fails on any stray null/undefined/NaN text |
+| **Two-asset combinations** (Tier 2, F4) under Even it out / Value matches: "Two assets together" (collapsed, open state remembered) — player + pick, two picks (the same generic pick may appear twice), two players; exact `analyzeTrade` scores, package-aware; each asset in one combination only; the best even combination of each kind kept; from your roster when you are the side that adds | `balance.js` (`comboSuggestions`), `trade.js`, `css/app.css` | 50–85 ms on real data, only when opened. Dynasty Garrett Wilson for Puka Nacua ("B +2,520", clearly ahead): "2028 Early 3rd + 2027 Late 1st" → exactly even |
+| **Counteroffer table** (Tier 2, F7, F-36): "+ Compare" keeps the current version (first = Original, then Counter 1…); table re-analyzes every version live — verdict, who gets more, adjusted totals, lineup impact with My Team; "+ added"/struck-through assets vs the original; unsaved current trade shown as a row with "+ Add"; Load / rename / remove / clear; up to 8 per mode in browser storage; cards on phones | `js/core/counteroffers.js` (new), `trade.js`, `css/app.css` | variants compared without save/load cycles |
 
 **Validation** (before/after, see Part III): unit tests 103 → 122 (new `tests/balance.test.js`,
 `tests/trade-helpers.test.js`, `tests/roster.test.js`, 2 trade tests); E2E smoke at 1360/721/390 px extended (share
@@ -289,7 +291,7 @@ complete trades identical before/after.
 
 ## 16. Remaining opportunities
 
-* Counteroffer table, combination value matches (Tier 2).
+* ~~Counteroffer table, combination value matches (Tier 2)~~ — done (§15, last rows).
 * My Team: Sleeper draft picks and one-click refresh; roster per league is browser-only (not synced to the local
   server like profiles).
 * Package charge on stars acquired for picks — quantitative audit.
@@ -341,7 +343,7 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 | F-33 | Player dialog: 6 tabs; "Dynasty outlook" shown in redraft | Player dialog | Some clutter; scrolls on phones | Low | Rename to "Long-term" in redraft; summary-first Overview | Low | Low | Open |
 | F-34 | No roster / My Team context | Trade | Can't answer "how does this affect MY team?" | High | Roster per league + lineup before/after | Medium–High | High | **Fixed** (My Team, lineup impact) |
 | F-35 | Sides only "Team A / Team B" | Trade | Users think "I give / I get" | Medium | Optional "You / Them" labels | Low–Medium | Medium | **Fixed** ("Which side is you?") |
-| F-36 | Comparing counteroffers requires save/load cycles | Trade | Slow exploration of variants | Medium | Counteroffer table | Medium | Medium | Open (Tier 2) |
+| F-36 | Comparing counteroffers requires save/load cycles | Trade | Slow exploration of variants | Medium | Counteroffer table | Medium | Medium | **Fixed** (Compare counteroffers) |
 | F-37 | Data pill = bare dot ≤960 px | Header | Freshness invisible on phones/tablets | Medium | Show age ("6 h") | Low | Medium | **Fixed** |
 | F-38 | Shared link silently replaced a trade in progress | Trade | Lost work | Medium | Confirm | Low | Medium | **Fixed** |
 | F-39 | Printing would omit the collapsed breakdown | Trade print | Incomplete report | Low | Open details on `beforeprint` | Low | Low | **Fixed** |
@@ -392,7 +394,7 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 2. Even it out / Value matches — *added*.
 3. Share as text/link — *added*.
 4. Model − Market divergence — *added*.
-5. Counteroffer comparison table (Tier 2).
+5. Counteroffer comparison table — *added*.
 
 **5 things simplified / to simplify**
 1. Five KPI cards → one verdict headline (*done*).
@@ -403,10 +405,10 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 
 **What would make trade analysis dramatically faster**
 Search + Enter per asset (already), the verdict visible without scrolling (done), one-click balancing (done), and a
-roster so "my side" is filled from a list or with one click from My Team (done). Next: a counteroffer table.
+roster so "my side" is filled from a list or with one click from My Team (done), and the counteroffer table (done).
 
 **Dynasty-specific**
-Value matches that include picks (done for single assets; combinations next), now-vs-future kept on screen, and a
+Value matches that include picks (single assets and player + pick / two-pick combinations, done), now-vs-future kept on screen, and a
 roster timeline view (Tier 2/3: age profile of my starters, picks owned).
 
 **Redraft-specific**

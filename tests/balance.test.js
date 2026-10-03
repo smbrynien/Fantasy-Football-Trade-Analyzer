@@ -85,3 +85,61 @@ test('only: suggestions restricted to a given list (my roster), exact picks allo
   assert.ok(s.suggestions.length > 0);
   for (const x of s.suggestions) assert.ok(mine.includes(x.id));
 });
+
+// Two-asset combinations (usability audit F4).
+import { comboSuggestions } from '../js/core/valuation/balance.js';
+
+test('combinations: two assets for the short side, scored exactly, each asset used once, sorted', () => {
+  for (const r of [red, dyn]) {
+    const ps = players(r);
+    const A = [ps[30].id], B = [ps[0].id];
+    const base = analyzeTrade(r, A, B);
+    const c = comboSuggestions(r, A, B);
+    assert.equal(c.side, 'a');
+    assert.ok(c.combos.length > 0 && c.combos.length <= 4);
+    const seen = new Set();
+    for (const x of c.combos) {
+      assert.equal(x.ids.length, 2);
+      const exact = analyzeTrade(r, [...A, ...x.ids], B);
+      assert.ok(Math.abs(exact.diff - x.diffAfter) < 1e-6, 'diffAfter is the real analyzeTrade result');
+      assert.equal(x.level, exact.assessment.level);
+      for (const id of new Set(x.ids)) { assert.ok(!seen.has(id), 'an asset appears in one combination only'); seen.add(id); }
+      for (const id of x.ids) {
+        assert.ok(!A.includes(id) && !B.includes(id));
+        const a = r.getAsset(id);
+        if (a.kind === 'player') assert.ok(a.team, 'no free agents');
+        else assert.ok(a.descriptor.slot === null && !a.descriptor.range, 'generic picks only');
+        assert.ok(a.value >= c.gap * 0.15, 'no token fillers');
+      }
+    }
+    for (let i = 1; i < c.combos.length; i++) assert.ok(Math.abs(c.combos[i - 1].diffAfter) <= Math.abs(c.combos[i].diffAfter) + 1e-9);
+    assert.ok(Math.abs(c.combos[0].diffAfter) < Math.abs(base.diff), 'the best combination improves the balance');
+  }
+});
+
+test('combinations in dynasty: player + pick offered when one evens the trade; the same generic pick may appear twice', () => {
+  const ps = players(dyn);
+  const c = comboSuggestions(dyn, [], [ps[2].id], { limit: 6 });
+  assert.equal(c.side, 'a');
+  assert.equal(c.oneSided, true);
+  const kinds = new Set(c.combos.map((x) => x.players));
+  const pool = comboSuggestions(dyn, [], [ps[2].id], { limit: 200, pool: 2000 });
+  if (pool.combos.some((x) => x.players === 1 && x.level === 'even')) assert.ok(kinds.has(1), 'a player + pick combination is shown');
+  // Doubling a generic pick is allowed ("two 2027 1sts"); a player never pairs with himself.
+  const up = dyn.picks.upcoming;
+  const pick = dyn.getAsset(`pick:${up}:1`);
+  const two = comboSuggestions(dyn, [], [ps[2].id], { only: [pick.id, pick.id, ps[10].id], minShare: 0, limit: 10 });
+  assert.ok(two.combos.some((x) => x.ids[0] === pick.id && x.ids[1] === pick.id), 'two copies in the list → can pair with itself');
+  const one = comboSuggestions(dyn, [], [ps[2].id], { only: [pick.id, ps[10].id], minShare: 0, limit: 10 });
+  assert.ok(!one.combos.some((x) => x.ids[0] === x.ids[1]), 'one copy → never doubled');
+  assert.ok(!comboSuggestions(dyn, [], [ps[2].id], { only: [ps[10].id], minShare: 0 }).combos.length, 'a single player cannot form a pair');
+});
+
+test('combinations: close or empty trades get none; read-only', () => {
+  const ps = players(red);
+  assert.deepEqual(comboSuggestions(red, [], []).combos, []);
+  assert.deepEqual(comboSuggestions(red, [ps[10].id], [ps[10].id]).combos, []);
+  const before = new Map([...red.assets.values()].map((a) => [a.id, a.value]));
+  comboSuggestions(red, [ps[25].id], [ps[1].id]);
+  for (const [id, v] of before) assert.equal(red.assets.get(id).value, v);
+});

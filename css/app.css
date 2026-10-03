@@ -363,6 +363,20 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
 .balance { padding: .6rem .7rem; border: 1px dashed var(--border-strong); border-radius: 8px; }
 .chip.suggest { display: inline-flex; align-items: center; gap: .25rem; font-weight: 600; text-align: left; }
 .chip.suggest:hover, .chip.suggest:focus-visible { border-color: var(--accent); }
+details.combos > summary { cursor: pointer; padding: .15rem 0; }
+.chip.suggest .pos { flex-shrink: 0; }
+.chip.combo { flex-wrap: wrap; row-gap: .15rem; }
+.counters[hidden] { display: none; }
+.counter-table td { vertical-align: top; }
+.counter-table tr.editing td { background: var(--accent-soft); }
+.counter-table tr.live td { border-top: 1px dashed var(--border-strong); }
+ul.variant-assets { list-style: none; margin: 0; padding: 0; }
+ul.variant-assets li.added { color: var(--good); font-weight: 700; }
+ul.variant-assets li.removed { color: var(--muted); }
+.verdict-pill { display: inline-block; padding: .1rem .5rem; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--panel-2); border-left: 4px solid var(--faint); white-space: nowrap; }
+.verdict-pill.even { background: var(--good-soft); border-left-color: var(--good); }
+.verdict-pill.lean { background: var(--warn-soft); border-left-color: #f59e0b; }
+.verdict-pill.clear { background: var(--bad-soft); border-left-color: var(--bad); }
 details.breakdown > summary { font-weight: 700; padding: .35rem 0; }
 small.block { display: block; font-size: .72rem; text-align: right; }
 .linklike { appearance: none; border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
@@ -383,6 +397,15 @@ details.menu > summary::-webkit-details-marker { display: none; }
   .view { padding-bottom: 4.5rem; }
   .verdict-label { font-size: 1.15rem; }
   .chip.suggest { width: 100%; }
+  /* Counteroffers: one card per version instead of a table that scrolls sideways. */
+  .counter-table thead { display: none; }
+  .counter-table, .counter-table tbody { display: block; }
+  .counter-table tr { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .75rem; padding: .55rem .6rem; border-bottom: 1px solid var(--border); }
+  .counter-table tr.editing { background: var(--accent-soft); }
+  table.data.counter-table td { display: block; padding: 0; border: 0; text-align: left; }
+  table.data.counter-table tr.editing td { background: none; }
+  .counter-table td:first-child { grid-column: 1 / -1; }
+  .counter-table td[data-label]::before { content: attr(data-label); display: block; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
   /* The two-row header took ~20% of a phone screen on every scroll position: let it scroll away. */
   .topbar { position: static; }
 }
