@@ -73,8 +73,9 @@ Model Audit:     Done (docs/MODEL_AUDIT.md, docs/MODEL_COMPARISON.md). Tool work
 UX Audit:        DONE (2026-10-03): docs/USABILITY_AUDIT.md (friction log F-01–F-44, findings, before/after) and
                  docs/FEATURE_AUDIT.md (opportunity matrix, Tier 1/2/3/Do-Not-Build). Tier 1 implemented: verdict-
                  first trade result, "Even it out"/value matches, share link/text, Model − Market column, grouped
-                 settings, a11y fixes. Next: My Team / roster context (Tier 2). Asset values unchanged.
-Testing:         115/115 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
+                 settings, a11y fixes; plus My Team (optional roster → lineup impact, "Which side is you?",
+                 roster quick-add). Next: counteroffer table, combination matches. Asset values unchanged.
+Testing:         122/122 node:test tests pass (≈5 s, offline). Optional E2E `npm run test:e2e` and `npm run lint`
                  (dev-only, zero dependencies) both pass.
 Documentation:   Extensive (11 docs). Minor code/doc discrepancies listed in §21 and §39.
 CI/Release:      GitHub Actions: lint → tests → build → publish ZIPs on every push to main (lint step added in
@@ -140,8 +141,11 @@ js/core/         Isomorphic (browser + Node): the whole valuation engine lives h
   settings.js      buildLeague, buildModel (config + calibration + per-league overrides), computePhase
   import/mapper.js manual-import column mapping; pick-labels.js; util/ (stats, csv, names, teams, positions)
   version.js       APP_VERSION, NORMALIZED_SCHEMA_VERSION, DATASET_SCHEMA_VERSION
-js/ui/           Vanilla ES-module UI: app.js (router), state.js, api.js, dom.js, search.js, charts.js, sync.js
-  views/           trade, players, compare, rookies, data, settings, model, help, player-modal
+  roster.js        My Team: bestLineup (dedicated → FLEX → SF), rosterImpact (lineup value/points before → after)
+  valuation/balance.js  "Even it out" / value matches (exact, via analyzeTrade)
+js/ui/           Vanilla ES-module UI: app.js (router), state.js, api.js, dom.js, search.js, charts.js, sync.js,
+                 trade-helpers.js (verdict wording, side names, share links)
+  views/           trade, team (My Team), players, compare, rookies, data, settings, model, help, player-modal
 config/          sources.json, model.json (model_version + every parameter), league-defaults.json,
                  profiles.json (7 presets), import-specs.json (7 templates), calibration/*.json (6 files)
 scripts/         sync.js (CLI), calibrate.js, backtest.js, audit-model.js + audit/{benchmark,backtests,current,compare}.js,
@@ -429,8 +433,14 @@ Inputs per player (`context.js derivePlayerInputs`), all re-scored with **your**
   "Team X clearly ahead" — same z thresholds), `marketCheck` (market-only diff vs the model), `leadText`
   ("B +6,160"), `tradeHash`/`tradeFromHash` (share links `#/trade?m=<mode>&a=<ids>&b=<ids>`, ids URL-encoded,
   ≤25 per side, ≤80 chars each; `js/app.js` switches mode first).
-* Roster-specific (your actual roster) valuation is **not implemented** — values are generic for the league format
-  (Tier 2 in `docs/FEATURE_AUDIT.md`, F1).
+* **Roster context (My Team, `js/core/roster.js`)** is a layer on top, not a different valuation: asset values stay
+  generic for the league format; `rosterImpact(result, rosterIds, giveIds, getIds, {points})` reports the best
+  lineup (highest-valued eligible player per slot: dedicated → FLEX → SUPERFLEX) before/after, lineup value,
+  projected points/game of the starters (`pointsPerGame` = redraft `details.projection.rate`), starters in/out,
+  depth, assets given that aren't on the roster, and players beyond starting + bench spots. Rosters are stored per
+  league profile in browser storage (`ffta.myteam.<profileId>` = `{ids, source, …}`; copied when a preset is
+  copied on first edit) — not on the server. `trade.me` ('a'|'b') stores "which side is you" with the trade (auto-
+  detected from the roster: my assets are what the other side receives).
 
 ## 15. League settings
 
@@ -465,6 +475,7 @@ Verified by Playwright screenshots this session (desktop 1360 px and mobile 390 
 | Trade (`#/trade`, home) | build and analyze a trade | context line (mode, league, what values mean); search ("jef", "det rb", "2027 1st", "1.04"), pick adder; **verdict headline first**, bars, market check, notes, **Even it out / Value matches** chips; package details and "Full breakdown" (KPIs, components, signals, reproducibility) collapsed; Swap / Save / Share ▾ (copy text, copy link, CSV+JSON, print) / Clear; phones: pinned verdict bar; saved trades (Then/Now "B +6,160", "Why changed?" dialog) | valuations + `/api/trades` | No roster context (Tier 2); sides are Team A/B, not You/Them |
 | Players (`#/players`) | searchable table | filters (pos, team, age, value, injured, rookies), sort (keyboard: Enter/Space, `aria-sort`), custom columns incl. **Model − Market** (default on), CSV exports; rows open with Enter | valuations | — (phones get cards) |
 | Player modal | "Why this value?", dynasty outlook, market & sources, stats, trends, "Why did this value change?" | tabs | valuations, `/api/history`, snapshots | — (Trends marks model changes since the bug #3 fix) |
+| My Team (`#/team`) | optional roster per league | search-add, paste a list (matched with the trade search), Sleeper team import (public API: `league/<id>/users` + `/rosters`, mapped via `ids.sleeper`; picks not imported), best lineup / bench / picks / depth / pts per game, "Trade" (asks before mixing into an unrelated trade), remove, clear | valuations, browser storage | roster not synced to the server; no Sleeper picks |
 | Compare (`#/compare`) | up to 8 assets, age-curve overlay | add/remove; empty state offers the current trade's assets | valuations | — |
 | Rookies & Picks (`#/rookies`, dynasty only) | prospect values, pick grid, methodology | tabs | valuations, picks | — (prospect table fits 1360 px; scrolls inside its box with a pinned Player column below that; bug #7 fixed) |
 | Data (`#/data`, `/sources`, `/import`, `/quality`, `/snapshots`) | sync dashboard, source health (details, retry), manual import wizard, identity resolution, snapshots | Retry, Force refresh, import steps, resolve ambiguous | `/api/status`, `/api/quality`, `/api/import/*` | — |
@@ -566,6 +577,10 @@ the header is not sticky and the data pill shows the data age ("6 h"). Usability
     keyboard row → player, stray null/undefined/NaN text on 12 routes). Only trade-analysis change: no package
     adjustment while a side is empty. Full value diff 24,892/0; 2,393 random complete trades 0 changes → model stays
     2.1.2.
+18. **My Team + lineup impact** (same session, second batch) — `js/core/roster.js`, `js/ui/views/team.js`, `#/team` tab,
+    trade-page "Which side is you?" (You/Them wording via `sideNames`/`relabel`), lineup impact block, "From my
+    roster" quick-add, roster-restricted "Even it out" (`balanceSuggestions({only})`). `tests/roster.test.js` (6),
+    balance `only` test, E2E My Team flow. No valuation change.
 
 ## 18. What is currently in progress
 
@@ -701,7 +716,7 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 
 ## 26. Testing status
 
-`npm test` → **115 tests, 115 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
+`npm test` → **122 tests, 122 pass, ≈5 s, no network** [verified]. Fixture: `tests/fixtures/make-dataset.js`
 (SYNTHETIC "Test QB 1" players, 2026 week 6, 40 rookies, FantasyCalc-style picks).
 
 | File | Tests | Covers |
@@ -716,14 +731,15 @@ Environment variables (all optional): `PORT` (5177), `HOST` (127.0.0.1 — keep 
 | `scoring.test.js` | 6 | PPR/half/std, QB scoring, TE premium, first downs, bonuses, K/DEF |
 | `sync.test.js` | 13 | partial failures, exclusive failover, retry failed, freshness skip, quarantine keeps previous, stale flag, snapshots/history |
 | `trade.test.js` | 11 | 1-for-1, 2-for-1, 3-for-2 package math, disable package, player vs picks, z-score verdict, missing ids, dynasty age notes, pick-for-player note, incomplete trade has no package adjustment |
-| `balance.test.js` | 6 | Even it out / Value matches: correct side, exact (= analyzeTrade), sorted, improves the gap, no free agents, generic picks only, one-sided matches, read-only |
+| `balance.test.js` | 7 | Even it out / Value matches: correct side, exact (= analyzeTrade), sorted, improves the gap, no free agents, generic picks only, one-sided matches, read-only, `only` (my roster) |
+| `roster.test.js` | 6 | best lineup (dedicated/FLEX/SF, empty slots), lineup impact (starters in/out, points, unchanged starters, not-on-roster, roster overflow), dynasty picks and duplicate generic picks |
 | `trade-helpers.test.js` | 4 | verdict headline wording, market check cases, "B +6,160" formatting, share-link round trip and junk handling |
 | `valuation.test.js` | 20 | rank mapping, blend, ES helpers, components sum, scale anchor, scarcity, SF, TEP, dynasty vs redraft, strategy, picks, missing data, confidence, phase weights, IR zero projection, market list QB-format exclusion, TEP list preference |
 | `model-audit.test.js` | 15 | monotonicity (projection, age), expected surplus, evidence gate, one-game backups, zero-weight DP, trend display-only, pick monotonicity, slot curve fit, league effects, finite values, age cliffs, elite > replacement, ADP-only N/A (FA + rostered, in season + preseason, corroborated ADP still counts), corroboration flag off |
 
 Optional browser E2E: `npm run test:e2e` (`tests/e2e/smoke.mjs`, not matched by the `npm test` glob; §3). It covers
 the trade builder (desktop + mobile width), share links, Even it out, side totals = bars, keyboard (Players row →
-player), every main route (no sideways scroll, no stray null/undefined/NaN text), the player Trends tab
+player), My Team (add → "Trade" → You/Them labels → lineup impact), every main route (no sideways scroll, no stray null/undefined/NaN text), the player Trends tab
 (model-change marker) and console errors — not the import wizard, Settings round-trips, the other player-modal tabs or dynasty picks. CI runs lint and `npm test`, not E2E.
 
 Gaps: no test for most adapters against recorded real responses (only ESPN ADP, stubbed), the HTTP API routes,
@@ -864,8 +880,8 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 | Low | Prune ADP-only players from the dataset (or flag them) | ≈45% of dataset rows carry no redraft value since 2.1.0 | not done | bug #1 fixed; decide | `server/dataset-builder.js` |
 | Research | Calibrate σ (± ranges) against outcomes; archive projections/markets for future backtests | trust in verdicts | not started | months of snapshots | `confidence.js`, snapshots |
 | Research | 3+-player package adjustment; roster-specific valuation | multi-player trades are the weakest area | evidence insufficient | simulation work | `trade.js`, `scripts/audit/current.js` |
-| Medium | **My Team / roster context** (FEATURE_AUDIT F1 + F37): roster per profile, lineup value before → after | biggest remaining usefulness gap (usability audit) | not started | none | new `js/core/roster.js`, `trade.js`, settings |
-| Medium | Perspective labels (You/Them), counteroffer table, combination value matches (F8, F7, F4) | trade exploration speed | not started | — | `trade.js`, `balance.js` |
+| Medium | Counteroffer table, combination value matches (FEATURE_AUDIT F7, F4) | trade exploration speed | not started | — | `trade.js`, `balance.js` |
+| Low | My Team: Sleeper draft picks (`traded_picks`), refresh from Sleeper, server copy of rosters | completeness | players only, browser-only | — | `js/ui/views/team.js`, `server/index.js` |
 | Research | Package charge on a star acquired for picks (usability F-40) | experienced users find it wrong | open model question | quantitative audit | `trade.js` `packageAdjustment` |
 | Low | Player dialog summary-first; unlabeled table inputs (Scoring/Import); chart text alternatives (F-33, F-42, F-44) | polish / a11y | open | — | `player-modal.js`, `settings.js`, `data.js` |
 
@@ -877,8 +893,7 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
    `STATIC_ALLOW` and render it in `js/ui/views/model.js`.
 4. **Dataset pruning:** decide whether ADP-only players should stay in `dataset.json` (bug #1 is fixed, so they are
     dead weight in redraft). Measure size and valuation time before and after.
-5. **My Team / roster context** — Tier 2 of `docs/FEATURE_AUDIT.md` (§8). Then perspective labels, counteroffer
-   table, combination value matches.
+5. **Counteroffer table** and **combination value matches** — Tier 2 of `docs/FEATURE_AUDIT.md` (§8).
 
 # PICK UP HERE
 
@@ -890,14 +905,15 @@ Full guide: `docs/ADDING_A_SOURCE.md` (matches the code [verified structure]).
 
 ```text
 Current state:            Model 2.1.2. All known bugs (§19 #1–#13) and the 32 bug-audit bugs fixed. Usability audit
-                          done (docs/USABILITY_AUDIT.md, docs/FEATURE_AUDIT.md) with Tier 1 implemented.
-                          115/115 tests, lint clean (also in CI), E2E pass at 3 widths. All 10 sources sync.
-Most important unfinished: My Team / roster context (FEATURE_AUDIT Tier 2, F1) — the largest remaining usefulness
-                          gap. Then perspective labels / counteroffer table / combination matches, §35 items 3–4
-                          (audit scorecard on the Model page; prune ADP-only players) and the §34 research items.
-Known blockers:           None.
-Files to inspect first:   js/ui/views/trade.js, js/core/valuation/{trade,balance}.js, js/ui/trade-helpers.js
-Tests to run first:       npm test (expect 115/115); npm run lint (clean); npm run test:e2e (pass or SKIP)
+                          done (docs/USABILITY_AUDIT.md, docs/FEATURE_AUDIT.md) with Tier 1 + My Team implemented.
+                          122/122 tests, lint clean (also in CI), E2E pass at 3 widths. All 10 sources sync.
+Most important unfinished: Counteroffer table and combination value matches (FEATURE_AUDIT Tier 2), My Team
+                          Sleeper picks, §35 items 3–4 (audit scorecard on the Model page; prune ADP-only players)
+                          and the §34 research items (incl. usability F-40: package charge on stars bought with picks).
+Known blockers:           None (no live Sleeper league was available to test the roster import; it was tested
+                          against a mocked API).
+Files to inspect first:   js/ui/views/{trade,team}.js, js/core/{roster.js,valuation/balance.js}, js/ui/trade-helpers.js
+Tests to run first:       npm test (expect 122/122); npm run lint (clean); npm run test:e2e (pass or SKIP)
 Docs to read first:       this file → docs/VALUATION_MODEL.md → docs/MODEL_AUDIT.md §1, §5, §19–20 → CLAUDE.md
 Expected immediate action: next item in §35, with tests; update this handoff in the same commit; push to the
                           assigned branch and main (CLAUDE.md).
@@ -956,7 +972,8 @@ node -e "import('./server/lib/config.js').then(async ({loadConfig}) => {
   validation (SY1–SY3, A6) → batch 7: search de-dupe/suffixes/team prefixes; performance and leak checks (SR1–SR3,
   PF1) → batch 8: import overwrite confirmation, CSV signed-number regression; import/export workflows verified
   (I4, I5) → batch 9: offline message; audit documents completed (O1) → usability audit + Tier 1 UX changes
-  (verdict-first trade result, Even it out / value matches, share, Model − Market, grouped settings, a11y; this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
+  (verdict-first trade result, Even it out / value matches, share, Model − Market, grouped settings, a11y) → My Team
+  + lineup impact + "Which side is you?" (this update). CI (release.yml) succeeded for every 2.1.0-session push checked.
 * Working tree: clean after each commit. `data/` (incl. `data/benchmark/dataset-frozen.json`) is git-ignored.
 * Direction: accuracy and validation of the model (audit-driven), then robustness/UX polish.
 

@@ -117,6 +117,30 @@ try {
     const totals = await page.evaluate(() => ({ side: [...document.querySelectorAll('.side-total')].map((x) => x.firstChild.textContent.trim()), bars: [...document.querySelectorAll('.bar-row .num')].map((x) => x.textContent.trim()) }));
     check(JSON.stringify(totals.side) === JSON.stringify(totals.bars), `trade: side totals equal the bars (${totals.side} vs ${totals.bars})`);
 
+    // My Team: add two players, "Trade" one away → it lands on the other side, perspective labels and lineup impact.
+    await page.evaluate(() => { for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.trade.')) localStorage.removeItem(k); });
+    await page.goto(`${base}/#/team`);
+    const teamSearch = page.locator('#view input[type=search]').first();
+    await teamSearch.waitFor({ timeout: 5000 });
+    for (const q of ['Test WR 5', 'Test RB 4']) {
+      await teamSearch.fill(q);
+      const o = page.locator('.search-results [role=option]').first();
+      await o.waitFor({ timeout: 5000 }); await o.dispatchEvent('mousedown'); await page.waitForTimeout(150);
+    }
+    const lineupRows = await page.locator('#view table.data tbody tr').count();
+    check(lineupRows >= 2 && /Test WR 5\b/.test(await page.locator('#view').innerText()), 'my team: players added, lineup shown');
+    await page.locator('tr', { hasText: 'Test WR 5' }).locator('button', { hasText: 'Trade' }).click();
+    await page.locator('.trade-side').first().waitFor({ timeout: 5000 });
+    const heads = (await page.locator('.trade-side h2').allInnerTexts()).map((t) => t.split('\n')[0]);
+    check(heads[0] === 'Your team receives' && heads[1] === 'Their team receives' && /Test WR 5\b/.test(await page.locator('.trade-side').nth(1).innerText()), `my team: "Trade" puts the asset on the other side with You/Them labels (${heads.join(' / ')})`);
+    const mine = page.locator('.trade-side').first().locator('input[type=search]');
+    await mine.fill('Test WR 1');
+    const o2 = page.locator('.search-results [role=option]').first();
+    await o2.waitFor({ timeout: 5000 }); await o2.dispatchEvent('mousedown');
+    const impact = await page.locator('.lineup-impact').waitFor({ timeout: 5000 }).then(() => page.locator('.lineup-impact').innerText(), () => '');
+    check(/Lineup value/.test(impact) && /Into your lineup: Test WR 1\b/.test(impact) && /Out of your lineup: Test WR 5\b/.test(impact), `my team: lineup impact names who moves in and out (${impact.replace(/\n/g, ' | ').slice(0, 300)})`);
+    await page.evaluate(() => { for (const k of Object.keys(localStorage)) if (k.startsWith('ffta.myteam.') || k.startsWith('ffta.trade.')) localStorage.removeItem(k); });
+
     // Keyboard: a Players row opens the player with Enter.
     await page.goto(`${base}/#/players`);
     const row = page.locator(viewport.width > 720 ? 'table.data tbody tr' : '.pcard').first();
@@ -125,7 +149,7 @@ try {
     check(await page.locator('.modal').waitFor({ timeout: 3000 }).then(() => true, () => false), 'players: Enter on a focused row opens the player');
     await page.keyboard.press('Escape');
 
-    for (const route of ['#/players', '#/compare', '#/data', '#/data/import', '#/data/quality', '#/data/snapshots', '#/settings', '#/settings/roster', '#/settings/redraft', '#/model', '#/help']) {
+    for (const route of ['#/team', '#/players', '#/compare', '#/data', '#/data/import', '#/data/quality', '#/data/snapshots', '#/settings', '#/settings/roster', '#/settings/redraft', '#/model', '#/help']) {
       await page.goto(`${base}/${route}`);
       await page.waitForTimeout(700);
       check((await page.locator('main, #app, body').first().innerText()).trim().length > 50, `${route} renders`);

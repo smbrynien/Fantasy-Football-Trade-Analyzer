@@ -38,10 +38,12 @@ workflow**, not in the numbers:
 
 The highest-value fixes were implemented (§15): a verdict-first result with the breakdown one click away; totals
 that match everywhere; **"Even it out" / "Value matches"** (exact, package-aware value matching); share as text or
-link; a pinned verdict bar on phones; a model-vs-market column; grouped settings; a "why changed" dialog; and a set
-of accessibility fixes. All 24,892 asset values and all 2,393 sampled complete trades are numerically unchanged.
+link; a pinned verdict bar on phones; a model-vs-market column; grouped settings; a "why changed" dialog; a set of
+accessibility fixes; and — the largest missing piece — an optional **My Team** roster with **lineup impact** ("your
+starting lineup value 31,940 → 33,290; projected points/game 97.9 → 102.0; into your lineup: X, out: Y") and
+"You / Them" wording. All 24,892 asset values and all 2,393 sampled complete trades are numerically unchanged.
 
-The largest remaining gap is **roster context** ("how does this affect *my* team?") — see §16 and
+The largest remaining gaps are a side-by-side counteroffer view and multi-asset value matches — see §16 and
 `FEATURE_AUDIT.md`.
 
 ## 2. Current strengths
@@ -70,7 +72,7 @@ The largest remaining gap is **roster context** ("how does this affect *my* team
 | 2 | Side totals (raw) contradicted bars/verdict (adjusted) (F-01) | High | **Fixed** |
 | 3 | No guidance on making a lopsided trade fair, or on what an asset is "worth" in trade terms (F-04, F-05) | High | **Fixed** |
 | 4 | Core interactions not keyboard/screen-reader accessible (F-23–F-26) | High | **Fixed** |
-| 5 | No roster context: values are generic for the league format (F-34) | High | Open (Tier 2) |
+| 5 | No roster context: values are generic for the league format (F-34) | High | **Fixed** (optional My Team + lineup impact) |
 | 6 | Unfinished trades charged a package adjustment; pick-for-player note mislabelled the consolidating side (F-11, F-12) | Medium | **Fixed** |
 | 7 | Settings: model internals presented as peers of league setup (F-19) | Medium | **Fixed** (grouped) |
 | 8 | No share/export path suited to a league chat (F-06) | Medium | **Fixed** |
@@ -78,14 +80,14 @@ The largest remaining gap is **roster context** ("how does this affect *my* team
 ## 4. Major missing features
 
 1. **Roster context / My Team** (brief §9–11): which of *my* starters change, starting-lineup value before/after,
-   positional depth. Not present at all. Objective metrics are feasible (optimal-lineup value from existing values
-   and the league's slots). → Tier 2, `FEATURE_AUDIT.md` F1.
+   positional depth. Was not present at all — **added** (optional; manual, paste or Sleeper import; lineup impact
+   on the trade page; one-click "Trade" from the roster; "From my roster" quick-add).
 2. **Value matching / "what would make this close?"** (§13, §54) — **added** (Even it out / Value matches).
 3. **Share** (link + text summary) — **added**.
 4. **Model-vs-market divergence view** (§56) — **added** as a sortable Players column.
 5. **Counteroffer comparison** (§14): comparing several variants side by side. Partly covered (save/load, swap,
    Even it out); a true side-by-side is Tier 2.
-6. **Perspective** ("You give / You get" instead of Team A/B) — Tier 2.
+6. **Perspective** ("Your team / Their team" instead of Team A/B) — **added** ("Which side is you?", detected from the roster).
 7. **Watchlist / value-movement view** (§26) — Tier 3; history exists per player, there is no cross-player
    "biggest movers" list.
 
@@ -100,8 +102,8 @@ The largest remaining gap is **roster context** ("how does this affect *my* team
 | Player comparison | Compare page; empty state was a dead end | One click to compare the assets of the current trade | — |
 | Dynasty decision (player vs picks) | Trade page with picks; now-vs-future split | Value matches include generic picks | Player + pick combinations not suggested |
 | Trade exploration | Trial and error | Even it out / Value matches (single assets) | Multi-asset combinations, counteroffer table |
-| Trade targeting | Players table sortable by value/age | + Model − Market column (sortable) | No "excess at position X" logic (needs a roster) |
-| Roster-aware analysis | **Not supported** | Not supported | My Team (Tier 2) |
+| Trade targeting | Players table sortable by value/age | + Model − Market column (sortable); My Team depth by position | No automatic "excess at position X" suggestions |
+| Roster-aware analysis | **Not supported** | My Team: best lineup, lineup value and projected points before → after, starters in/out, depth, roster-limit warning | Picks owned aren't imported from Sleeper (add by search) |
 | Weekly decision support | Player dialog (projection, injury, trends) | unchanged | Start/sit is out of scope (Do Not Build) |
 
 ### 5.2 Personas
@@ -111,7 +113,7 @@ The largest remaining gap is **roster context** ("how does this affect *my* team
 * **Serious redraft manager** — wants evidence. Everything is still one click away ("Full breakdown"), plus the
   market cross-check line and exact package math.
 * **Dynasty manager** — now-vs-future and age stay visible (not hidden in the breakdown); value matches include
-  picks. Missing: roster timeline (contending vs rebuilding is a setting, not a view).
+  picks; My Team shows the roster's value-weighted age and picks. Missing: a multi-year roster timeline.
 * **Experienced dynasty manager** — the Model − Market column is the main new tool; source-level detail unchanged.
 * **New user** — the welcome card is now 3 short lines (was 510 px tall on a phone and could not be brought back;
   now restorable from Help). Jargon (replacement level, σ, z) is confined to the breakdown and Model page; Help
@@ -225,19 +227,19 @@ before the primary task).
 
 Implemented items are in §15. Recommended next (detail and rationale in `FEATURE_AUDIT.md`):
 
-1. **My Team / roster context** (Tier 2): roster per league profile (manual + Sleeper import), then on the trade
-   page "your starting lineup value before → after", which starters change, depth by position.
-2. **Perspective toggle**: "You give / You get" labels.
-3. **Counteroffer table**: keep the original, list variants with their verdicts side by side.
-4. **Value matches with combinations** (player + pick) in dynasty.
-5. **Player dialog**: put "Why this value?" content summary on Overview; rename "Dynasty outlook" to "Long-term"
+1. **Counteroffer table**: keep the original, list variants with their verdicts (and lineup impact) side by side.
+2. **Value matches with combinations** (player + pick) in dynasty.
+3. **Player dialog**: put "Why this value?" content summary on Overview; rename "Dynasty outlook" to "Long-term"
    in redraft.
-6. **Label the remaining unlabeled number fields** (Scoring/Import tables).
+4. **Label the remaining unlabeled number fields** (Scoring/Import tables); replace the pick "Custom range…"
+   `prompt()` with inline fields.
+5. **Sleeper draft picks** in the roster import (`traded_picks`), and roster refresh from Sleeper on demand.
 
 ## 12. Features worth adding
 
-See `FEATURE_AUDIT.md` §2–§3 (High/Medium). In short: roster context, perspective labels, counteroffer comparison,
-pick + player value matches, a biggest-movers view, settings comparison ("what if Superflex?").
+See `FEATURE_AUDIT.md` §2–§3 (High/Medium). In short: roster context and perspective labels (both now added),
+counteroffer comparison, pick + player value matches, a biggest-movers view, settings comparison ("what if
+Superflex?").
 
 ## 13. Features not worth adding
 
@@ -274,17 +276,22 @@ All in this session; no valuation formula or default changed (`model_version` st
 | Welcome card shortened; restorable from Help; Help Q&A for the verdict words, Even it out, sharing | `js/ui/views/help.js` | 510 → 376 px on a phone |
 | Phones: header no longer sticky; data pill shows the age | `css/app.css`, `index.html`, `js/app.js` | +170 px of usable screen while scrolling |
 | Accessibility: focusable asset names, `aria-pressed` mode toggle, `<h1>`, focus rings, reduced motion | several | §7 |
+| **My Team** (`#/team`, new tab): optional roster per league profile — search-add, paste a list from any site, or import a Sleeper team (public API, no login); best lineup by slot (dedicated → FLEX → SF), bench, picks, projected points/game, depth, value-weighted age (dynasty); "Trade" button starts an offer with that asset (asks before mixing into an unrelated trade) | `js/core/roster.js` (new: `bestLineup`, `rosterImpact`), `js/ui/views/team.js` (new), `js/ui/state.js`, `index.html`, `js/app.js` | roster → offer in 1 click |
+| **Lineup impact** on the trade page: lineup value and projected points/game before → after, starters into/out of the lineup, depth changes, "not on your roster" and roster-limit warnings | `trade.js` | e.g. "31,940 → 33,290 (+1,350) · 97.9 → 102.0 (+4.1) · Into your lineup: Puka Nacua · Out: Justin Jefferson" |
+| **"Which side is you?"** (detected from the roster): every label becomes "Your team / Their team" (bars: You / Them), including engine notes; "From my roster" quick-add list on the side receiving your assets; "Even it out" suggests from your roster when you are the one who should add | `trade.js`, `js/ui/trade-helpers.js` (`sideNames`, `relabel`), `balance.js` (`only`) | adding your own players: pick from a list instead of typing |
 | Polish bugs: "-0" values, "14.000000000000002 games", "null" on the Model page | `js/ui/dom.js`, `player-modal.js`, `model.js`, `settings.js` | E2E now fails on any stray null/undefined/NaN text |
 
-**Validation** (before/after, see Part III): unit tests 103 → 115 (new `tests/balance.test.js`,
-`tests/trade-helpers.test.js`, 2 trade tests); E2E smoke at 1360/721/390 px extended (share link, Even it out,
-totals = bars, keyboard row → player, stray-text check on 12 routes) — all pass; lint clean; full value snapshot
-24,892/24,892 identical; 2,393 random complete trades identical before/after.
+**Validation** (before/after, see Part III): unit tests 103 → 122 (new `tests/balance.test.js`,
+`tests/trade-helpers.test.js`, `tests/roster.test.js`, 2 trade tests); E2E smoke at 1360/721/390 px extended (share
+link, Even it out, totals = bars, keyboard row → player, My Team → "Trade" → You/Them labels → lineup impact,
+stray-text check on 13 routes) — all pass; lint clean; full value snapshot 24,892/24,892 identical; 2,393 random
+complete trades identical before/after.
 
 ## 16. Remaining opportunities
 
-* **Roster context / My Team** — the single biggest remaining usefulness gain (Tier 2, F1 in `FEATURE_AUDIT.md`).
-* Perspective labels, counteroffer table, combination value matches (Tier 2).
+* Counteroffer table, combination value matches (Tier 2).
+* My Team: Sleeper draft picks and one-click refresh; roster per league is browser-only (not synced to the local
+  server like profiles).
 * Package charge on stars acquired for picks — quantitative audit.
 * Real-device and screen-reader testing; Firefox/Safari.
 * Player dialog summary-first layout; unlabeled table inputs in Scoring/Import.
@@ -332,8 +339,8 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 | F-31 | Compare empty state: "Add players to compare." only | Compare | Dead end; usually you compare the trade's assets | Low | One-click "compare the assets in your current trade" | Low | Medium | **Fixed** |
 | F-32 | Search results lacked positional rank | Search | Hard to pick between similar names / judge tier | Low | "MIN · WR7 · 27.3" | Low | Low | **Fixed** |
 | F-33 | Player dialog: 6 tabs; "Dynasty outlook" shown in redraft | Player dialog | Some clutter; scrolls on phones | Low | Rename to "Long-term" in redraft; summary-first Overview | Low | Low | Open |
-| F-34 | No roster / My Team context | Trade | Can't answer "how does this affect MY team?" | High | Roster per league + lineup before/after | Medium–High | High | Open (Tier 2) |
-| F-35 | Sides only "Team A / Team B" | Trade | Users think "I give / I get" | Medium | Optional "You / Them" labels | Low–Medium | Medium | Open (Tier 2) |
+| F-34 | No roster / My Team context | Trade | Can't answer "how does this affect MY team?" | High | Roster per league + lineup before/after | Medium–High | High | **Fixed** (My Team, lineup impact) |
+| F-35 | Sides only "Team A / Team B" | Trade | Users think "I give / I get" | Medium | Optional "You / Them" labels | Low–Medium | Medium | **Fixed** ("Which side is you?") |
 | F-36 | Comparing counteroffers requires save/load cycles | Trade | Slow exploration of variants | Medium | Counteroffer table | Medium | Medium | Open (Tier 2) |
 | F-37 | Data pill = bare dot ≤960 px | Header | Freshness invisible on phones/tablets | Medium | Show age ("6 h") | Low | Medium | **Fixed** |
 | F-38 | Shared link silently replaced a trade in progress | Trade | Lost work | Medium | Confirm | Low | Medium | **Fixed** |
@@ -343,6 +350,9 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 | F-42 | Scoring / Import tables: number inputs without text labels | Settings, Data | Screen readers | Low | aria-labels from row/column | Low | Low | Open |
 | F-43 | No keyboard shortcut to focus search | Trade | Power users | Low | "/" focuses the first empty side | Low | Low | Open (Tier 3) |
 | F-44 | Charts have no text alternative | Player dialog, Model | Screen readers | Low | Summary sentence / aria-label | Low | Low | Open |
+| F-45 | "Trade" on My Team would silently join an unrelated trade in progress | My Team | Surprising mix of offers | Medium | Ask: new trade or add | Low | Medium | **Fixed** |
+| F-46 | Pick adder "Custom range…" uses a `prompt()` box | Trade (dynasty) | Blocking browser dialog, poor on phones | Low | Two inline number fields | Low | Low | Open |
+| F-47 | Adding my own players to "their side" required searching names I already know | Trade | Slow; error-prone | Medium | "From my roster" list | Low | Medium | **Fixed** |
 
 ---
 
@@ -361,6 +371,7 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 | Sync | unchanged code; `npm test` sync suite (13 tests) | ✓ |
 | Manual import | unchanged code; import tests + E2E route render | ✓ |
 | Saved data | save → "Why changed?" dialog; corrupt-storage E2E | ✓ |
+| My Team | manual add, paste (3 of 4 matched, 1 reported), Sleeper import against a mocked API (3 of 4 mapped, incl. a defense), "Trade" → offer, lineup impact, You/Them labels, 1360 and 390 px (E2E + Playwright walkthrough) | ✓ (no live Sleeper league available here) |
 | Trade calculations | full snapshot (24,892 asset values, 28 preset × mode × phase sets) and 2,393 random complete trades, old vs new engine | **0 differences** |
 | Responsive | E2E: no sideways scroll on 12 routes at 1360/721/390 | ✓ |
 | Stray text | E2E: no "null"/"undefined"/"NaN" text on 12 routes (failed on the old Model page) | ✓ |
@@ -373,11 +384,11 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 1. The answer was buried under data (and two screens down on a phone). *Fixed.*
 2. Numbers that should match didn't (raw side totals vs adjusted verdict; a lone player at 29% while building). *Fixed.*
 3. No help after a lopsided result — no way to find what would balance it. *Fixed.*
-4. No roster context — "how does this affect *my* team?" can't be answered. *Open, Tier 2.*
+4. No roster context — "how does this affect *my* team?" couldn't be answered. *Fixed (optional My Team + lineup impact).*
 5. Core interactions inaccessible by keyboard/screen reader. *Fixed (real screen-reader test still owed).*
 
 **5 highest-value features to add**
-1. Roster context / My Team with starting-lineup value before → after (Tier 2).
+1. Roster context / My Team with starting-lineup value before → after — *added*.
 2. Even it out / Value matches — *added*.
 3. Share as text/link — *added*.
 4. Model − Market divergence — *added*.
@@ -391,16 +402,16 @@ Fields: **Where** · **Why it matters** · **Severity** · **Suggested improveme
 5. Player dialog → summary-first Overview, fewer tabs for redraft (open).
 
 **What would make trade analysis dramatically faster**
-Search + Enter per asset (already), the verdict visible without scrolling (done), one-click balancing (done), and
-next: a roster so "my side" can be filled from a list instead of searching.
+Search + Enter per asset (already), the verdict visible without scrolling (done), one-click balancing (done), and a
+roster so "my side" is filled from a list or with one click from My Team (done). Next: a counteroffer table.
 
 **Dynasty-specific**
 Value matches that include picks (done for single assets; combinations next), now-vs-future kept on screen, and a
 roster timeline view (Tier 2/3: age profile of my starters, picks owned).
 
 **Redraft-specific**
-Roster context matters most in redraft: "starting lineup value / projected weekly points before → after" is the
-objective version of "does this help me win now?" (Tier 2).
+Roster context matters most in redraft: "starting lineup value / projected points per game before → after" is the
+objective version of "does this help me win now?" — now shown on the trade page once My Team is set.
 
 **What most improves trust**
 Consistent numbers (done), the market cross-check line (done), clear wording that matches are value math (done),

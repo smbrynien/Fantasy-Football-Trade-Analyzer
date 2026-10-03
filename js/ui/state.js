@@ -131,3 +131,11 @@ export function setDataset(ds) {
 }
 
 export function playerData(cid) { return app.playerById ? app.playerById.get(cid) : null; }
+
+// ---------- My Team: one roster per league profile (browser storage; optional everywhere) ----------
+const isRoster = (r) => isPlainObject(r) && isStringArray(r.ids);
+export function myRoster(profile = activeProfile()) { return load(`myteam.${profile.id}`, { ids: [] }, isRoster); }
+export function saveMyRoster(ids, meta = {}, profile = activeProfile()) {
+  const prev = myRoster(profile);
+  save(`myteam.${profile.id}`, { ...prev, ...meta, ids: [...ids], updated_at: new Date().toISOString() });
+}

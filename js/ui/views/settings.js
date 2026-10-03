@@ -2,7 +2,7 @@
 // Editing a built-in preset automatically creates a custom copy; user profiles auto-save.
 
 import { h, append, toast, download, fmtTime } from '../dom.js';
-import { app, activeProfile, allProfiles, upsertUserProfile, deleteUserProfile, setProfile, emit, save, load } from '../state.js';
+import { app, activeProfile, allProfiles, upsertUserProfile, deleteUserProfile, setProfile, emit, save, load, myRoster, saveMyRoster } from '../state.js';
 import { buildLeague, buildModel, validateLeague, settingsHash } from '../../core/settings.js';
 import { resolveScoring } from '../../core/scoring.js';
 import { deepClone } from '../../core/util/objects.js';
@@ -22,7 +22,9 @@ export function renderSettings(root, args) {
   function commit(mutator, { rerender = true } = {}) {
     let p = deepClone(activeProfile());
     if (p.builtin) {
+      const roster = myRoster(p);
       p = { ...p, id: `user_${Date.now().toString(36)}`, name: `${p.name} (custom)`, builtin: false };
+      if (roster.ids.length) saveMyRoster(roster.ids, { source: roster.source }, p); // My Team follows the league to its copy
       toast(`Preset copied to "${p.name}" — your changes are saved there.`);
     }
     mutator(p);

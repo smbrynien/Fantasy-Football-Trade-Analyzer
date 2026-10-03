@@ -5,6 +5,7 @@ import { detectServer, hasServer, loadConfig, loadDataset } from './ui/api.js';
 import { app, on, initProfiles, setMode, setProfile, allProfiles, activeProfile, setDataset } from './ui/state.js';
 import { refreshStatus, startSync, resumeIfRunning } from './ui/sync.js';
 import { renderTrade } from './ui/views/trade.js';
+import { renderTeam } from './ui/views/team.js';
 import { renderPlayers } from './ui/views/players.js';
 import { renderCompare } from './ui/views/compare.js';
 import { renderRookies } from './ui/views/rookies.js';
@@ -14,7 +15,7 @@ import { renderModel } from './ui/views/model.js';
 import { openPlayer } from './ui/views/player-modal.js';
 import { renderHelp } from './ui/views/help.js';
 
-const VIEWS = { trade: renderTrade, players: renderPlayers, compare: renderCompare, rookies: renderRookies, data: renderData, settings: renderSettings, model: renderModel, help: renderHelp };
+const VIEWS = { trade: renderTrade, team: renderTeam, players: renderPlayers, compare: renderCompare, rookies: renderRookies, data: renderData, settings: renderSettings, model: renderModel, help: renderHelp };
 const viewEl = document.getElementById('view');
 let current = null;
 let cleanup = null;

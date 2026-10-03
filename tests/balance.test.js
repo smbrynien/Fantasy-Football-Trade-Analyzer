@@ -75,3 +75,13 @@ test('read-only: computing suggestions changes no asset value', () => {
   balanceSuggestions(red, [ps[25].id, ps[60].id], [ps[1].id]);
   for (const [id, v] of before) assert.equal(red.assets.get(id).value, v);
 });
+
+test('only: suggestions restricted to a given list (my roster), exact picks allowed, nothing else', () => {
+  const ps = players(dyn);
+  const up = dyn.picks.upcoming;
+  const mine = [ps[50].id, ps[60].id, ps[70].id, `pick:${up}:2:early`, `pick:${up}:1`];
+  const s = balanceSuggestions(dyn, [ps[3].id], [ps[40].id], { only: mine, limit: 10 }); // A receives more → top up B
+  assert.equal(s.side, 'b');
+  assert.ok(s.suggestions.length > 0);
+  for (const x of s.suggestions) assert.ok(mine.includes(x.id));
+});

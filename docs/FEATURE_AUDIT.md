@@ -22,14 +22,14 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
 
 | ID | Feature | User value | Frequency | Differentiation | Impl. cost | Maint. cost | Data requirements | Confusion risk | Core-workflow impact | Class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| F1 | **Roster context / My Team** — roster per league profile; trade shows starting-lineup value before → after, which starters change, depth by position | High | every trade (once set up) | High (most calculators ignore your roster) | Medium–High | Medium | a roster: manual entry, or Sleeper `league/{id}/rosters` (IDs already in the crosswalk) | Medium — must stay optional and objective (no "you should") | Positive if optional; must not slow the no-roster path | **High** | Tier 2 |
+| F1 | **Roster context / My Team** — roster per league profile; trade shows starting-lineup value before → after, which starters change, depth by position | High | every trade (once set up) | High (most calculators ignore your roster) | Medium–High | Medium | a roster: manual entry, or Sleeper `league/{id}/rosters` (IDs already in the crosswalk) | Medium — must stay optional and objective (no "you should") | Positive if optional; must not slow the no-roster path | **High** | **Implemented** (`js/core/roster.js`, My Team tab, lineup impact) |
 | F2 | **Even it out** — exact single-asset additions that bring a lopsided trade closest to even (package-aware) | High | most lopsided trades | Medium–High (exact, league-specific, includes the package adjustment) | Low | Low | none | Medium → mitigated by "value math, not a prediction" wording | Positive (one click) | **High** | **Implemented** |
 | F3 | **Value matches** — one side filled: single assets of equal trade value | High | frequent (dynasty) | Medium | Low | Low | none | Low | Positive | **High** | **Implemented** |
 | F4 | Value matches with combinations (player + pick, 2-for-1) | Medium–High | occasional | Medium | Medium (combinatorics; must stay fast) | Low | none | Medium (long lists) | Neutral if collapsed | **Medium** | Tier 2 |
 | F5 | **Share**: text summary for chats; link that reopens the trade (`#/trade?m=…&a=…&b=…`) | High | frequent | Low–Medium | Low | Low | none (ids only; no data in the URL) | Low | Positive | **High** | **Implemented** |
 | F6 | **Model − Market divergence** column (sortable) | High (trade targeting) | weekly | High | Low | Low | none (market signal already on the same scale) | Medium — wording says "a difference, not a recommendation" | Neutral | **High** | **Implemented** |
 | F7 | Counteroffer table: original + variants with verdicts side by side | Medium–High | occasional | Medium | Medium | Low | none | Low | Positive for negotiation, neutral otherwise | **Medium** | Tier 2 |
-| F8 | Perspective labels ("You give / You get" vs Team A/B) | Medium | every trade | Low | Low–Medium (wording in core notes + UI) | Low | none | Low | Positive | **Medium** | Tier 2 |
+| F8 | Perspective labels ("Your team / Their team" vs Team A/B) | Medium | every trade | Low | Low–Medium (wording in core notes + UI) | Low | none | Low | Positive | **Medium** | **Implemented** ("Which side is you?", roster-detected) |
 | F9 | Trade history with then/now | Medium | occasional | Medium (reproducible re-check) | — | — | snapshots | Medium (hindsight ≠ proof) — dialog says so | Neutral | Medium | Exists; improved (Then/Now as "B +6,160") |
 | F10 | "Why did this change?" (player Trends; saved trades) | High (trust) | occasional | High | — | — | history/snapshots | Low | Neutral | **High** | Exists; saved-trade version now a dialog with drivers |
 | F11 | Trade-target explorer (filters: position, value band, age) | Medium | weekly | Low | Low | Low | none | Low | Neutral | Medium | Covered by Players filters + Model − Market sort; "excess at position" needs F1 |
@@ -58,20 +58,22 @@ Classes: **High priority** (large usefulness gain, reasonable effort) · **Mediu
 | F34 | Start/sit advice | — | weekly | — | High | High | weekly projections & matchups | — | — | **Avoid** | Different product |
 | F35 | Separate data-coverage badge | Low | — | — | Low | Low | — | Medium (two badges) | — | **Low** | The confidence badge already reports source coverage/agreement |
 | F36 | Printable trade report | Medium | occasional | Low | — | — | — | — | — | Medium | Exists; breakdown now auto-opens for printing |
-| F37 | Platform roster sync (Sleeper) | High (as part of F1) | once per league | Medium | Medium | Medium (API changes) | Sleeper rosters | Low | Positive | **High** (with F1) | Tier 2 |
+| F37 | Platform roster sync (Sleeper) | High (as part of F1) | once per league | Medium | Medium | Medium (API changes) | Sleeper rosters | Low | Positive | **High** (with F1) | **Implemented** (players; picks not yet) |
 | F38 | Command palette | Low | — | — | Medium | Low | — | Low | — | **Low** | Not now |
-| F39 | Trade side "perspective" swap remembered per league | Low | — | — | Low | Low | — | Low | — | Low | Comes with F8 |
+| F39 | Trade side "perspective" remembered | Low | — | — | Low | Low | — | Low | — | Low | Implemented with F8 (stored with the trade) |
+| F40 | "From my roster" quick-add; roster-restricted "Even it out" | Medium–High | every trade (with a roster) | Medium | Low | Low | F1 | Low | Positive | **High** | **Implemented** |
 
 ## 2. High priority
 
 * **F2 Even it out**, **F3 Value matches**, **F5 Share**, **F6 Model − Market**, **F10 Why changed** (improved) —
   implemented this session.
-* **F1 Roster context / My Team (+ F37 Sleeper rosters)** — the largest remaining gain (Tier 2, below).
+* **F1 Roster context / My Team (+ F37 Sleeper rosters, F40 roster quick-add)** and **F8 perspective labels** —
+  implemented in the second batch of this session.
 
 ## 3. Medium priority
 
-F4 combination matches, F7 counteroffer table, F8 perspective labels, F13 biggest movers, F15 settings what-if,
-F17 dynasty age profile (after F1), F11 position-excess targeting (after F1).
+F4 combination matches, F7 counteroffer table, F13 biggest movers, F15 settings what-if, F17 dynasty age profile
+(F1 now exists), F11 position-excess targeting (F1 now exists).
 
 ## 4. Low priority
 
@@ -124,7 +126,7 @@ Open app → Choose league → Build trade → See quick result → Expand expla
 | Build trade | Search + Enter per asset; pick adder; keyboard-only works | — |
 | See quick result | **Verdict headline** + bars; pinned on phones | — (was the biggest deviation) |
 | Expand explanation | "Full breakdown"; click any asset for "Why this value?" | Component names still model-centric |
-| Review roster/context | Dynasty now-vs-future and age; positions received | **No roster context** (F1) |
+| Review roster/context | Dynasty now-vs-future and age; positions received; **lineup impact** with My Team | Roster must be set up once (optional) |
 | Explore alternatives | Even it out / Value matches; Swap; saved trades | No side-by-side counteroffers (F7); no combinations (F4) |
 | Save/export | Save (with reproducibility record), Share text/link, CSV+JSON, print | — |
 
@@ -135,16 +137,15 @@ Verdict-first result with progressive disclosure · consistent (package-adjusted
 matches · Share (text + link, with confirmation) · pinned verdict on phones · trade context line · Model − Market
 column · grouped settings with changed markers and reset · "why changed" dialog · mode-grouped league dropdown ·
 Compare from the current trade · keyboard/screen-reader fixes · phone header and freshness · polish bugs (−0,
-float game counts, stray "null"). Details and measurements: `USABILITY_AUDIT.md` §15.
+float game counts, stray "null") · **My Team + lineup impact + "Which side is you?" + roster quick-add** (pulled
+forward from Tier 2 — it was the largest gap and fitted the existing values without model changes). Details and
+measurements: `USABILITY_AUDIT.md` §15.
 
 ### Tier 2 — implement soon
-1. **My Team / roster context** (F1 + F37): roster per league profile (manual search-add; Sleeper roster import),
-   optional "my side" selector on the trade page, objective metrics: starting-lineup value (and, in redraft,
-   projected points per week) before → after, starters gained/lost, depth per position. Must stay optional.
-2. **Perspective labels** (F8).
-3. **Counteroffer table** (F7).
-4. **Combination value matches** (F4: player + pick, two assets).
-5. Hide "Model — advanced" settings behind a toggle; merge "Data Refresh" into Data.
+1. **Counteroffer table** (F7): original + variants side by side, each with its verdict and lineup impact.
+2. **Combination value matches** (F4: player + pick, two assets).
+3. Sleeper draft picks (`traded_picks`) and a "refresh from Sleeper" button on My Team.
+4. Hide "Model — advanced" settings behind a toggle; merge "Data Refresh" into Data.
 
 ### Tier 3 — future
 Biggest movers (F13), settings what-if (F15), team age profile (F17), watchlist (F12), keyboard shortcut (F25),

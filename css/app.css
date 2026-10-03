@@ -226,7 +226,7 @@ table.data tfoot td { font-weight: 700; background: var(--panel-2); }
 .verdict.lean { border-left-color: #f59e0b; }
 .verdict.clear { border-left-color: var(--bad); }
 .bars { display: flex; flex-direction: column; gap: .4rem; }
-.bar-row { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) 5.5rem; gap: .5rem; align-items: center; font-size: .85rem; }
+.bar-row { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr) 5.5rem; gap: .5rem; align-items: center; font-size: .85rem; }
 .bar-track { position: relative; height: 22px; background: var(--panel-2); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
 .bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
 .bar-fill.a { background: var(--team-a); } .bar-fill.b { background: var(--team-b); }
@@ -355,6 +355,11 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
 .verdict-sub { color: var(--muted); font-size: .92rem; margin-top: .15rem; }
 .market-check { margin: .6rem 0 0; padding: .45rem .7rem; border-radius: 6px; background: var(--panel-2); }
 .market-check.disagree { background: var(--warn-soft); }
+.lineup-impact { padding: .6rem .75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); display: grid; gap: .3rem; }
+.lineup-kpis { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
+.warn-text { color: var(--warn); }
+.side-picker { margin-top: .35rem; }
+.side-picker select { padding: .2rem .4rem; font-size: .85rem; }
 .balance { padding: .6rem .7rem; border: 1px dashed var(--border-strong); border-radius: 8px; }
 .chip.suggest { display: inline-flex; align-items: center; gap: .25rem; font-weight: 600; text-align: left; }
 .chip.suggest:hover, .chip.suggest:focus-visible { border-color: var(--accent); }
