@@ -89,14 +89,15 @@ code, .mono { font-family: var(--mono); font-size: .86em; }
 .brand span { color: #f8fafc; }
 .mode-toggle { display: inline-flex; background: #1e293b; border-radius: 999px; padding: 3px; margin-left: .5rem; }
 .mode-toggle button { appearance: none; border: 0; background: transparent; color: #cbd5e1; font: 700 .8rem/1 var(--font); letter-spacing: .08em; text-transform: uppercase; padding: .55rem 1.05rem; border-radius: 999px; cursor: pointer; }
-.mode-toggle button[aria-selected="true"] { background: #f8fafc; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
-.mode-toggle button[data-mode="dynasty"][aria-selected="true"] { background: #a78bfa; color: #1e1b4b; }
-.mode-toggle button[data-mode="redraft"][aria-selected="true"] { background: #4ade80; color: #052e16; }
+.mode-toggle button[aria-pressed="true"] { background: #f8fafc; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.mode-toggle button[data-mode="dynasty"][aria-pressed="true"] { background: #a78bfa; color: #1e1b4b; }
+.mode-toggle button[data-mode="redraft"][aria-pressed="true"] { background: #4ade80; color: #052e16; }
 .topbar-right { margin-left: auto; display: flex; gap: .5rem; align-items: center; }
 .profile-select select { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; padding: .45rem .6rem; max-width: 260px; font: inherit; }
 .data-pill { display: inline-flex; align-items: center; gap: .4rem; background: #1e293b; color: #cbd5e1; border: 1px solid #334155; border-radius: 999px; padding: .4rem .75rem; font: 600 .78rem var(--font); cursor: pointer; white-space: nowrap; }
 .data-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
 .data-pill.ok .dot { background: #22c55e; } .data-pill.warn .dot { background: #f59e0b; } .data-pill.bad .dot { background: #ef4444; }
+.data-pill .txt-short { display: none; } /* short age label, shown only where the full text is hidden */
 /* Tabs wrap instead of scrolling behind a hidden scrollbar, so every section is always visible. */
 .tabs { display: flex; flex-wrap: wrap; gap: 0 .25rem; padding: 0 1rem; max-width: 1400px; margin: 0 auto; }
 .tabs a { color: #94a3b8; padding: .55rem .8rem .6rem; font-weight: 600; font-size: .88rem; border-bottom: 3px solid transparent; white-space: nowrap; text-decoration: none; }
@@ -122,6 +123,11 @@ body.mode-dynasty .redraft-only { display: none !important; }
 .subtabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; overflow-x: auto; }
 .subtabs button { appearance: none; border: 0; background: none; padding: .6rem .9rem; font: 600 .88rem var(--font); color: var(--muted); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
 .subtabs button.active { color: var(--text); border-bottom-color: var(--accent); }
+.subtabs.grouped { flex-wrap: wrap; gap: .25rem 1.25rem; overflow: visible; }
+.subtab-group { display: flex; flex-direction: column; min-width: 0; }
+.subtab-group-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); padding: 0 .9rem; }
+.subtab-row { display: flex; flex-wrap: wrap; }
+.banner-inline { padding: .6rem .8rem; border-radius: 8px; background: var(--warn-soft); font-size: .88rem; }
 
 /* ---------- controls ---------- */
 .btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: .35rem; border: 1px solid var(--border-strong); background: var(--panel); color: var(--text); border-radius: 8px; padding: .5rem .85rem; font: 600 .86rem var(--font); cursor: pointer; white-space: nowrap; text-decoration: none !important; }
@@ -138,7 +144,8 @@ body.mode-dynasty .redraft-only { display: none !important; }
 @keyframes spin { to { transform: rotate(360deg); } }
 input[type=text], input[type=search], input[type=number], input[type=url], select, textarea {
   font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--border-strong); border-radius: 8px; padding: .5rem .6rem; min-width: 0; }
-input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+table.data tr.clickable:focus-visible { outline-offset: -2px; }
 input[type=number] { width: 6.5rem; }
 input.compact[type=number] { width: 4.5rem; }
 textarea { width: 100%; min-height: 8rem; font-family: var(--mono); font-size: .82rem; }
@@ -306,6 +313,7 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
 @media (max-width: 960px) {
   .trade-layout, .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); } /* plain 1fr cannot shrink below its content */
   .data-pill .txt { display: none; }
+  .data-pill .txt-short { display: inline; }
   #sync-btn .lbl { display: none; }
 }
 @media (max-width: 720px) {
@@ -335,6 +343,46 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
   .modal { border-radius: 0; min-height: 100vh; }
 }
 
+/* ---------- trade result: verdict first, breakdown on demand ---------- */
+.trade-context { font-size: .85rem; margin: 0 0 .75rem; line-height: 1.45; }
+.mode-badge { display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .15rem .5rem; border-radius: 999px; background: #4ade80; color: #052e16; vertical-align: 1px; }
+.mode-badge.dynasty { background: #a78bfa; color: #1e1b4b; }
+.verdict-head { padding: .8rem 1rem; border-radius: 8px; background: var(--panel-2); border-left: 5px solid var(--faint); }
+.verdict-head.even { border-left-color: var(--good); }
+.verdict-head.lean { border-left-color: #f59e0b; }
+.verdict-head.clear { border-left-color: var(--bad); }
+.verdict-label { font-size: 1.35rem; font-weight: 800; line-height: 1.25; }
+.verdict-sub { color: var(--muted); font-size: .92rem; margin-top: .15rem; }
+.market-check { margin: .6rem 0 0; padding: .45rem .7rem; border-radius: 6px; background: var(--panel-2); }
+.market-check.disagree { background: var(--warn-soft); }
+.balance { padding: .6rem .7rem; border: 1px dashed var(--border-strong); border-radius: 8px; }
+.chip.suggest { display: inline-flex; align-items: center; gap: .25rem; font-weight: 600; text-align: left; }
+.chip.suggest:hover, .chip.suggest:focus-visible { border-color: var(--accent); }
+details.breakdown > summary { font-weight: 700; padding: .35rem 0; }
+small.block { display: block; font-size: .72rem; text-align: right; }
+.linklike { appearance: none; border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.linklike:hover { text-decoration: underline; }
+details.menu { position: relative; }
+details.menu > summary { list-style: none; }
+details.menu > summary::-webkit-details-marker { display: none; }
+.menu-panel { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; display: flex; flex-direction: column; gap: .3rem; min-width: 210px; padding: .5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); }
+.menu-panel .btn { width: 100%; justify-content: flex-start; text-align: left; }
+.trade-sticky { display: none; }
+@media (max-width: 720px) {
+  .trade-sticky:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--panel); border-top: 3px solid var(--faint); box-shadow: 0 -4px 14px rgba(0,0,0,.12); transition: transform .15s; }
+  .trade-sticky.even { border-top-color: var(--good); }
+  .trade-sticky.lean { border-top-color: #f59e0b; }
+  .trade-sticky.clear { border-top-color: var(--bad); }
+  .trade-sticky.offscreen { transform: translateY(110%); }
+  .trade-sticky button { appearance: none; border: 0; background: none; color: var(--text); width: 100%; padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom)); font: inherit; text-align: left; cursor: pointer; }
+  .view { padding-bottom: 4.5rem; }
+  .verdict-label { font-size: 1.15rem; }
+  .chip.suggest { width: 100%; }
+  /* The two-row header took ~20% of a phone screen on every scroll position: let it scroll away. */
+  .topbar { position: static; }
+}
+@media (max-height: 560px) { .topbar { position: static; } }
+
 /* ---------- print ---------- */
 @media print {
   .topbar, .tabs, .search-box, .pick-adder, .asset .x, .no-print, #toast-root, .banner { display: none !important; }
@@ -353,3 +401,8 @@ details > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
 details.qa { border-bottom: 1px solid var(--border); padding: .5rem 0; }
 details.qa summary { font-size: .95rem; }
 details.qa p { margin: .4rem 0 .2rem 1rem; color: var(--muted); }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

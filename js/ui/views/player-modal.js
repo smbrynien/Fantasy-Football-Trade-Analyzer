@@ -1,7 +1,7 @@
 // Player & pick detail views: overview, "Why this value?", dynasty outlook, sources, stats, trends,
 // and "Why did this value change?" (re-runs the model on an older data snapshot with today's settings).
 
-import { h, clear, openModal, fmtValue, fmtSigned, fmt1, fmtAge, fmtPctPlain, fmtRange, fmtTime, posBadge, confBadge, injuryBadge, timeAgo } from '../dom.js';
+import { h, clear, openModal, fmtValue, fmtSigned, fmt1, fmtAge, fmtPctPlain, fmtRange, fmtGames, fmtTime, posBadge, confBadge, injuryBadge, timeAgo } from '../dom.js';
 import { app, getValuations, activeProfile, playerData } from '../state.js';
 import { COMPONENT_LABELS, COMPONENT_ORDER } from '../../core/valuation/engine.js';
 import { diffAsset } from '../../core/valuation/explain.js';
@@ -81,11 +81,11 @@ export function openPlayer(cid) {
       const d = ar?.details;
       const rows = [];
       if (d) {
-        rows.push(['Projected points (ROS)', d.projection.points !== null ? `${fmt1(d.projection.points)} in ${d.projection.games ?? '?'} games${d.projection.zeroedForInjury ? ' (no projection while on IR → 0)' : ''}` : 'Unavailable']);
+        rows.push(['Projected points (ROS)', d.projection.points !== null ? `${fmt1(d.projection.points)} in ${fmtGames(d.projection.games)} games${d.projection.zeroedForInjury ? ' (no projection while on IR → 0)' : ''}` : 'Unavailable']);
         if (d.production.gp) rows.push(['Points per game (this season)', `${fmt1(d.production.ppg)} actual · ${fmt1(d.production.xppg)} expected (opportunity) · ${d.production.gp} games`]);
         if (d.weeklyRange) rows.push(['Weekly floor / median / ceiling', `${fmt1(d.weeklyRange.floor)} / ${fmt1(d.weeklyRange.median)} / ${fmt1(d.weeklyRange.ceiling)} (10th/50th/90th pct of ${d.weeklyRange.n} games)`]);
         if (d.lastSeason) rows.push([`Last season (${d.lastSeason.season})`, `${fmt1(d.lastSeason.ppg)} PPG in ${d.lastSeason.gp} games`]);
-        rows.push(['Remaining games', d.production.remGames ?? '—']);
+        rows.push(['Remaining games', d.production.remGames === null || d.production.remGames === undefined ? '—' : fmtGames(d.production.remGames)]);
         if (d.production.sosDetail) rows.push(['Remaining schedule', `${d.production.sos > 1 ? 'easier' : 'harder'} than average (×${d.production.sos.toFixed(3)} applied to production)`]);
         rows.push(['Replacement level', `${fmt1(d.replacement)} pts (starter) · ${fmt1(d.waiver)} pts (waiver)`]);
       }

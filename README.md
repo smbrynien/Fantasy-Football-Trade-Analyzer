@@ -8,6 +8,9 @@ website's trade values — tuned to **your** league's scoring, roster and size.
 * Works offline from the last good dataset; one broken source never breaks the app
 * Manual CSV/JSON import as a first-class path (KeepTradeCut, FantasyPros exports, any projections/rankings/ADP/values)
 * Canonical player identity resolution across 15+ ID systems; ambiguous players are never silently merged
+* Trade results lead with a plain verdict ("Close — roughly fair", "Team B clearly ahead") and a market cross-check;
+  **"Even it out"** lists the single players/picks that would balance a lopsided trade (package-aware); share a trade
+  as text or as a link; full breakdown one click away
 * Every value explains itself: **"Why this value?"**, **"Why did this value change?"**, uncertainty ranges, confidence
 * Dynasty: calibrated aging curves, attrition and draft-capital priors, multi-year projections, rookie pick model with
   future and unknown-slot picks

@@ -12,20 +12,21 @@
 <body>
   <header class="topbar">
     <div class="topbar-row">
+      <h1 class="sr-only">FF Trade Analyzer</h1>
       <a class="brand" href="#/trade" aria-label="Home">
         <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><ellipse cx="16" cy="16" rx="14" ry="9" transform="rotate(-35 16 16)" fill="currentColor"/><path d="M11 21l10-10M13 15l2 2M15 13l2 2M17 11l2 2" stroke="var(--brand-ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
         <span>Trade Analyzer</span>
       </a>
-      <div class="mode-toggle" role="tablist" aria-label="Valuation mode">
-        <button role="tab" data-mode="redraft" id="mode-redraft">Redraft</button>
-        <button role="tab" data-mode="dynasty" id="mode-dynasty">Dynasty</button>
+      <div class="mode-toggle" role="group" aria-label="Valuation mode">
+        <button type="button" data-mode="redraft" id="mode-redraft">Redraft</button>
+        <button type="button" data-mode="dynasty" id="mode-dynasty">Dynasty</button>
       </div>
       <div class="topbar-right">
         <label class="profile-select" title="League profile">
           <span class="sr-only">League profile</span>
           <select id="profile-select"></select>
         </label>
-        <button class="data-pill" id="data-pill" title="Data status — open the sync dashboard"><span class="dot"></span><span class="txt">No data</span></button>
+        <button class="data-pill" id="data-pill" title="Data status — open the sync dashboard"><span class="dot"></span><span class="txt">No data</span><span class="txt-short" aria-hidden="true"></span></button>
         <button class="btn btn-primary" id="sync-btn" title="Refresh all data sources"><span class="sync-icon" aria-hidden="true">⟳</span><span class="lbl">Sync All</span></button>
       </div>
     </div>

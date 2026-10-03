@@ -27,6 +27,9 @@ function route() {
   if (name === 'player' && rest[0]) { openPlayer(decodeURIComponent(rest[0])); }
   current = { view, args: rest };
   document.querySelectorAll('#tabs a').forEach((a) => a.classList.toggle('active', a.dataset.view === view));
+  // A shared trade link carries its mode (#/trade?m=dynasty&a=…): switch first so the ids resolve in the right engine.
+  const m = new URLSearchParams(location.hash.split('?')[1] || '').get('m');
+  if (view === 'trade' && (m === 'redraft' || m === 'dynasty') && m !== app.mode) { setMode(m); return; } // the 'mode' event renders
   render();
 }
 
@@ -70,13 +73,20 @@ function emptyState() {
 function renderHeader() {
   document.body.classList.toggle('mode-dynasty', app.mode === 'dynasty');
   document.body.classList.toggle('mode-redraft', app.mode === 'redraft');
-  for (const b of document.querySelectorAll('.mode-toggle button')) b.setAttribute('aria-selected', String(b.dataset.mode === app.mode));
+  for (const b of document.querySelectorAll('.mode-toggle button')) b.setAttribute('aria-pressed', String(b.dataset.mode === app.mode));
   const sel = document.getElementById('profile-select');
   clear(sel);
   const user = allProfiles().filter((p) => !p.builtin);
   const builtin = allProfiles().filter((p) => p.builtin);
   if (user.length) sel.append(h('optgroup', { label: 'My leagues' }, user.map((p) => h('option', { value: p.id }, p.name))));
-  sel.append(h('optgroup', { label: 'Presets' }, builtin.map((p) => h('option', { value: p.id }, p.name))));
+  // Presets grouped by the mode they were made for, the current mode first (one mixed list read as if dynasty
+  // presets were the only ones for dynasty — any preset's league settings work in either mode).
+  const other = app.mode === 'dynasty' ? 'redraft' : 'dynasty';
+  const cap = (m) => m[0].toUpperCase() + m.slice(1);
+  for (const m of [app.mode, other]) {
+    const list = builtin.filter((p) => (p.mode || 'redraft') === m);
+    if (list.length) sel.append(h('optgroup', { label: `${cap(m)} presets` }, list.map((p) => h('option', { value: p.id }, p.name))));
+  }
   sel.value = activeProfile().id;
   renderDataPill();
 }
@@ -86,14 +96,17 @@ function renderDataPill() {
   const txt = pill.querySelector('.txt');
   pill.classList.remove('ok', 'warn', 'bad');
   const ds = app.dataset;
-  if (!ds) { txt.textContent = 'No data'; pill.classList.add('bad'); return; }
+  const short = pill.querySelector('.txt-short');
+  if (!ds) { txt.textContent = 'No data'; short.textContent = 'No data'; pill.classList.add('bad'); return; }
   const stale = Object.values(ds.sources || {}).filter((s) => s.stale).length;
   const failing = app.status ? app.status.sources.filter((s) => ['error', 'quarantined', 'partial'].includes(s.state)).length : 0;
   const auto = Object.values(ds.sources || {}).filter((s) => !s.manual && s.enabled);
   const okCount = auto.filter((s) => s.has_data && !s.stale).length;
   txt.textContent = `Data ${timeAgo(ds.built_at)} · ${okCount}/${auto.length} sources`;
+  short.textContent = timeAgo(ds.built_at).replace(' ago', ''); // phones/tablets: the age stays visible, not just a dot
   pill.classList.add(stale || failing ? 'warn' : 'ok');
   if (!hasServer()) txt.textContent += ' · read-only';
+  pill.setAttribute('aria-label', `${txt.textContent}${stale || failing ? ` — ${stale} stale, ${failing} failing` : ''}. Open the sync dashboard.`);
   pill.title = `Dataset ${ds.data_version}\nBuilt ${new Date(ds.built_at).toLocaleString()}\n${stale} stale source(s), ${failing} failing.\nClick for the sync dashboard.`;
 }
 

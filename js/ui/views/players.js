@@ -1,6 +1,6 @@
 // PLAYER DATABASE — search, filters, sortable/customisable columns, CSV export.
 
-import { h, clear, fmtValue, fmt1, fmtAge, posBadge, confBadge, injuryBadge, download, debounce, timeAgo } from '../dom.js';
+import { h, clear, fmtValue, fmtSigned, fmt1, fmtAge, posBadge, confBadge, injuryBadge, download, debounce, timeAgo } from '../dom.js';
 import { app, getValuations, load, save, playerData, isPlainObject, isStringArray } from '../state.js';
 import { openPlayer } from './player-modal.js';
 import { toCSV } from '../../core/util/csv.js';
@@ -21,13 +21,14 @@ const COLUMNS = [
   { key: 'dyn_rank', label: 'Dynasty Rank', num: true, get: (r) => r.dyn?.rank },
   { key: 'future', label: 'Future Value', num: true, get: (r) => r.dyn ? (r.dyn.components.longevity || 0) + (r.dyn.components.prospect || 0) : null, fmt: fmtValue, title: 'Dynasty value attributable to seasons 2+ and draft capital' },
   { key: 'market', label: 'Market Value', num: true, get: (r) => r.cur?.groupValues?.market, fmt: fmtValue, cls: 'market-v', title: 'Market signal on this app\'s scale (mode-specific)' },
+  { key: 'edge', label: 'Model − Market', num: true, get: (r) => (Number.isFinite(r.cur?.groupValues?.market) ? r.cur.value - r.cur.groupValues.market : null), fmt: (v) => (v === null || v === undefined ? '—' : fmtSigned(v)), title: 'This app\'s value minus the market value (same scale). Positive: the model rates the player above what managers trade for (a possible buy). Negative: the market pays more than the model (a possible sell). A difference, not a recommendation.' },
   { key: 'adp', label: 'ADP', num: true, get: (r) => r.adp, fmt: fmt1 },
   { key: 'trend', label: 'Trend', num: true, get: (r) => r.trend, fmt: (v) => (v === null || v === undefined ? '—' : `${v > 0 ? '+' : ''}${(v * 100).toFixed(1)}%`), title: 'Market source 30-day trend (source-reported)' },
   { key: 'conf', label: 'Confidence', get: (r) => r.cur?.confidence?.score },
   { key: 'updated', label: 'Last Updated', get: (r) => r.updated },
 ];
 
-const DEFAULT_VISIBLE = { redraft: ['rank', 'player', 'pos', 'team', 'age', 'red', 'red_rank', 'proj', 'ppg', 'market', 'adp', 'trend', 'conf'], dynasty: ['rank', 'player', 'pos', 'team', 'age', 'dyn', 'dyn_rank', 'future', 'market', 'red', 'trend', 'conf'] };
+const DEFAULT_VISIBLE = { redraft: ['rank', 'player', 'pos', 'team', 'age', 'red', 'red_rank', 'proj', 'ppg', 'market', 'edge', 'adp', 'trend', 'conf'], dynasty: ['rank', 'player', 'pos', 'team', 'age', 'dyn', 'dyn_rank', 'future', 'market', 'edge', 'red', 'trend', 'conf'] };
 
 export function renderPlayers(root) {
   const red = getValuations('redraft');
@@ -58,18 +59,18 @@ export function renderPlayers(root) {
   const tableHost = h('div.mt');
   root.append(controls, tableHost);
 
-  const q = h('input', { type: 'search', placeholder: 'Search name, team or position…', value: f.q, style: { minWidth: '220px', flex: '1 1 220px' } });
+  const q = h('input', { type: 'search', placeholder: 'Search name, team or position…', 'aria-label': 'Search players', value: f.q, style: { minWidth: '220px', flex: '1 1 220px' } });
   const posChips = h('div.chips', {}, ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'].map((p) => h('button.chip', { class: f.pos.includes(p) ? 'on' : '', onclick: (e) => { f.pos = f.pos.includes(p) ? f.pos.filter((x) => x !== p) : [...f.pos, p]; e.target.classList.toggle('on'); draw(); } }, p)));
-  const team = h('select', { onchange: (e) => { f.team = e.target.value; draw(); } }, h('option', { value: '' }, 'All teams'), h('option', { value: 'FA' }, 'Free agents'), TEAMS.map((t) => h('option', { value: t, selected: f.team === t ? true : null }, t)));
-  const num = (key, ph) => h('input.compact', { type: 'number', placeholder: ph, value: f[key], oninput: debounce((e) => { f[key] = e.target.value; draw(); }, 250) });
-  const sel = (key, opts) => h('select', { onchange: (e) => { f[key] = e.target.value; draw(); } }, opts.map(([v, l]) => h('option', { value: v, selected: f[key] === v ? true : null }, l)));
+  const team = h('select', { 'aria-label': 'Team', onchange: (e) => { f.team = e.target.value; draw(); } }, h('option', { value: '' }, 'All teams'), h('option', { value: 'FA' }, 'Free agents'), TEAMS.map((t) => h('option', { value: t, selected: f.team === t ? true : null }, t)));
+  const num = (key, ph, label) => h('input.compact', { type: 'number', placeholder: ph, 'aria-label': label, value: f[key], oninput: debounce((e) => { f[key] = e.target.value; draw(); }, 250) });
+  const sel = (key, opts, label) => h('select', { 'aria-label': label, onchange: (e) => { f[key] = e.target.value; draw(); } }, opts.map(([v, l]) => h('option', { value: v, selected: f[key] === v ? true : null }, l)));
   controls.append(
     h('div.flex', {}, q, posChips, team),
     h('div.flex.mt-s', {},
-      h('span.small.muted', {}, 'Age'), num('ageMin', 'min'), num('ageMax', 'max'),
-      h('span.small.muted', {}, 'Value ≥'), num('valMin', '0'),
-      sel('inj', [['all', 'Any health'], ['healthy', 'Not injured'], ['injured', 'Injured / designated']]),
-      sel('exp', [['all', 'All players'], ['rookies', 'Rookies'], ['veterans', 'Veterans']]),
+      h('span.small.muted', {}, 'Age'), num('ageMin', 'min', 'Minimum age'), num('ageMax', 'max', 'Maximum age'),
+      h('span.small.muted', {}, 'Value ≥'), num('valMin', '0', 'Minimum value'),
+      sel('inj', [['all', 'Any health'], ['healthy', 'Not injured'], ['injured', 'Injured / designated']], 'Health'),
+      sel('exp', [['all', 'All players'], ['rookies', 'Rookies'], ['veterans', 'Veterans']], 'Experience'),
       h('span.grow'),
       h('details', { style: { position: 'relative' } }, h('summary.btn.btn-sm', {}, 'Columns'),
         h('div.panel', { style: { position: 'absolute', right: 0, zIndex: 20, minWidth: '220px' } }, COLUMNS.filter((c) => !c.always).map((c) => h('label.check', { style: { display: 'flex' } }, h('input', { type: 'checkbox', checked: visible.includes(c.key) ? true : null, onchange: (e) => { visible = e.target.checked ? [...visible, c.key] : visible.filter((k) => k !== c.key); save(`players.cols.${app.mode}`, visible); draw(); } }), c.label)),
@@ -132,15 +133,19 @@ export function renderPlayers(root) {
     const list = filtered();
     const cols = COLUMNS.filter((c) => c.always || visible.includes(c.key));
     const shown = list.slice(0, f.limit);
+    const sortBy = (c) => { if (f.sort === c.key) f.dir = f.dir === 'desc' ? 'asc' : 'desc'; else { f.sort = c.key; f.dir = c.num && c.key !== 'rank' && !c.key.endsWith('_rank') && c.key !== 'adp' && c.key !== 'age' ? 'desc' : 'asc'; } draw(); };
+    // Keyboard: headers sort with Enter/Space, rows open with Enter (they were mouse-only).
+    const activate = (fn) => (e) => { if (e.key === 'Enter' || (e.key === ' ' && e.currentTarget.tagName === 'TH')) { e.preventDefault(); fn(); } };
     const thead = h('thead', {}, h('tr', {}, cols.map((c) => h('th', {
-      class: `sortable ${c.num ? 'num' : ''} ${f.sort === c.key ? `sorted ${f.dir}` : ''}`, title: c.title || '',
-      onclick: () => { if (f.sort === c.key) f.dir = f.dir === 'desc' ? 'asc' : 'desc'; else { f.sort = c.key; f.dir = c.num && c.key !== 'rank' && !c.key.endsWith('_rank') && c.key !== 'adp' && c.key !== 'age' ? 'desc' : 'asc'; } draw(); },
+      class: `sortable ${c.num ? 'num' : ''} ${f.sort === c.key ? `sorted ${f.dir}` : ''}`, title: c.title || '', tabindex: 0,
+      'aria-sort': f.sort === c.key ? (f.dir === 'asc' ? 'ascending' : 'descending') : null,
+      onclick: () => sortBy(c), onkeydown: activate(() => sortBy(c)),
     }, c.label))));
-    const tbody = h('tbody', {}, shown.map((r) => h('tr.clickable', { onclick: () => openPlayer(r.id) }, cols.map((c) => cell(c, r)))));
+    const tbody = h('tbody', {}, shown.map((r) => h('tr.clickable', { tabindex: 0, title: 'Open details (Enter)', onclick: () => openPlayer(r.id), onkeydown: activate(() => openPlayer(r.id)) }, cols.map((c) => cell(c, r)))));
     tableHost.append(
       h('div.flex-between.small.muted.mb', {}, h('span', {}, `${list.length} players · showing ${shown.length} · values in ${cur.league.name}`), h('span', {}, 'Click a player for details and "Why this value?"')),
       h('div.table-wrap.desktop-table', {}, h('table.data', {}, thead, tbody)),
-      h('div.mobile-cards', {}, shown.map((r) => h('div.pcard', { onclick: () => openPlayer(r.id) }, posBadge(r.position),
+      h('div.mobile-cards', {}, shown.map((r) => h('div.pcard', { role: 'button', tabindex: 0, onclick: () => openPlayer(r.id), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPlayer(r.id); } } }, posBadge(r.position),
         h('div', {}, h('div.player-name', {}, r.name, ' ', injuryBadge(r.injury ? { status: r.injury } : null)), h('div.player-sub', {}, `${r.team || 'FA'} · ${fmtAge(r.age)} · market ${fmtValue(r.cur.groupValues?.market)}`)),
         h('div.num', {}, h('div.bold', {}, fmtValue(r.cur.value)), confBadge(r.cur.confidence))))),
       list.length > shown.length ? h('div.center.mt', {}, h('button.btn', { onclick: () => { f.limit += 200; draw(); } }, `Show more (${list.length - shown.length} remaining)`)) : null);

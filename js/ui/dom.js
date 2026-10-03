@@ -41,9 +41,11 @@ const nf1 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFr
 /** Trade values are rounded to the nearest 10 for display: 7,000 vs 6,990 is not a meaningful distinction. */
 export function fmtValue(v) {
   if (v === null || v === undefined || !Number.isFinite(v)) return '—';
-  return nf0.format(Math.round(v / 10) * 10);
+  return nf0.format(Math.round(v / 10) * 10 || 0); // `|| 0`: −4 rounds to −0, which printed as "-0"
 }
-export function fmtInt(v) { return v === null || v === undefined || !Number.isFinite(v) ? '—' : nf0.format(Math.round(v)); }
+export function fmtInt(v) { return v === null || v === undefined || !Number.isFinite(v) ? '—' : nf0.format(Math.round(v) || 0); }
+/** Game counts can be fractional (remaining games × availability): 14.000000000000002 → "14", 13.6 → "13.6". */
+export function fmtGames(v) { return v === null || v === undefined || !Number.isFinite(v) ? '?' : String(Math.round(v * 10) / 10); }
 export function fmt1(v) { return v === null || v === undefined || !Number.isFinite(v) ? '—' : nf1.format(v); }
 export function fmtSigned(v) { if (v === null || v === undefined || !Number.isFinite(v)) return '—'; const r = Math.round(v / 10) * 10; return (r > 0 ? '+' : r < 0 ? '−' : '±') + nf0.format(Math.abs(r)); }
 export function fmtPct(v, d = 1) { if (v === null || v === undefined || !Number.isFinite(v)) return '—'; return `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v * 100).toFixed(d)}%`; }
@@ -135,4 +137,16 @@ export function injuryBadge(inj) {
 export function statusIcon(st) {
   const m = { ok: '✓', warning: '⚠', partial: '⚠', error: '✕', quarantined: '⛔', never: '○', skipped: '↷', 'never synced': '○', 'not imported': '○', manual: '✎' };
   return h('span.status-icon', { class: `st-${String(st).split(' ')[0]}` }, m[st] || '•');
+}
+
+/** Copy text to the clipboard; if the browser refuses, show it in a dialog so it can be copied by hand. */
+export async function copyText(text, okMsg = 'Copied to the clipboard.') {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(okMsg);
+  } catch {
+    openModal((close) => h('div.modal-body', {},
+      h('div.flex-between', {}, h('h3', { style: { margin: 0 } }, 'Copy this text'), h('button.btn.btn-sm', { onclick: close, 'aria-label': 'Close' }, '×')),
+      h('textarea', { rows: 10, readonly: true, style: { width: '100%', marginTop: '.75rem', fontFamily: 'inherit' }, 'aria-label': 'Text to copy', onfocus: (e) => e.target.select() }, text)));
+  }
 }

@@ -97,8 +97,12 @@ export function analyzeTrade(result, idsA, idsB, { dataSources = {}, names = nul
   const unvaluedPlayers = (ids) => ids.filter((id) => !getAsset(result, id) && !String(id).startsWith('pick:')).length;
   const playersA = A.filter((a) => a.kind === 'player').length + unvaluedPlayers(idsA);
   const playersB = B.filter((a) => a.kind === 'player').length + unvaluedPlayers(idsB);
-  const pkgA = packageAdjustment(A, playersB, result);
-  const pkgB = packageAdjustment(B, playersA, result);
+  // An incomplete trade (one side still empty) is not a consolidation: charging the only side that has players made
+  // a lone Player X show as a fraction of his value while the user was still building the trade.
+  const complete = idsA.length > 0 && idsB.length > 0;
+  const none = { total: 0, items: [], nExtra: 0, explanation: [] };
+  const pkgA = complete ? packageAdjustment(A, playersB, result) : none;
+  const pkgB = complete ? packageAdjustment(B, playersA, result) : none;
   const adjA = sa.raw - pkgA.total, adjB = sb.raw - pkgB.total;
   const diff = adjA - adjB;
   const base = Math.max(adjA, adjB, 1e-9);
@@ -130,7 +134,10 @@ export function analyzeTrade(result, idsA, idsB, { dataSources = {}, names = nul
   }
   if (pkgA.nExtra || pkgB.nExtra) {
     const cons = pkgA.nExtra ? 'B' : 'A';
-    notes.push(`Team ${cons} consolidates (receives fewer players). The package adjustment charges the extra pieces for lineup displacement and roster spots.`);
+    const extra = pkgA.nExtra ? 'A' : 'B';
+    // "Team A consolidates" read wrongly when Team A receives a draft pick for a player: say what is actually charged.
+    if ((cons === 'A' ? A : B).some((a) => a.kind === 'pick')) notes.push(`Team ${extra} receives more players than it sends (draft picks don't count as players), so its extra player(s) are charged the package adjustment for lineup displacement and roster spots.`);
+    else notes.push(`Team ${cons} consolidates (receives fewer players). The package adjustment charges the extra pieces for lineup displacement and roster spots.`);
   }
   const lowConf = [...A, ...B].filter((a) => a.confidence && a.confidence.label === 'Low');
   if (lowConf.length) notes.push(`Low-confidence values: ${lowConf.map((a) => a.name).join(', ')}.`);

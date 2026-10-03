@@ -1,7 +1,7 @@
 // SETTINGS — league profiles, scoring, roster, model weights, package adjustments, data refresh, debug.
 // Editing a built-in preset automatically creates a custom copy; user profiles auto-save.
 
-import { h, toast, download, fmtTime } from '../dom.js';
+import { h, append, toast, download, fmtTime } from '../dom.js';
 import { app, activeProfile, allProfiles, upsertUserProfile, deleteUserProfile, setProfile, emit, save, load } from '../state.js';
 import { buildLeague, buildModel, validateLeague, settingsHash } from '../../core/settings.js';
 import { resolveScoring } from '../../core/scoring.js';
@@ -39,9 +39,18 @@ export function renderSettings(root, args) {
     h('input', { type: 'number', step, min, max, value: value ?? '', onchange: (e) => { const v = e.target.value === '' ? null : Number(e.target.value); if (v !== null && !Number.isFinite(v)) return; onSet(v); } }));
   const modelNum = (label, path, opts) => numField(label, modelVal(path), (v) => setModel(path, v), opts);
 
-  const nav = h('div.subtabs', {}, SECTIONS.map(([k, l]) => h('button', { class: k === sec ? 'active' : '', onclick: () => { location.hash = `#/settings/${k}`; } }, l)));
+  // Basic vs advanced: most people only need the league itself; model parameters are calibrated defaults.
+  const GROUPS = [['Your league', ['league', 'scoring', 'roster']], ['Model — advanced', ['redraft', 'dynasty', 'picks', 'sources', 'package']], ['App', ['refresh', 'advanced']]];
+  const label = Object.fromEntries(SECTIONS);
+  const touched = new Set(Object.keys(profile.overrides || {}).flatMap((k) => (k === 'source_weights' ? ['sources'] : k === 'phase' ? ['redraft'] : [k])));
+  const nav = h('nav.subtabs.grouped', { 'aria-label': 'Settings sections' }, GROUPS.map(([g, keys]) => h('div.subtab-group', {}, h('span.subtab-group-label', {}, g),
+    h('div.subtab-row', {}, keys.map((k) => h('button', { 'aria-current': k === sec ? 'page' : null, class: k === sec ? 'active' : '', title: touched.has(k) ? 'Changed from the defaults in this profile' : null, onclick: () => { location.hash = `#/settings/${k}`; } }, label[k], touched.has(k) ? ' •' : ''))))));
   const body = h('div.panel');
-  root.append(profileBar(), nav, body);
+  const isModel = GROUPS[1][1].includes(sec);
+  append(root, [profileBar(), nav,
+    isModel ? h('div.banner-inline.mb', {}, h('strong', {}, 'Advanced: '), 'these settings change how values are calculated. The defaults are calibrated and documented under Model; changes apply only to the active profile (• marks changed sections). ',
+      Object.keys(profile.overrides || {}).length ? h('button.btn.btn-xs', { onclick: () => { commit((p) => { p.overrides = {}; }); toast('Model settings reset to the defaults for this profile.'); } }, 'Reset all model settings') : null) : null,
+    body]);
 
   function profileBar() {
     const p = activeProfile();
@@ -117,11 +126,11 @@ export function renderSettings(root, args) {
         h('h3', {}, 'League'),
         h('div.fields', {},
           h('label.field', {}, 'Name', h('input', { type: 'text', value: league.name, onchange: (e) => commit((p) => { p.name = e.target.value || p.name; }) })),
-          h('label.field', {}, 'Teams', h('select', { onchange: (e) => { if (e.target.value === 'custom') { const n = Number(prompt('Number of teams (4–32)', league.teams)); if (n) commit((p) => { p.teams = n; }); } else commit((p) => { p.teams = Number(e.target.value); }); } },
-            [8, 10, 12, 14, 16].map((n) => h('option', { value: n, selected: league.teams === n ? true : null }, `${n} teams`)), h('option', { value: 'custom', selected: ![8, 10, 12, 14, 16].includes(league.teams) ? true : null }, ![8, 10, 12, 14, 16].includes(league.teams) ? `${league.teams} teams (custom)` : 'Custom…'))),
+          // A plain number field (the old "Custom…" option opened a browser prompt() box).
+          h('label.field', {}, 'Teams', h('input', { type: 'number', min: 4, max: 32, step: 1, value: league.teams, onchange: (e) => { const n = Math.round(Number(e.target.value)); if (Number.isFinite(n) && n >= 4 && n <= 32) commit((p) => { p.teams = n; }); else { toast('Teams must be between 4 and 32.', 'warn'); e.target.value = league.teams; } } })),
           h('label.field', {}, 'QB format', h('select', { onchange: (e) => commit((p) => { p.roster = { ...league.roster }; if (e.target.value === 'sf') { p.roster.SUPERFLEX = Math.max(1, p.roster.SUPERFLEX || 0); p.roster.QB = 1; } else if (e.target.value === '2qb') { p.roster.QB = 2; p.roster.SUPERFLEX = 0; } else { p.roster.QB = 1; p.roster.SUPERFLEX = 0; } }) },
             [['1qb', '1 QB'], ['2qb', '2 QB'], ['sf', 'Superflex']].map(([v, l]) => h('option', { value: v, selected: league.qb_format === v ? true : null }, l)))),
-          h('label.field', {}, 'Default mode hint', h('select', { onchange: (e) => commit((p) => { p.mode = e.target.value; }) }, ['redraft', 'dynasty'].map((m) => h('option', { value: m, selected: (profile.mode || 'redraft') === m ? true : null }, m))))),
+          h('label.field', { title: 'Which engine this league usually uses. The REDRAFT / DYNASTY switch at the top decides what is calculated.' }, 'League type', h('select', { onchange: (e) => commit((p) => { p.mode = e.target.value; }) }, ['redraft', 'dynasty'].map((m) => h('option', { value: m, selected: (profile.mode || 'redraft') === m ? true : null }, m))))),
         h('p.small.muted.mt', {}, 'The REDRAFT / DYNASTY toggle at the top switches the valuation engine; both use these league settings.'));
     },
     scoring() {

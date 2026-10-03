@@ -93,3 +93,19 @@ test('unavailable player (handoff bug #11): named in the note, counted as a play
   const p = analyzeTrade(red, ['pick:2099:1'], ['TWR5', 'TWR6']);
   assert.equal(p.sides[0].package.total, 0);
 });
+
+test('pick-for-player note names the side that is charged instead of calling the pick side a consolidator', () => {
+  const up = dyn.picks.upcoming;
+  const t = analyzeTrade(dyn, [`pick:${up}:1`], ['TWR2']);
+  assert.equal(t.sides[1].package.nExtra, 1, 'B receives a player and sends none');
+  assert.ok(!t.notes.some((n) => /Team A consolidates/.test(n)));
+  assert.ok(t.notes.some((n) => /Team B receives more players than it sends \(draft picks don't count/.test(n)));
+});
+
+test('incomplete trade (one side empty): no package adjustment, totals are the plain sums', () => {
+  const t = analyzeTrade(red, [], ['TWR1', 'TRB2']);
+  assert.equal(t.assessment.level, 'incomplete');
+  assert.equal(t.sides[1].package.total, 0);
+  assert.ok(Math.abs(t.sides[1].adjusted - (v(red, 'TWR1') + v(red, 'TRB2'))) < 1e-6);
+  assert.ok(!t.notes.some((n) => /consolidates|more players than it sends/.test(n)));
+});

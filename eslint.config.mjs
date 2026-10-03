@@ -16,7 +16,7 @@ const browser = {
   requestAnimationFrame: 'readonly', cancelAnimationFrame: 'readonly', getComputedStyle: 'readonly',
   matchMedia: 'readonly', CustomEvent: 'readonly', FileReader: 'readonly', File: 'readonly', HTMLElement: 'readonly',
   Node: 'readonly', MutationObserver: 'readonly', ResizeObserver: 'readonly', IntersectionObserver: 'readonly',
-  KeyboardEvent: 'readonly', MouseEvent: 'readonly', DOMParser: 'readonly', print: 'readonly', scrollTo: 'readonly',
+  KeyboardEvent: 'readonly', NodeFilter: 'readonly', MouseEvent: 'readonly', DOMParser: 'readonly', print: 'readonly', scrollTo: 'readonly',
 };
 const node = { process: 'readonly', Buffer: 'readonly', setImmediate: 'readonly', clearImmediate: 'readonly' };
 

@@ -96,14 +96,43 @@ try {
     }
     const sides = page.locator('.trade-side');
     check((await sides.count()) === 2 && /Test WR 1\b/.test(await sides.nth(0).innerText()) && /Test RB 1\b/.test(await sides.nth(1).innerText()), 'trade: one player added to each side');
-    const verdict = page.locator('.verdict');
+    const verdict = page.locator('.verdict-head');
     const level = (await verdict.count()) ? await verdict.first().getAttribute('class') : '';
     check(/\b(even|lean|clear)\b/.test(level || ''), `trade: verdict computed (${level || 'none'})`);
 
-    for (const route of ['#/players', '#/compare', '#/data', '#/data/import', '#/data/quality', '#/data/snapshots', '#/settings', '#/settings/roster', '#/model', '#/help']) {
+    // Usability audit: a shared link replaces the trade (after confirmation), the lopsided verdict offers
+    // "even it out" additions that really narrow the gap, and the side totals match the bars.
+    page.once('dialog', (d) => d.accept());
+    await page.goto(`${base}/#/trade?m=redraft&a=TWR30&b=TWR1`);
+    await page.locator('.verdict-head').waitFor({ timeout: 8000 });
+    const linked = await page.evaluate(() => ({ hash: location.hash, sides: [...document.querySelectorAll('.trade-side')].map((x) => x.innerText) }));
+    check(linked.hash === '#/trade' && /Test WR 30\b/.test(linked.sides[0]) && /Test WR 1\b/.test(linked.sides[1]), 'share link: trade loaded, link consumed');
+    const gapOf = async () => Number((await page.locator('.bar-row .num').allInnerTexts()).map((t) => t.replace(/,/g, '')).reduce((x, y) => x - y));
+    const gap0 = Math.abs(await gapOf());
+    const chip = page.locator('.chip.suggest').first();
+    const hasChip = await chip.waitFor({ timeout: 3000 }).then(() => true, () => false);
+    check(hasChip, 'even it out: suggestions offered for a lopsided trade');
+    if (hasChip) { await chip.click(); await page.waitForTimeout(300); }
+    check(hasChip && Math.abs(await gapOf()) < gap0, 'even it out: clicking a suggestion narrows the gap');
+    const totals = await page.evaluate(() => ({ side: [...document.querySelectorAll('.side-total')].map((x) => x.firstChild.textContent.trim()), bars: [...document.querySelectorAll('.bar-row .num')].map((x) => x.textContent.trim()) }));
+    check(JSON.stringify(totals.side) === JSON.stringify(totals.bars), `trade: side totals equal the bars (${totals.side} vs ${totals.bars})`);
+
+    // Keyboard: a Players row opens the player with Enter.
+    await page.goto(`${base}/#/players`);
+    const row = page.locator(viewport.width > 720 ? 'table.data tbody tr' : '.pcard').first();
+    await row.waitFor({ timeout: 5000 });
+    await row.focus(); await page.keyboard.press('Enter');
+    check(await page.locator('.modal').waitFor({ timeout: 3000 }).then(() => true, () => false), 'players: Enter on a focused row opens the player');
+    await page.keyboard.press('Escape');
+
+    for (const route of ['#/players', '#/compare', '#/data', '#/data/import', '#/data/quality', '#/data/snapshots', '#/settings', '#/settings/roster', '#/settings/redraft', '#/model', '#/help']) {
       await page.goto(`${base}/${route}`);
       await page.waitForTimeout(700);
       check((await page.locator('main, #app, body').first().innerText()).trim().length > 50, `${route} renders`);
+      if (route === '#/model') await page.waitForTimeout(800); // backtest report loads asynchronously
+      // Native Element.append(null) prints "null" (it did on the Model page): no stray null/undefined/NaN text.
+      const junk = await page.evaluate(() => { const w = document.createTreeWalker(document.getElementById('view'), NodeFilter.SHOW_TEXT); const bad = []; for (let n = w.nextNode(); n; n = w.nextNode()) if (/^\s*(null|undefined|NaN)\s*$|\b(undefined|NaN)\b/.test(n.textContent)) bad.push(n.textContent.trim().slice(0, 40)); return bad; });
+      check(!junk.length, `${route}: no stray null/undefined/NaN text${junk.length ? ` (${junk.slice(0, 3).join(' | ')})` : ''}`);
       const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       check(over <= 0, `${route}: no sideways page scroll (${over}px)`);
     }

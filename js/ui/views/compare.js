@@ -22,7 +22,14 @@ export function renderCompare(root) {
     save(`compare.${app.mode}`, ids);
     clear(host);
     const assets = ids.map((id) => res.getAsset(id)).filter(Boolean);
-    if (!assets.length) { host.append(h('div.panel.muted.center.mt', {}, 'Add players to compare.')); return; }
+    if (!assets.length) {
+      // Most comparisons start from a trade being considered: offer its assets in one click.
+      const t = load(`trade.${app.mode}`, { a: [], b: [] }, (x) => x && isStringArray(x.a) && isStringArray(x.b));
+      const fromTrade = [...new Set([...t.a, ...t.b])].filter((id) => res.getAsset(id)).slice(0, 8);
+      host.append(h('div.panel.muted.center.mt', {}, h('p', {}, 'Search above to add up to 8 players', app.mode === 'dynasty' ? ' or picks' : '', '.'),
+        fromTrade.length ? h('button.btn.btn-sm', { onclick: () => { ids = fromTrade; draw(); } }, `Compare the ${fromTrade.length} asset${fromTrade.length === 1 ? '' : 's'} in your current trade`) : null));
+      return;
+    }
     const metric = (label, fn, cls = '') => h('tr', {}, h('td.muted', {}, label), assets.map((a) => h('td.num', { class: cls }, fn(a) ?? '—')));
     const rd = (a) => (a.kind === 'player' ? red.assets.get(a.id) : null);
     const rows = [

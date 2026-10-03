@@ -1,6 +1,6 @@
 // MODEL — methodology summary, live league structure, calibration outputs and backtest diagnostics.
 
-import { h, clear, fmt1, fmtPctPlain } from '../dom.js';
+import { h, append, clear, fmt1, fmtPctPlain } from '../dom.js';
 import { app, getValuations, activeLeague } from '../state.js';
 import { buildModel } from '../../core/settings.js';
 import { lineChart } from '../charts.js';
@@ -74,8 +74,8 @@ export function renderModel(root) {
     if (!rep) { bt.append(h('p.muted', {}, 'No backtest report found. Run `npm run backtest` to evaluate historical rankings vs. actual production.')); return; }
     bt.append(h('p.small.muted', {}, `${rep.method} Generated ${new Date(rep.generated_at).toLocaleDateString()}.`));
     for (const sec of rep.sections || []) {
-      bt.append(h('h3.mt', {}, sec.title), sec.note ? h('p.small.muted', {}, sec.note) : null,
-        h('div.table-wrap', {}, h('table.data', {}, h('thead', {}, h('tr', {}, sec.columns.map((c, i) => h('th', { class: i ? 'num' : '' }, c)))), h('tbody', {}, sec.rows.map((r) => h('tr', {}, r.map((v, i) => h('td', { class: i ? 'num' : '' }, typeof v === 'number' ? (Math.abs(v) < 1.5 && !Number.isInteger(v) ? v.toFixed(3) : fmt1(v)) : v ?? '—'))))))));
+      append(bt, [h('h3.mt', {}, sec.title), sec.note ? h('p.small.muted', {}, sec.note) : null, // dom append(): native append(null) printed "null"
+        h('div.table-wrap', {}, h('table.data', {}, h('thead', {}, h('tr', {}, sec.columns.map((c, i) => h('th', { class: i ? 'num' : '' }, c)))), h('tbody', {}, sec.rows.map((r) => h('tr', {}, r.map((v, i) => h('td', { class: i ? 'num' : '' }, typeof v === 'number' ? (Math.abs(v) < 1.5 && !Number.isInteger(v) ? v.toFixed(3) : fmt1(v)) : v ?? '—')))))))]);
     }
     if (rep.conclusions) bt.append(h('h3.mt', {}, 'Takeaways'), h('ul', {}, rep.conclusions.map((c) => h('li', {}, c))));
   }).catch(() => { clear(bt).append(h('h2', {}, 'Backtesting'), h('p.muted', {}, 'Backtest report unavailable.')); });

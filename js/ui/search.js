@@ -74,22 +74,27 @@ export function searchAssets(index, q, { limit = 12, includePicks = true, exclud
 
 export function assetSearchBox({ getResult, onPick, placeholder = 'Search player, team or position…', includePicks = true, exclude = () => new Set() }) {
   let index = null, indexFor = null, hl = 0, results = [];
-  const input = h('input', { type: 'search', placeholder, autocomplete: 'off', 'aria-label': placeholder, spellcheck: 'false' });
-  const list = h('div.search-results', { hidden: true, role: 'listbox' });
+  // ARIA combobox: screen readers announce the list and the highlighted option while focus stays in the input.
+  const listId = `sr-${Math.random().toString(36).slice(2, 9)}`;
+  const input = h('input', { type: 'search', placeholder, autocomplete: 'off', 'aria-label': placeholder, spellcheck: 'false', role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': listId });
+  const list = h('div.search-results', { hidden: true, role: 'listbox', id: listId });
+  new MutationObserver(() => input.setAttribute('aria-expanded', String(!list.hidden))).observe(list, { attributes: true, attributeFilter: ['hidden'] });
   const box = h('div.search-box', {}, input, list);
   const ensure = () => { const r = getResult(); if (r !== indexFor) { index = buildSearchIndex(r); indexFor = r; } return r; };
   const choose = (a) => { onPick(a); input.value = ''; list.hidden = true; input.focus(); };
   const draw = () => {
     clear(list);
+    input.removeAttribute('aria-activedescendant');
     if (!results.length) { list.hidden = !input.value.trim(); if (input.value.trim()) list.append(h('div.small.muted', { style: { padding: '.6rem' } }, 'No matches')); return; }
     results.forEach((a, i) => {
       const p = a.kind === 'player' ? playerData(a.id) : null;
-      list.append(h('button', { type: 'button', role: 'option', class: i === hl ? 'hl' : '', onmousedown: (e) => { e.preventDefault(); choose(a); } },
+      list.append(h('button', { type: 'button', role: 'option', id: `${listId}-${i}`, tabindex: -1, 'aria-selected': String(i === hl), class: i === hl ? 'hl' : '', onmousedown: (e) => { e.preventDefault(); choose(a); } },
         posBadge(a.position),
-        h('span', {}, h('span.bold', {}, a.name), ' ', h('span.muted.small', {}, a.kind === 'player' ? `${a.team || 'FA'}${a.age ? ` · ${a.age.toFixed(1)}` : ''}` : 'rookie pick'), ' ', p ? injuryBadge(p.injury && { status: p.injury.status || p.injury.official_status }) : null),
+        h('span', {}, h('span.bold', {}, a.name), ' ', h('span.muted.small', {}, a.kind === 'player' ? [a.team || 'FA', a.posRank ? `${a.position}${a.posRank}` : null, a.age ? a.age.toFixed(1) : null].filter(Boolean).join(' · ') : 'rookie pick'), ' ', p ? injuryBadge(p.injury && { status: p.injury.status || p.injury.official_status }) : null),
         h('span.num.bold', {}, fmtValue(a.value))));
     });
     list.hidden = false;
+    input.setAttribute('aria-activedescendant', `${listId}-${hl}`);
   };
   input.addEventListener('input', () => { const r = ensure(); results = searchAssets(index, input.value, { includePicks, exclude: exclude(), result: r }); hl = 0; draw(); });
   input.addEventListener('keydown', (e) => {
