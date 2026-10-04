@@ -15,7 +15,7 @@
     {
       "season": 2022,
       "snapshot": "2022-09-02",
-      "players": 446
+      "players": 443
     },
     {
       "season": 2023,
@@ -24,45 +24,45 @@
     }
   ],
   "trades": 5000,
-  "outcomeSd": 428.647,
+  "outcomeSd": 434.5,
   "calibration": {
     "experiment": "E7 trade verdict calibration (share of simulated trades won by the side receiving more value)",
     "trades": 5000,
     "byMargin": [
       {
         "margin": "0-5%",
-        "n": 166,
-        "hitRate": 0.524
+        "n": 156,
+        "hitRate": 0.519
       },
       {
         "margin": "5-10%",
-        "n": 169,
-        "hitRate": 0.491
+        "n": 176,
+        "hitRate": 0.528
       },
       {
         "margin": "10-20%",
-        "n": 345,
-        "hitRate": 0.516
+        "n": 359,
+        "hitRate": 0.549
       },
       {
         "margin": "20-30%",
-        "n": 412,
-        "hitRate": 0.617
+        "n": 394,
+        "hitRate": 0.594
       },
       {
         "margin": "30-50%",
-        "n": 930,
-        "hitRate": 0.669
+        "n": 923,
+        "hitRate": 0.666
       },
       {
         "margin": "50-75%",
-        "n": 1307,
-        "hitRate": 0.745
+        "n": 1334,
+        "hitRate": 0.77
       },
       {
         "margin": "75-100%",
-        "n": 1671,
-        "hitRate": 0.809
+        "n": 1658,
+        "hitRate": 0.811
       }
     ],
     "verdictLevels": [
@@ -70,16 +70,16 @@
         "sigmaPctOfValue": 0.05,
         "levels": {
           "close": {
-            "n": 199,
-            "hitRate": 0.533
+            "n": 196,
+            "hitRate": 0.536
           },
           "lean": {
-            "n": 180,
-            "hitRate": 0.494
+            "n": 174,
+            "hitRate": 0.506
           },
           "clear": {
-            "n": 4621,
-            "hitRate": 0.726
+            "n": 4630,
+            "hitRate": 0.734
           }
         }
       },
@@ -87,16 +87,16 @@
         "sigmaPctOfValue": 0.1,
         "levels": {
           "close": {
-            "n": 379,
-            "hitRate": 0.515
+            "n": 370,
+            "hitRate": 0.522
           },
           "lean": {
-            "n": 369,
-            "hitRate": 0.534
+            "n": 379,
+            "hitRate": 0.575
           },
           "clear": {
-            "n": 4252,
-            "hitRate": 0.743
+            "n": 4251,
+            "hitRate": 0.748
           }
         }
       },
@@ -105,38 +105,38 @@
         "levels": {
           "close": {
             "n": 557,
-            "hitRate": 0.501
+            "hitRate": 0.537
           },
           "lean": {
-            "n": 583,
-            "hitRate": 0.607
+            "n": 588,
+            "hitRate": 0.597
           },
           "clear": {
-            "n": 3860,
-            "hitRate": 0.756
+            "n": 3855,
+            "hitRate": 0.763
           }
         }
       }
     ],
     "logistic": {
       "slope": 1.75,
-      "logLik": -2893.208,
+      "logLik": -2857.064,
       "at10pct": 0.544,
       "at20pct": 0.587,
       "at30pct": 0.628,
       "at50pct": 0.706
     },
-    "meanHitRate": 0.71
+    "meanHitRate": 0.718
   },
   "slopeBySeason": {
-    "2020": 1.75,
-    "2021": 2,
-    "2022": 1.5,
-    "2023": 1.5
+    "2020": 1.5,
+    "2021": 1.75,
+    "2022": 2,
+    "2023": 1.75
   },
   "packageCheck": {
-    "adjusted": 0.618,
-    "plainSums": 0.616
+    "adjusted": 0.614,
+    "plainSums": 0.617
   },
   "appLevels": {
     "slope": 1.75,
@@ -144,94 +144,94 @@
     "clearMargin": 0.418,
     "levels": {
       "close": {
-        "share": 0.116,
-        "hitRate": 0.512
+        "share": 0.118,
+        "hitRate": 0.546
       },
       "lean": {
-        "share": 0.21,
-        "hitRate": 0.637
+        "share": 0.207,
+        "hitRate": 0.627
       },
       "clear": {
-        "share": 0.673,
-        "hitRate": 0.767
+        "share": 0.675,
+        "hitRate": 0.777
       }
     }
   },
   "replication": {
     "seed": 99,
     "logistic": {
-      "slope": 1.75,
-      "logLik": -2860.737,
-      "at10pct": 0.544,
-      "at20pct": 0.587,
-      "at30pct": 0.628,
-      "at50pct": 0.706
+      "slope": 2,
+      "logLik": -2758.468,
+      "at10pct": 0.55,
+      "at20pct": 0.599,
+      "at30pct": 0.646,
+      "at50pct": 0.731
     },
     "slopeBySeason": {
-      "2020": 1.75,
-      "2021": 1.75,
-      "2022": 1.5,
+      "2020": 2,
+      "2021": 2,
+      "2022": 1.75,
       "2023": 2
     },
     "byMargin": [
       {
         "margin": "0-5%",
         "n": 163,
-        "hitRate": 0.46
+        "hitRate": 0.479
       },
       {
         "margin": "5-10%",
-        "n": 159,
-        "hitRate": 0.528
+        "n": 166,
+        "hitRate": 0.53
       },
       {
         "margin": "10-20%",
-        "n": 393,
-        "hitRate": 0.562
+        "n": 388,
+        "hitRate": 0.575
       },
       {
         "margin": "20-30%",
-        "n": 374,
-        "hitRate": 0.599
+        "n": 393,
+        "hitRate": 0.623
       },
       {
         "margin": "30-50%",
-        "n": 956,
-        "hitRate": 0.691
+        "n": 945,
+        "hitRate": 0.673
       },
       {
         "margin": "50-75%",
-        "n": 1354,
-        "hitRate": 0.748
+        "n": 1351,
+        "hitRate": 0.759
       },
       {
         "margin": "75-100%",
-        "n": 1601,
-        "hitRate": 0.814
+        "n": 1594,
+        "hitRate": 0.852
       }
     ],
     "appLevels": {
-      "slope": 1.75,
-      "leanMargin": 0.173,
-      "clearMargin": 0.418,
+      "slope": 2,
+      "leanMargin": 0.151,
+      "clearMargin": 0.365,
       "levels": {
         "close": {
-          "share": 0.12,
+          "share": 0.105,
           "hitRate": 0.513
         },
         "lean": {
-          "share": 0.205,
-          "hitRate": 0.639
+          "share": 0.169,
+          "hitRate": 0.617
         },
         "clear": {
-          "share": 0.676,
-          "hitRate": 0.776
+          "share": 0.727,
+          "hitRate": 0.788
         }
       }
     },
     "packageCheck": {
-      "adjusted": 0.616,
-      "plainSums": 0.617
+      "adjusted": 0.645,
+      "plainSums": 0.645
     }
   }
 }

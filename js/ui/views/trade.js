@@ -7,7 +7,7 @@ import { finderFairness } from './trade-finder.js';
 import { analyzeTrade } from '../../core/valuation/trade.js';
 import { balanceSuggestions, comboSuggestions } from '../../core/valuation/balance.js';
 import { compareCounteroffers, addVariant, sameTrade, variantLabel, MAX_VARIANTS } from '../../core/counteroffers.js';
-import { leadText, verdictHeadline, marketCheck, outcomeText, tradeFromHash, tradeHash, sideNames, relabel, mid } from '../trade-helpers.js';
+import { leadText, verdictHeadline, marketCheck, outcomeText, tradeFromHash, tradeHash, sideNames, relabel, mid, disagreementNote, assumptionVariants } from '../trade-helpers.js';
 import { rosterImpact } from '../../core/roster.js';
 import { pointsPerGame, rosterExpectation } from './team.js';
 import { COMPONENT_LABELS } from '../../core/valuation/engine.js';
@@ -175,7 +175,7 @@ export function renderTrade(root) {
       posBadge(a.position),
       h('div', { style: { minWidth: 0 } },
         h('div.name', {}, h('button.linklike', { type: 'button', onclick: () => (a.kind === 'player' ? openPlayer(a.id) : openPickDetail(a.id)), title: 'Open details' }, a.name), ' ', inj),
-        h('div.meta', {}, meta, ' · ', confBadge(a.confidence))),
+        h('div.meta', {}, meta, ' · ', confBadge(a.confidence), ...(() => { const d = disagreementNote(a, COMPONENT_LABELS); return d ? [' ', h('span.badge.warn', { title: d.title }, d.label)] : []; })())),
       h('div.val', { title: `Approximate fair-value range ${fmtRange(a.range)}` }, fmtValue(a.value), h('small', {}, `±${fmtValue(a.sigma)}`)),
       h('button.x', { onclick: remove, title: 'Remove', 'aria-label': `Remove ${a.name}` }, '×'));
   }
@@ -331,7 +331,7 @@ export function renderTrade(root) {
         h('dt', {}, 'League'), h('dd', {}, `${l.name} · ${l.teams} teams · ${l.qb_format.toUpperCase()} · ${starterSlotsSummary(l)} · bench ${l.roster.BENCH} · ${describeScoring(result.scoring)}`),
         h('dt', {}, 'Season phase'), h('dd', {}, `${result.phase.season} week ${result.phase.week} (${result.phase.phase}, in-season weight ${Math.round(result.phase.alpha * 100)}%)`),
         h('dt', {}, 'Reference league'), h('dd', {}, result.meta.reference_league)));
-    panel.append(otherFormatsBlock(), breakdown);
+    panel.append(otherFormatsBlock(), assumptionsBlock(), breakdown);
     summary.append(panel);
   }
 
@@ -367,6 +367,38 @@ export function renderTrade(root) {
       }, 20);
     };
     return h('details.mt', { ontoggle: (e) => { if (e.target.open && !filled) fill(); } }, h('summary', {}, 'This trade in other league formats (Superflex, league size, scoring)'), body);
+  }
+
+  /**
+   * The same trade valued with one kind of information at a time (expert rankings, trade market, projections or the
+   * production model). Shows whether the verdict depends on a methodology choice; computed when opened.
+   */
+  function assumptionsBlock() {
+    if (!trade.a.length || !trade.b.length) return null;
+    const body = h('div.mt-s');
+    let filled = false;
+    const fill = () => {
+      filled = true;
+      body.append(h('p.small.muted', {}, 'Calculating…'));
+      setTimeout(() => {
+        const n = N();
+        const cur = activeProfile();
+        const names = (ids) => ids.map((id) => playerData(id)?.name || id);
+        const row = (label, r, isCur) => {
+          const a = analyzeTrade(r, trade.a, trade.b);
+          return h('tr', { class: isCur ? 'current-row' : '' }, h('td', {}, label, isCur ? h('span.tiny.muted', {}, ' (the app\'s blend)') : null),
+            h('td.num', {}, fmtValue(a.sides[0].adjusted)), h('td.num', {}, fmtValue(a.sides[1].adjusted)),
+            h('td', {}, h('span.verdict-pill', { class: a.assessment.level }, verdictHeadline(a, n).label), ' ', h('span.small.muted', {}, leadText(a.diff, n)),
+              a.missing.length ? h('div.tiny.muted', {}, `No value of this kind for: ${names(a.missing).join(', ')} (counted as 0)`) : null));
+        };
+        const variants = assumptionVariants(app.mode).map((v) => ({ ...v, r: getValuations(app.mode, { ...cur, overrides: { ...(cur.overrides || {}), ...v.overrides } }) }));
+        clear(body).append(h('div.table-wrap', {}, h('table.data', {},
+          h('thead', {}, h('tr', {}, h('th', {}, 'Information used'), h('th.num', {}, n.A), h('th.num', {}, n.B), h('th', {}, 'Verdict'))),
+          h('tbody', {}, row('All signals', result, true), variants.map((v) => row(v.label, v.r, false))))),
+        h('p.small.muted', {}, 'Each row values the same assets with one kind of information only, on the same scale. When the rows agree, the verdict does not hinge on how the sources are weighted; when they split, the trade depends on whom you believe. Not a recommendation.'));
+      }, 20);
+    };
+    return h('details.mt', { ontoggle: (e) => { if (e.target.open && !filled) fill(); } }, h('summary', {}, 'This trade under other model assumptions (experts, market, projections)'), body);
   }
 
   /** My Team: how the trade changes my best starting lineup (objective; only with a roster and "which side is you"). */

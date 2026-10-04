@@ -377,7 +377,7 @@ function sosRatio(bench, y, team, fromW, pos, fpa) {
 //   hist = loadSeasons(2006, 2025) (nflverse season totals). Aging curve, attrition and draft priors are refit for each
 //   test season Y using ONLY seasons < Y, so the fundamental model never sees the outcomes it is scored on.
 // ---------------------------------------------------------------------------------------------------------------
-export function dynasty(bench, hist, { discount = 0.82, regularize = true } = {}) {
+export function dynasty(bench, hist, { discount = 0.82, regularize = true, concave = 'decline' } = {}) {
   const seasonRows = new Map();
   for (const arr of hist.seasons.values()) for (const r of arr) seasonRows.set(`${r.gsis}|${r.season}`, r);
   const replCache = {};
@@ -391,8 +391,8 @@ export function dynasty(bench, hist, { discount = 0.82, regularize = true } = {}
     const first = bench.schedule[Y]?.weeks[1]?.first;
     const snap = snapshotBefore(bench, 'dynasty', first, 45);
     if (!snap) continue;
-    const cal = calibrateBefore(hist, Y, { regularize });
-    out.calibrations[Y] = { agingSample: cal.agingN, priorsClasses: cal.priorClasses, aging: Object.fromEntries(POS.map((p) => [p, Object.fromEntries([22, 24, 26, 28, 30, 32].map((a) => [a, r3(interp(cal.aging[p], a))]))])) };
+    const cal = calibrateBefore(hist, Y, { regularize, concave });
+    out.calibrations[Y] = { survMult: cal.survMult, agingSample: cal.agingN, priorsClasses: cal.priorClasses, aging: Object.fromEntries(POS.map((p) => [p, Object.fromEntries([22, 24, 26, 28, 30, 32].map((a) => [a, r3(interp(cal.aging[p], a))]))])) };
     const ranks = positionalRanks(snap.rows);
     const rows = [];
     for (const [g, { rank, pos }] of ranks) {
@@ -403,8 +403,15 @@ export function dynasty(bench, hist, { discount = 0.82, regularize = true } = {}
       let target = 0;
       for (let k = 0; k < 3; k++) { const s = seasonRows.get(`${g}|${Y + k}`); target += discount ** k * (s ? Math.max(0, s.pts - repl(Y + k, pos)) : 0); }
       const F = (opt) => fundamental(seasonRows, cal, g, m, pos, Y, age, repl(Y - 1, pos), opt);
-      const row = { g, pos, rank, age, target, F: F({}), F_noAge: F({ noAge: true }), F_noAttr: F({ noAttrition: true }), F_noPrior: F({ noPrior: true }), F_det: F({ deterministic: true }), F_y1only: F({ horizon: 1 }) };
+      const row = { g, pos, rank, age, target, F: F({}), F_survMult: F({ survMult: true }), F_noAge: F({ noAge: true }), F_noAttr: F({ noAttrition: true }), F_noPrior: F({ noPrior: true }), F_det: F({ deterministic: true }), F_y1only: F({ horizon: 1 }) };
       for (const k of [10, 20, 40]) for (const gm of [1, 1.5, 2]) row[`V_k${k}_g${gm}`] = F({ priorK: k, agingPower: gm });
+      for (const k of [5, 10, 20, 40]) row[`P_k${k}`] = F({ priorK: k, agingPower: 2 });
+      row.C_base = F({ priorK: 20, agingPower: 2 });
+      row.G_15 = F({ priorK: 20, agingPower: 2, growthPower: 1.5 });
+      row.G_1 = F({ priorK: 20, agingPower: 2, growthPower: 1 });
+      row.C_wr10 = F({ priorK: { WR: 10 }, agingPower: 2 });
+      row.C_smooth = F({ priorK: 20, agingPower: 2, priorSmooth: true });
+      row.C_both = F({ priorK: { WR: 10 }, agingPower: 2, priorSmooth: true });
       rows.push(row);
     }
     const withF = rows.filter((r) => r.F !== null);
@@ -417,9 +424,15 @@ export function dynasty(bench, hist, { discount = 0.82, regularize = true } = {}
     }).filter(Number.isFinite));
     out.results.push({
       season: Y, snapshot: snap.date, n: rows.length, nWithFundamental: withF.length,
+      // Young AND already good (age < 24, consensus top third at the position): over/under-rating by aging power.
+      growthVariants: Object.fromEntries(['C_base', 'G_15', 'G_1'].map((key) => { const yb = [], gb = []; for (const p of POS) { const zz = withF.filter((r) => r.pos === p && r[key] !== null); const a = pct(zz, key, true), b = pct(zz, 'target', true); yb.push(...zz.filter((r) => r.age !== null && r.age < 24).map((r) => b.get(r.g) - a.get(r.g))); gb.push(...zz.filter((r) => r.age !== null && r.age < 24 && r.rank <= TOPN[p] / 3).map((r) => b.get(r.g) - a.get(r.g))); } return [key, { rho: r3(rhoOf(key)), youngBias: r3(-mean(yb)), youngGoodBias: r3(-mean(gb)) }]; })),
+      youngGoodBias: Object.fromEntries([1, 1.5, 2].map((gm) => { const key = `V_k20_g${gm}`; const d = []; for (const p of POS) { const zz = withF.filter((r) => r.pos === p && r[key] !== null); const a = pct(zz, key, true), b = pct(zz, 'target', true); d.push(...zz.filter((r) => r.age !== null && r.age < 24 && r.rank <= TOPN[p] / 3).map((r) => b.get(r.g) - a.get(r.g))); } return [`g${gm}`, { n: d.length, meanOverrating: r3(mean(d)) }]; })),
+      candidates: Object.fromEntries(['C_base', 'C_wr10', 'C_smooth', 'C_both'].map((c) => [c, Object.fromEntries(POS.map((p) => { const z = withF.filter((r) => r.pos === p && r[c] !== null); return [p, r3(spearman(z.map((r) => r[c]), z.map((r) => r.target)))]; }))])),
+      priorKByPos: Object.fromEntries(POS.map((p) => [p, Object.fromEntries([5, 10, 20, 40].map((k) => { const z = withF.filter((r) => r.pos === p && r[`P_k${k}`] !== null); return [k, r3(spearman(z.map((r) => r[`P_k${k}`]), z.map((r) => r.target)))]; }))])),
+      priorKYoung: Object.fromEntries(POS.map((p) => [p, Object.fromEntries([5, 10, 20, 40].map((k) => { const z = withF.filter((r) => r.pos === p && r.age !== null && r.age < 25 && r[`P_k${k}`] !== null); return [k, z.length >= 8 ? r3(spearman(z.map((r) => r[`P_k${k}`]), z.map((r) => r.target))) : null]; }))])),
       variants: Object.fromEntries([10, 20, 40].flatMap((k) => [1, 1.5, 2].map((gm) => [`k${k}_g${gm}`, r3(rhoOf(`V_k${k}_g${gm}`))]))),
       variantAgeBias: Object.fromEntries([10, 20, 40].flatMap((k) => [1, 1.5, 2].map((gm) => { const key = `V_k${k}_g${gm}`; let young = [], old = []; for (const p of POS) { const zz = withF.filter((r) => r.pos === p && r[key] !== null); const a = pct(zz, key, true), b = pct(zz, 'target', true); young = young.concat(zz.filter((r) => r.age !== null && r.age < 24).map((r) => b.get(r.g) - a.get(r.g))); old = old.concat(zz.filter((r) => r.age !== null && r.age >= 27).map((r) => b.get(r.g) - a.get(r.g))); } return [`k${k}_g${gm}`, { young: r3(mean(young)), old: r3(mean(old)) }]; }))),
-      rho: { ecr: r3(rhoOf('rank', false)), fundamental: r3(rhoOf('F')), noAgeCurve: r3(rhoOf('F_noAge')), noAttrition: r3(rhoOf('F_noAttr')), noDraftPrior: r3(rhoOf('F_noPrior')), deterministicSurplus: r3(rhoOf('F_det')), year1Only: r3(rhoOf('F_y1only')), blend_ecr25: r3(blendRho(0.25)), blend_ecr50: r3(blendRho(0.5)), blend_ecr75: r3(blendRho(0.75)) },
+      rho: { ecr: r3(rhoOf('rank', false)), fundamental: r3(rhoOf('F')), fundamental_survMult: r3(rhoOf('F_survMult')), noAgeCurve: r3(rhoOf('F_noAge')), noAttrition: r3(rhoOf('F_noAttr')), noDraftPrior: r3(rhoOf('F_noPrior')), deterministicSurplus: r3(rhoOf('F_det')), year1Only: r3(rhoOf('F_y1only')), blend_ecr25: r3(blendRho(0.25)), blend_ecr50: r3(blendRho(0.5)), blend_ecr75: r3(blendRho(0.75)) },
     });
     for (const [lab, lo, hi] of [['<=23', 0, 23.99], ['24-26', 24, 26.99], ['27-29', 27, 29.99], ['30+', 30, 99]]) {
       for (const [mname, key, higher] of [['ecr', 'rank', false], ['fundamental', 'F', true]]) {
@@ -445,7 +458,7 @@ export function dynasty(bench, hist, { discount = 0.82, regularize = true } = {}
 }
 
 /** Aging (delta method, symmetric selection, shrunk to default), attrition and draft priors from seasons < Y only. */
-export function calibrateBefore(hist, Y, { regularize = true } = {}) {
+export function calibrateBefore(hist, Y, { regularize = true, concave = 'decline' } = {}) {
   const defaults = readJSONSync(path.join(ROOT, 'config', 'model.json')).dynasty.default_aging_curves;
   const aging = {}, hazard = {};
   let agingN = 0;
@@ -480,7 +493,7 @@ export function calibrateBefore(hist, Y, { regularize = true } = {}) {
     if (regularize) {
       // Same shape constraints as scripts/calibrate.js (scripts/lib/calibration-shape.js).
       const supported = Object.keys(acc).map(Number).filter((a) => acc[a].n >= 15);
-      const reg = unimodalAgeCurve(Object.fromEntries(aging[pos]), supported.length ? Math.max(...supported) + 1 : undefined);
+      const reg = unimodalAgeCurve(Object.fromEntries(aging[pos]), supported.length ? Math.max(...supported) + 1 : undefined, { concave });
       aging[pos] = Object.entries(reg).map(([a, v]) => [Number(a), v]).sort((x, y) => x[0] - y[0]);
       const hz = monotoneHazard(Object.fromEntries(Object.entries(rel).map(([a, r]) => [a, { exits: r.e, n: r.n }])));
       hazard[pos] = (age) => hz[Math.min(42, Math.max(21, Math.floor(age)))] ?? 0.1;
@@ -507,7 +520,38 @@ export function calibrateBefore(hist, Y, { regularize = true } = {}) {
     }
   }
   const prior = (pos, b, k) => { const c = priors[pos]?.[b]?.[Math.min(5, Math.max(1, k)) - 1]; if (!c || c.play < 5) return null; return (c.s / c.play) * Math.min(1, (c.play / c.n) / 0.82); };
-  return { aging, hazard, prior, agingN, priorClasses: [...priorClasses].length };
+  // Smoothed across neighbouring career years (count-weighted ±1 year): each cell averages only the players of one
+  // draft bucket and career year, so single cells swing with a handful of players.
+  const priorSmooth = (pos, b, k) => {
+    const kk = Math.min(5, Math.max(1, k));
+    let sv = 0, sp = 0, sn = 0;
+    for (const j of [kk - 1, kk, kk + 1]) { const c = priors[pos]?.[b]?.[j - 1]; if (!c) continue; sv += c.s; sp += c.play; sn += c.n; }
+    if (sp < 5) return null;
+    return (sv / sp) * Math.min(1, (sp / sn) / 0.82);
+  };
+  // E19: hazard multiplier for the transitions after the first. Compounding the hazard of currently relevant players
+  // over-states multi-year survival for RB/WR/TE (survivors who decline exit faster) and under-states it for QBs.
+  // One factor per position, fitted on seasons before Y: observed P(≥ 4 games k = 2..4 seasons later) vs
+  // Π_j (1 − h(age + j) · (j ≥ 1 ? m : 1)).
+  const survMult = {};
+  for (const pos of POS) {
+    const obs = [];
+    for (const arr of hist.seasons.values()) {
+      const by = new Map(arr.map((r) => [r.season, r]));
+      for (const a of arr) {
+        if (a.pos !== pos || a.age === null || !(a.ppg >= 8 && a.games >= 8)) continue;
+        for (let k = 2; k <= 4; k++) { if (a.season + k >= Y) break; const nx = by.get(a.season + k); obs.push({ age: a.age, k, active: nx && nx.games >= 4 ? 1 : 0 }); }
+      }
+    }
+    let best = null;
+    for (let mm = 0.5; mm <= 2.501; mm += 0.05) {
+      let err = 0;
+      for (const o of obs) { let sv = 1; for (let j = 0; j < o.k; j++) sv *= 1 - Math.min(0.95, hazard[pos](o.age + j) * (j ? mm : 1)); err += (o.active - sv) ** 2; }
+      if (!best || err < best.err) best = { mm, err };
+    }
+    survMult[pos] = best ? Math.round(best.mm * 100) / 100 : 1;
+  }
+  return { aging, hazard, prior, priorSmooth, agingN, priorClasses: [...priorClasses].length, survMult };
 }
 const toNum = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
 
@@ -519,9 +563,10 @@ export function fundamental(seasonRows, cal, g, m, pos, Y, age, r, opt) {
   if (prev2 && prev2.games >= 4) ev.push({ v: prev2.ppg, w: 0.4 * Math.min(1, prev2.games / 8) });
   const dy = toNum(m.draft_year) ?? toNum(m.rookie_season);
   const careerYear = dy ? Y - dy + 1 : 1;
-  const p = opt.noPrior ? null : cal.prior(pos, bucket({ dr: toNum(m.draft_round), dp: toNum(m.draft_pick) }), careerYear);
+  const prior = opt.priorSmooth ? cal.priorSmooth : cal.prior;
+  const p = opt.noPrior ? null : prior(pos, bucket({ dr: toNum(m.draft_round), dp: toNum(m.draft_pick) }), careerYear);
   const careerGames = (prev?.games || 0) + (prev2?.games || 0);
-  const pk = opt.priorK ?? 10;
+  const pk = typeof opt.priorK === 'object' ? opt.priorK[pos] ?? 20 : opt.priorK ?? 10;
   if (p !== null) ev.push({ v: p, w: pk / (pk + careerGames) });
   const sw = ev.reduce((a, e) => a + e.w, 0);
   if (!sw || age === null) return null;
@@ -530,8 +575,10 @@ export function fundamental(seasonRows, cal, g, m, pos, Y, age, r, opt) {
   const H = opt.horizon || 5;
   let F = 0, surv = 1;
   for (let t = 1; t <= H; t++) {
-    if (t > 1 && !opt.noAttrition) surv *= 1 - cal.hazard[pos](age + t - 2);
-    const mu = (mu1 * A(age + t - 1)) / A(age);
+    if (t > 1 && !opt.noAttrition) surv *= 1 - Math.min(0.95, cal.hazard[pos](age + t - 2) * (opt.survMult && t > 2 && (!opt.survMultPos || opt.survMultPos.includes(pos)) ? cal.survMult[pos] : 1));
+    // opt.growthPower: separate power for improvement (ratio > 1) and decline (aging power), E20.
+    const ratioRaw = opt.noAge ? 1 : interp(cal.aging[pos], age + t - 1) / interp(cal.aging[pos], age);
+    const mu = opt.growthPower !== undefined ? mu1 * ratioRaw ** (ratioRaw > 1 ? opt.growthPower : opt.agingPower ?? 1) : (mu1 * A(age + t - 1)) / A(age);
     const M = mu * 17 * 0.82, S = (opt.cvMult ?? 1) * (0.3 + 0.12 * (t - 1)) * M;
     F += 0.82 ** (t - 1) * surv * (opt.deterministic ? Math.max(0, M - r) : expectedSurplus(M, S, r));
   }

@@ -1,0 +1,625 @@
+{
+  "experiment": "E19 dynasty survival: compounded one-year exit hazard vs observed share active k seasons later",
+  "label": "REAL HISTORICAL DATA (nflverse 2006–2025)",
+  "summary": {
+    "QB": {
+      "k1": {
+        "n": 602,
+        "observed": 0.869,
+        "compounded": 0.868
+      },
+      "k2": {
+        "n": 570,
+        "observed": 0.783,
+        "compounded": 0.749
+      },
+      "k3": {
+        "n": 538,
+        "observed": 0.702,
+        "compounded": 0.641
+      },
+      "k4": {
+        "n": 507,
+        "observed": 0.627,
+        "compounded": 0.547
+      }
+    },
+    "RB": {
+      "k1": {
+        "n": 1139,
+        "observed": 0.88,
+        "compounded": 0.881
+      },
+      "k2": {
+        "n": 1080,
+        "observed": 0.741,
+        "compounded": 0.763
+      },
+      "k3": {
+        "n": 1020,
+        "observed": 0.584,
+        "compounded": 0.648
+      },
+      "k4": {
+        "n": 960,
+        "observed": 0.442,
+        "compounded": 0.538
+      }
+    },
+    "WR": {
+      "k1": {
+        "n": 1592,
+        "observed": 0.908,
+        "compounded": 0.91
+      },
+      "k2": {
+        "n": 1508,
+        "observed": 0.772,
+        "compounded": 0.818
+      },
+      "k3": {
+        "n": 1424,
+        "observed": 0.644,
+        "compounded": 0.728
+      },
+      "k4": {
+        "n": 1340,
+        "observed": 0.516,
+        "compounded": 0.638
+      }
+    },
+    "TE": {
+      "k1": {
+        "n": 606,
+        "observed": 0.907,
+        "compounded": 0.909
+      },
+      "k2": {
+        "n": 574,
+        "observed": 0.805,
+        "compounded": 0.818
+      },
+      "k3": {
+        "n": 542,
+        "observed": 0.69,
+        "compounded": 0.726
+      },
+      "k4": {
+        "n": 510,
+        "observed": 0.571,
+        "compounded": 0.633
+      }
+    }
+  },
+  "table": {
+    "QB": {
+      "33-40": {
+        "1": {
+          "n": 113,
+          "observed": 0.823,
+          "compounded": 0.804,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 107,
+          "observed": 0.645,
+          "compounded": 0.626,
+          "returnedAfterGap": 0.047
+        },
+        "3": {
+          "n": 104,
+          "observed": 0.5,
+          "compounded": 0.466,
+          "returnedAfterGap": 0.106
+        },
+        "4": {
+          "n": 97,
+          "observed": 0.381,
+          "compounded": 0.323,
+          "returnedAfterGap": 0.103
+        }
+      },
+      "30-32": {
+        "1": {
+          "n": 97,
+          "observed": 0.887,
+          "compounded": 0.877,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 95,
+          "observed": 0.832,
+          "compounded": 0.769,
+          "returnedAfterGap": 0.042
+        },
+        "3": {
+          "n": 92,
+          "observed": 0.717,
+          "compounded": 0.675,
+          "returnedAfterGap": 0.043
+        },
+        "4": {
+          "n": 89,
+          "observed": 0.618,
+          "compounded": 0.592,
+          "returnedAfterGap": 0.067
+        }
+      },
+      "27-29": {
+        "1": {
+          "n": 127,
+          "observed": 0.866,
+          "compounded": 0.877,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 118,
+          "observed": 0.797,
+          "compounded": 0.769,
+          "returnedAfterGap": 0.051
+        },
+        "3": {
+          "n": 111,
+          "observed": 0.757,
+          "compounded": 0.675,
+          "returnedAfterGap": 0.09
+        },
+        "4": {
+          "n": 104,
+          "observed": 0.702,
+          "compounded": 0.592,
+          "returnedAfterGap": 0.106
+        }
+      },
+      "24-26": {
+        "1": {
+          "n": 166,
+          "observed": 0.861,
+          "compounded": 0.88,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 157,
+          "observed": 0.828,
+          "compounded": 0.772,
+          "returnedAfterGap": 0.076
+        },
+        "3": {
+          "n": 143,
+          "observed": 0.762,
+          "compounded": 0.677,
+          "returnedAfterGap": 0.105
+        },
+        "4": {
+          "n": 133,
+          "observed": 0.669,
+          "compounded": 0.594,
+          "returnedAfterGap": 0.12
+        }
+      },
+      "21-23": {
+        "1": {
+          "n": 99,
+          "observed": 0.919,
+          "compounded": 0.903,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 93,
+          "observed": 0.796,
+          "compounded": 0.806,
+          "returnedAfterGap": 0.022
+        },
+        "3": {
+          "n": 88,
+          "observed": 0.761,
+          "compounded": 0.712,
+          "returnedAfterGap": 0.102
+        },
+        "4": {
+          "n": 84,
+          "observed": 0.762,
+          "compounded": 0.625,
+          "returnedAfterGap": 0.25
+        }
+      }
+    },
+    "RB": {
+      "30-32": {
+        "1": {
+          "n": 78,
+          "observed": 0.782,
+          "compounded": 0.745,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 75,
+          "observed": 0.467,
+          "compounded": 0.539,
+          "returnedAfterGap": 0.027
+        },
+        "3": {
+          "n": 73,
+          "observed": 0.247,
+          "compounded": 0.377,
+          "returnedAfterGap": 0.041
+        },
+        "4": {
+          "n": 68,
+          "observed": 0.132,
+          "compounded": 0.254,
+          "returnedAfterGap": 0.059
+        }
+      },
+      "33-40": {
+        "1": {
+          "n": 17,
+          "observed": 0.529,
+          "compounded": 0.648,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 17,
+          "observed": 0.412,
+          "compounded": 0.402,
+          "returnedAfterGap": 0.118
+        },
+        "3": {
+          "n": 16,
+          "observed": 0.25,
+          "compounded": 0.197,
+          "returnedAfterGap": 0.063
+        },
+        "4": {
+          "n": 16,
+          "observed": 0.063,
+          "compounded": 0.088,
+          "returnedAfterGap": 0
+        }
+      },
+      "27-29": {
+        "1": {
+          "n": 274,
+          "observed": 0.825,
+          "compounded": 0.833,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 260,
+          "observed": 0.631,
+          "compounded": 0.665,
+          "returnedAfterGap": 0.035
+        },
+        "3": {
+          "n": 248,
+          "observed": 0.379,
+          "compounded": 0.513,
+          "returnedAfterGap": 0.032
+        },
+        "4": {
+          "n": 235,
+          "observed": 0.226,
+          "compounded": 0.38,
+          "returnedAfterGap": 0.03
+        }
+      },
+      "24-26": {
+        "1": {
+          "n": 444,
+          "observed": 0.903,
+          "compounded": 0.908,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 414,
+          "observed": 0.79,
+          "compounded": 0.809,
+          "returnedAfterGap": 0.031
+        },
+        "3": {
+          "n": 386,
+          "observed": 0.668,
+          "compounded": 0.7,
+          "returnedAfterGap": 0.06
+        },
+        "4": {
+          "n": 364,
+          "observed": 0.508,
+          "compounded": 0.583,
+          "returnedAfterGap": 0.066
+        }
+      },
+      "21-23": {
+        "1": {
+          "n": 326,
+          "observed": 0.936,
+          "compounded": 0.928,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 314,
+          "observed": 0.85,
+          "compounded": 0.858,
+          "returnedAfterGap": 0.041
+        },
+        "3": {
+          "n": 297,
+          "observed": 0.747,
+          "compounded": 0.784,
+          "returnedAfterGap": 0.074
+        },
+        "4": {
+          "n": 277,
+          "observed": 0.635,
+          "compounded": 0.708,
+          "returnedAfterGap": 0.094
+        }
+      }
+    },
+    "WR": {
+      "30-32": {
+        "1": {
+          "n": 175,
+          "observed": 0.846,
+          "compounded": 0.85,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 164,
+          "observed": 0.622,
+          "compounded": 0.705,
+          "returnedAfterGap": 0.037
+        },
+        "3": {
+          "n": 154,
+          "observed": 0.422,
+          "compounded": 0.562,
+          "returnedAfterGap": 0.058
+        },
+        "4": {
+          "n": 148,
+          "observed": 0.243,
+          "compounded": 0.432,
+          "returnedAfterGap": 0.047
+        }
+      },
+      "33-40": {
+        "1": {
+          "n": 77,
+          "observed": 0.701,
+          "compounded": 0.751,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 76,
+          "observed": 0.368,
+          "compounded": 0.522,
+          "returnedAfterGap": 0.013
+        },
+        "3": {
+          "n": 75,
+          "observed": 0.16,
+          "compounded": 0.339,
+          "returnedAfterGap": 0.013
+        },
+        "4": {
+          "n": 75,
+          "observed": 0.067,
+          "compounded": 0.2,
+          "returnedAfterGap": 0.013
+        }
+      },
+      "27-29": {
+        "1": {
+          "n": 379,
+          "observed": 0.91,
+          "compounded": 0.912,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 363,
+          "observed": 0.744,
+          "compounded": 0.818,
+          "returnedAfterGap": 0.025
+        },
+        "3": {
+          "n": 343,
+          "observed": 0.583,
+          "compounded": 0.717,
+          "returnedAfterGap": 0.05
+        },
+        "4": {
+          "n": 320,
+          "observed": 0.434,
+          "compounded": 0.611,
+          "returnedAfterGap": 0.063
+        }
+      },
+      "24-26": {
+        "1": {
+          "n": 567,
+          "observed": 0.928,
+          "compounded": 0.925,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 538,
+          "observed": 0.825,
+          "compounded": 0.855,
+          "returnedAfterGap": 0.032
+        },
+        "3": {
+          "n": 515,
+          "observed": 0.705,
+          "compounded": 0.786,
+          "returnedAfterGap": 0.05
+        },
+        "4": {
+          "n": 484,
+          "observed": 0.581,
+          "compounded": 0.715,
+          "returnedAfterGap": 0.058
+        }
+      },
+      "21-23": {
+        "1": {
+          "n": 394,
+          "observed": 0.947,
+          "compounded": 0.943,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 367,
+          "observed": 0.872,
+          "compounded": 0.876,
+          "returnedAfterGap": 0.033
+        },
+        "3": {
+          "n": 337,
+          "observed": 0.822,
+          "compounded": 0.812,
+          "returnedAfterGap": 0.083
+        },
+        "4": {
+          "n": 313,
+          "observed": 0.735,
+          "compounded": 0.751,
+          "returnedAfterGap": 0.089
+        }
+      }
+    },
+    "TE": {
+      "30-32": {
+        "1": {
+          "n": 72,
+          "observed": 0.778,
+          "compounded": 0.812,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 70,
+          "observed": 0.6,
+          "compounded": 0.63,
+          "returnedAfterGap": 0.029
+        },
+        "3": {
+          "n": 67,
+          "observed": 0.478,
+          "compounded": 0.488,
+          "returnedAfterGap": 0.015
+        },
+        "4": {
+          "n": 62,
+          "observed": 0.339,
+          "compounded": 0.379,
+          "returnedAfterGap": 0.032
+        }
+      },
+      "27-29": {
+        "1": {
+          "n": 178,
+          "observed": 0.927,
+          "compounded": 0.925,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 166,
+          "observed": 0.819,
+          "compounded": 0.832,
+          "returnedAfterGap": 0.024
+        },
+        "3": {
+          "n": 155,
+          "observed": 0.645,
+          "compounded": 0.71,
+          "returnedAfterGap": 0.039
+        },
+        "4": {
+          "n": 144,
+          "observed": 0.458,
+          "compounded": 0.573,
+          "returnedAfterGap": 0.049
+        }
+      },
+      "33-40": {
+        "1": {
+          "n": 36,
+          "observed": 0.778,
+          "compounded": 0.744,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 33,
+          "observed": 0.515,
+          "compounded": 0.536,
+          "returnedAfterGap": 0.091
+        },
+        "3": {
+          "n": 31,
+          "observed": 0.323,
+          "compounded": 0.363,
+          "returnedAfterGap": 0.129
+        },
+        "4": {
+          "n": 31,
+          "observed": 0.226,
+          "compounded": 0.225,
+          "returnedAfterGap": 0.097
+        }
+      },
+      "24-26": {
+        "1": {
+          "n": 224,
+          "observed": 0.964,
+          "compounded": 0.94,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 214,
+          "observed": 0.869,
+          "compounded": 0.884,
+          "returnedAfterGap": 0.014
+        },
+        "3": {
+          "n": 206,
+          "observed": 0.786,
+          "compounded": 0.827,
+          "returnedAfterGap": 0.049
+        },
+        "4": {
+          "n": 196,
+          "observed": 0.699,
+          "compounded": 0.764,
+          "returnedAfterGap": 0.077
+        }
+      },
+      "21-23": {
+        "1": {
+          "n": 96,
+          "observed": 0.885,
+          "compounded": 0.94,
+          "returnedAfterGap": 0
+        },
+        "2": {
+          "n": 91,
+          "observed": 0.89,
+          "compounded": 0.884,
+          "returnedAfterGap": 0.099
+        },
+        "3": {
+          "n": 83,
+          "observed": 0.843,
+          "compounded": 0.831,
+          "returnedAfterGap": 0.12
+        },
+        "4": {
+          "n": 77,
+          "observed": 0.779,
+          "compounded": 0.781,
+          "returnedAfterGap": 0.091
+        }
+      }
+    }
+  },
+  "mean": null
+}

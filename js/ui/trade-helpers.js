@@ -118,3 +118,39 @@ export function compareSummary(assets) {
     }),
   };
 }
+
+/**
+ * Source disagreement of one asset (deep audit 2026-10-04, question 45): when the signal groups that make up its value
+ * disagree strongly (the confidence heuristic's "large disagreement" level, cv ≥ 0.35), list them so the user sees the
+ * spread behind the single number. Returns null otherwise.
+ */
+export function disagreementNote(a, labels = {}) {
+  if (!a || !(a.confidence?.cv >= 0.35)) return null;
+  const parts = Object.entries(a.groupValues || {}).filter(([, v]) => Number.isFinite(v) && v > 0).sort((x, y) => y[1] - x[1]);
+  if (parts.length < 2) return null;
+  return { label: 'sources disagree', title: `The parts of this value disagree: ${parts.map(([k, v]) => `${labels[k] || k} ${Math.round(v / 10) * 10}`).join(' · ')}. The value is their weighted blend.` };
+}
+
+/**
+ * Alternative model assumptions for "This trade under other model assumptions" (question 44): the same trade valued
+ * with one kind of information at a time. Each entry is a league `overrides` object (signal weights) — values come
+ * from the normal engine, nothing is invented.
+ */
+export function assumptionVariants(mode) {
+  if (mode === 'dynasty') {
+    return [
+      { key: 'consensus', label: 'Expert rankings only', overrides: { dynasty: { weights: { fundamental: 0, market: 0, adp: 0 } } } },
+      { key: 'market', label: 'Trade market only', overrides: { dynasty: { weights: { fundamental: 0, consensus: 0, adp: 0 } } } },
+      { key: 'fundamental', label: 'Production model only (age, projections, draft capital)', overrides: { dynasty: { weights: { market: 0, consensus: 0, adp: 0 } } } },
+    ];
+  }
+  const only = (keep) => {
+    const w = Object.fromEntries(['consensus', 'projection', 'market', 'adp', 'production'].filter((g) => !keep.includes(g)).map((g) => [g, 0]));
+    return { redraft: { weights: { preseason: w, in_season: w } } };
+  };
+  return [
+    { key: 'consensus', label: 'Expert rankings only', overrides: only(['consensus']) },
+    { key: 'market', label: 'Trade market only', overrides: only(['market']) },
+    { key: 'projection', label: 'Projections and production only', overrides: only(['projection', 'production']) },
+  ];
+}

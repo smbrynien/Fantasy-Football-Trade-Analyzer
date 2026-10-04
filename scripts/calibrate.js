@@ -91,7 +91,10 @@ for (const pos of POS) {
   const peak2 = Math.max(...Object.values(out));
   // Unimodal, and still declining past the last age with >=15 pairs (the default curves end flat at 35-37, which
   // stopped old players' projected decline and made dynasty values non-monotone in age; audit 2026-10-03).
-  aging[pos] = unimodalAgeCurve(Object.fromEntries(Object.entries(out).sort((x, y) => x[0] - y[0]).map(([a, v]) => [a, v / peak2])), hi + 1);
+  // Log-concave after the peak since 2.5.0 (deep audit W8): the yearly decline never slows with age, so sampling noise
+  // cannot make identical production worth more a year older. Growth before the peak stays as fitted: making it concave
+  // too was worse in E15 on both seeds (E3 .508 -> .513 full, .510 decline-only; E15 neutral within its noise).
+  aging[pos] = unimodalAgeCurve(Object.fromEntries(Object.entries(out).sort((x, y) => x[0] - y[0]).map(([a, v]) => [a, v / peak2])), hi + 1, { concave: 'decline' });
 }
 
 // ---------- attrition & availability ----------
@@ -117,6 +120,32 @@ for (const pos of POS) {
   avail[pos] = r3(mean(availVals));
 }
 avail.K = 0.95; avail.DEF = 1.0;
+
+// Later-year multiplier (audit E19, model 2.5.0). The dynasty model compounds the hazard year by year. That one-year
+// hazard is measured on currently relevant players; survivors who decline exit faster (RB/WR/TE) and QBs who lose a
+// starting job often come back. One factor m per position for every transition after the first, fitted by least
+// squares to the observed share of relevant players with >= 4 games k = 2..4 seasons later:
+// P(active at k) ≈ Π_{j<k} (1 − h(age + j) · (j ≥ 1 ? m : 1)).
+const laterMult = {};
+for (const pos of POS) {
+  const tbl = hazard[pos];
+  const h = (age) => tbl[Math.min(42, Math.max(21, Math.floor(age)))] ?? 0.1;
+  const obs = [];
+  for (const arr of seasons.values()) {
+    const by = new Map(arr.map((r) => [r.season, r]));
+    for (const r of arr) {
+      if (r.pos !== pos || r.age === null || !relevant.has(`${r.gsis}|${r.season}`)) continue;
+      for (let k = 2; k <= 4; k++) { if (r.season + k > TO) break; const nx = by.get(r.season + k); obs.push({ age: r.age, k, active: nx && nx.games >= 4 ? 1 : 0 }); }
+    }
+  }
+  let best = null;
+  for (let m = 0.5; m <= 2.501; m += 0.05) {
+    let err = 0;
+    for (const o of obs) { let s = 1; for (let j = 0; j < o.k; j++) s *= 1 - Math.min(0.95, h(o.age + j) * (j ? m : 1)); err += (o.active - s) ** 2; }
+    if (!best || err < best.err) best = { m, err };
+  }
+  laterMult[pos] = Math.round(best.m * 100) / 100;
+}
 
 // ---------- year-over-year volatility ----------
 const yoy = {};
@@ -215,13 +244,14 @@ const hitRates = bucketsP.map(([a, b]) => {
 
 const sample = { seasons: `${FROM}-${TO}`, players: seasons.size };
 await writeJSON(path.join(OUT, 'aging-curves.json'), { generated_at: now, method: 'Delta method on PPR PPG: consecutive seasons with >=6 games, kept when either season >=5 PPG (symmetric selection avoids building regression-to-the-mean into the curve), weighted by harmonic-mean games, 3-pt smoothed, anchored at mean PPG of ages 24-28; ages without >=15 pairs follow the shape of the default curve, and every age is shrunk toward the default curve with weight n/(n+80) (n = pairs observed); then made unimodal, with the decline of the last three supported ages continued beyond the data. Survivorship bias (decliners leave the sample) is partly offset by attrition.json.', sample, curves: aging, raw: agingRaw }, { pretty: true });
-await writeJSON(path.join(OUT, 'attrition.json'), { generated_at: now, method: 'P(next season < 4 games or absent | top-N positional finish this season: QB32/RB60/WR84/TE32), pooled +-1 age (+-2 when sparse), then a weighted monotone (non-decreasing in age) fit; +0.06 per year beyond the last age with >=15 pooled observations (cap 0.9).', sample, hazard, raw: hazardRaw }, { pretty: true });
+await writeJSON(path.join(OUT, 'attrition.json'), { generated_at: now, method: 'P(next season < 4 games or absent | top-N positional finish this season: QB32/RB60/WR84/TE32), pooled +-1 age (+-2 when sparse), then a weighted monotone (non-decreasing in age) fit; +0.06 per year beyond the last age with >=15 pooled observations (cap 0.9). later_year_multiplier (audit E19): factor on the hazard for every transition after the first, least squares to the observed share active 2-4 seasons later.', sample, hazard, later_year_multiplier: laterMult, raw: hazardRaw }, { pretty: true });
 await writeJSON(path.join(OUT, 'availability.json'), { generated_at: now, method: 'Mean share of games played next season by fantasy-relevant players who played >=4 games.', sample, by_position: avail }, { pretty: true });
 await writeJSON(path.join(OUT, 'year-over-year.json'), { generated_at: now, method: 'SD of next-season PPG change / mean PPG, players with >=8 games and >=8 PPG.', sample, cv: yoy }, { pretty: true });
 await writeJSON(path.join(OUT, 'draft-priors.json'), { generated_at: now, method: 'Mean PPR PPG of players with >=4 games in career year k, scaled by min(1, P(>=4 games)/position availability). Buckets: R1a picks 1-16, R1b 17-32, R2, R3, R4-5, R6-7, UDFA.', sample, priors, detail: priorDetail }, { pretty: true });
 await writeJSON(path.join(OUT, 'rookie-slot-curve.json'), { generated_at: now, method: 'FantasyPros rookie ECR (last summer scrape, Jun-Aug of the draft year) for the 2020-2023 classes; value = discounted (0.82) 3-season PPR surplus over 12-team replacement (QB12/RB30/WR42/TE12). Mean by class rank, least-squares exponential fit a·exp(−b(p−1)); shape normalised so mean of ranks 1-12 = 1.', fit: { a: r3(fit.a), b: r3(fit.b) }, classes: Object.fromEntries(Object.entries(classes).map(([y, c]) => [y, c.length])), shape, raw_mean_by_rank: byP.map(r3), hit_rates: hitRates, examples: Object.fromEntries(Object.entries(classes).map(([y, c]) => [y, c.slice(0, 15)])) }, { pretty: true });
 
 console.log('\nAging (peak=1):'); for (const p of POS) console.log(' ', p, Object.entries(aging[p]).filter(([a]) => a % 2 === 0 && a >= 22 && a <= 36).map(([a, v]) => `${a}:${v}`).join(' '));
+console.log('Later-year hazard multiplier:', JSON.stringify(laterMult));
 console.log('Attrition:'); for (const p of POS) console.log(' ', p, Object.entries(hazard[p]).filter(([a]) => a % 2 === 0).map(([a, v]) => `${a}:${v}`).join(' '));
 console.log('Availability:', JSON.stringify(avail));
 console.log('YoY cv:', JSON.stringify(yoy));

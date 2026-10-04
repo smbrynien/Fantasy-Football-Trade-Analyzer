@@ -74,6 +74,7 @@ export function runDynasty(dataset, league, model, env) {
   const H = cfg.horizon_years;
   const G = cfg.season_games;
   const re = cfg.rate_evidence;
+  const laterMult = cfg.attrition_later_multiplier || {};
 
   // League-scoring / PPR ratio per position (priors are calibrated in PPR points).
   const ratioAcc = {};
@@ -98,7 +99,8 @@ export function runDynasty(dataset, league, model, env) {
     const priorPPR = draftPrior(model, x.pos, x.p.draft, careerYear);
     const ratio = scoringRatio[x.pos] ?? 1;
     if (priorPPR !== null && ['QB', 'RB', 'WR', 'TE'].includes(x.pos)) {
-      ev.push({ kind: 'prior', v: priorPPR * ratio, w: re.prior_pseudo_games / (re.prior_pseudo_games + careerGames) });
+      const k = re.prior_pseudo_games_by_position?.[x.pos] ?? re.prior_pseudo_games; // 2.5.0: WRs 10 (audit E3)
+      ev.push({ kind: 'prior', v: priorPPR * ratio, w: k / (k + careerGames) });
     }
     let sumW = ev.reduce((a, e) => a + e.w, 0);
     // Past year one, a fundamental value needs current evidence: the draft prior alone must not value players who
@@ -148,7 +150,10 @@ export function runDynasty(dataset, league, model, env) {
     for (let t = 1; t <= T; t++) {
       const share = t === 1 ? f : t === H + 1 ? 1 - f : 1;
       const age = age0 + (t - 1);
-      if (t > 1) surv *= 1 - hazard(model, x.pos, age - 1);
+      // Later transitions use the hazard × a per-position multiplier (2.5.0, audit E19): compounding the hazard of
+      // currently relevant players over-stated multi-year survival for RB/WR/TE (decliners exit faster) and
+      // under-stated it for QBs (backups and benched starters return).
+      if (t > 1) surv *= 1 - Math.min(0.95, hazard(model, x.pos, age - 1) * (t > 2 ? laterMult[x.pos] ?? 1 : 1));
       let mu = x.dyn.mu1;
       if (t > 1) {
         const aged = x.dyn.mu1 * Math.pow(agingMultiplier(model, x.pos, age) / a0, cfg.aging_power ?? 1);

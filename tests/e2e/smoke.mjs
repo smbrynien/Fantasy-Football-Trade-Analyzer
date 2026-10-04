@@ -366,6 +366,16 @@ try {
       const n = await other.locator('tbody tr').count();
       check(n >= 2, `other formats: the same trade in ≥2 leagues (${n} rows)`);
     } else check(false, 'other formats: block present');
+    if (viewport.width === 1360) {
+      // Deep audit (2026-10-04): the same trade with one kind of information at a time.
+      const alt = page.locator('details', { has: page.locator('summary', { hasText: 'other model assumptions' }) });
+      if (await alt.count()) {
+        await alt.locator('summary').click();
+        await page.waitForTimeout(1500);
+        const rows = await alt.locator('tbody tr').count();
+        check(rows === 4, `model assumptions: all signals + 3 single-signal rows (${rows})`);
+      } else check(false, 'model assumptions: block present');
+    }
     await page.locator('header button', { hasText: /^Dynasty$/i }).first().click();
     await page.waitForTimeout(700);
     check(/Test WR 1\b/.test(await page.locator('.trade-side').nth(0).innerText()), 'mode switch: the trade is carried over into the empty dynasty trade');

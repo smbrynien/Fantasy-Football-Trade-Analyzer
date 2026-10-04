@@ -23,7 +23,7 @@ Evidence-weighted average of:
 | Projection rate (ROS in season, season projection otherwise) | 1.0 |
 | Current-season production (actual blended with expected points) | min(1, games/8) |
 | Last season PPG (≥4 games) | 0.8 × min(1, games/8) |
-| **Draft-capital prior** for this career year | 20 / (20 + career games) |
+| **Draft-capital prior** for this career year | k / (k + career games); k = 20, WRs 10 (2.5.0: within-position dynasty Spearman .554 vs .532, 4 of 4 seasons; smoothing the career-year priors was tested and rejected — it cost QBs .492 → .385) |
 
 Priors are calibrated in PPR points and rescaled to your scoring by the league/PPR ratio of last-season points at the
 position.
@@ -42,7 +42,13 @@ For season t (age a+t−1):
   (career year k+t−1) with the prior's evidence share (young players develop toward what their draft slot historically
   produced).
 * **σₜ** = μₜ × √(cv₁² + (t−1)·g²) (+ rookie extra cv) — uncertainty grows every year.
-* **Sₜ** = Π(1 − hazard(age)) — probability the player is still fantasy-relevant (attrition).
+* **Sₜ** = Π(1 − hazard(age)·mⱼ) — probability the player is still fantasy-relevant (attrition); mⱼ = 1 for the first
+  transition and the per-position later-year multiplier after it (2.5.0, audit E19: QB .70, RB 1.35, WR 1.60, TE 1.25).
+  The one-year hazard is measured on currently relevant players; compounding it as-is over-stated the share of
+  RB/WR/TE still active 3–4 seasons later (e.g. WRs aged 27–29: 61% modelled vs 43% observed after 4 seasons) and
+  under-stated it for QBs (55% vs 63%). Fitted walk-forward the multipliers were stable (QB .65–.70, RB 1.45–1.50, WR
+  1.45, TE 1.15–1.25); in 3-season dynasty league simulations (E15) trade outcomes were predicted better on both seeds
+  (corr .618 → .636, .616 → .641).
 * Season points X ~ Normal(μₜ·17·availability, σₜ·17·availability).
 * **Expected surplus** = E[max(0, X − replacement)] + bench fraction × E[band between waiver and replacement].
 
@@ -65,6 +71,8 @@ startable).
   ≥5 PPG; selecting on year-1 performance would build regression to the mean into every age step), anchored at ages
   24–28, shrunk toward the default curve where samples are thin (n/(n+80)). Result: RB peak ≈24 → 0.82 at 28, 0.67
   at 30; WR peak ≈26 → 0.79 at 30; TE peak ≈26; QB flat to ~32.
+* **Later-year multiplier** (2.5.0) — `later_year_multiplier` in attrition.json: least squares of the observed share
+  of relevant players with ≥ 4 games 2–4 seasons later against Π(1 − h·m) (see §2).
 * **Attrition** — P(<4 games next season | top-N finish), pooled ±1 age (±2 when sparse), then a weighted **monotone
   (non-decreasing) fit** in age (2.2.0), +6 points a year beyond the data (RB 24% at 30; WR 13% at 30; TE 15% at 30;
   QB ~12% through 34). The former rule only enforced monotonicity after the minimum, so one noisy TE cell (9 exits of
@@ -74,6 +82,13 @@ startable).
   slows down (each year's ratio is capped by the previous year's). The former curves copied a flat default tail past
   ages 35–37, so a 37-year-old TE stopped declining while a 35-year-old declined 12–14% a year (Travis Kelce was worth
   more at 37 than he would have been at 35). Values inside the data range are unchanged.
+* **Log-concave decline (2.5.0, deep audit W8)** — from the peak on, the yearly decline of each curve must not slow
+  with age, fitted with pool-adjacent-violators on the yearly log-changes (`unimodalAgeCurve(…, { concave: 'decline' })`;
+  growth before the peak stays as fitted). The sampled curves zig-zagged (WR 30→31 −6.7%, 31→32 −8.6%, 32→33 −5.9%), so
+  identical WR production was worth *more* a year older after the peak (structural check D7: +1.7% at 30→31, +4.4% at
+  32→33). A consistency constraint, not a fitted improvement: walk-forward E3 .508 → .510, E15 trade outcomes neutral
+  within the simulation's noise (corr .633 → .614 on one seed, .645 → .645 on the other; log-likelihood −21 / +54).
+  Making the growth side concave too (E3 .513) was worse in E15 on both seeds and is not used.
 * **Availability** — ~81–83% of games for relevant players who stay active.
 * **Year-1 CV** — SD of next-season PPG change / PPG: QB .23, RB .32, WR .29, TE .28.
 * **Draft-capital priors** — PPR PPG by position × bucket (R1 picks 1–16, R1 17–32, R2, R3, R4–5, R6–7, UDFA) × career

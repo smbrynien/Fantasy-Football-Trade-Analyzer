@@ -41,24 +41,25 @@ E2 in-season ROS,REAL HISTORICAL DATA,currentBlend,MAE,35.47
 E2 in-season ROS,REAL HISTORICAL DATA,fittedBlend,spearman,0.512
 E2 in-season ROS,REAL HISTORICAL DATA,fittedBlend,MAE,34.485
 E3 dynasty,REAL HISTORICAL DATA,ecr,spearman,0.581
-E3 dynasty,REAL HISTORICAL DATA,fundamental,spearman,0.508
+E3 dynasty,REAL HISTORICAL DATA,fundamental,spearman,0.51
+E3 dynasty,REAL HISTORICAL DATA,fundamental_survMult,spearman,0.51
 E3 dynasty,REAL HISTORICAL DATA,noAgeCurve,spearman,0.484
-E3 dynasty,REAL HISTORICAL DATA,noAttrition,spearman,0.508
-E3 dynasty,REAL HISTORICAL DATA,noDraftPrior,spearman,0.483
+E3 dynasty,REAL HISTORICAL DATA,noAttrition,spearman,0.509
+E3 dynasty,REAL HISTORICAL DATA,noDraftPrior,spearman,0.484
 E3 dynasty,REAL HISTORICAL DATA,deterministicSurplus,spearman,0.494
 E3 dynasty,REAL HISTORICAL DATA,year1Only,spearman,0.469
-E3 dynasty,REAL HISTORICAL DATA,blend_ecr25,spearman,0.544
-E3 dynasty,REAL HISTORICAL DATA,blend_ecr50,spearman,0.573
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr25,spearman,0.543
+E3 dynasty,REAL HISTORICAL DATA,blend_ecr50,spearman,0.574
 E3 dynasty,REAL HISTORICAL DATA,blend_ecr75,spearman,0.582
-E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1,spearman,0.508
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1,spearman,0.51
 E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g1.5,spearman,0.517
-E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g2,spearman,0.518
-E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1,spearman,0.521
+E3 dynasty,REAL HISTORICAL DATA,fundamental k10_g2,spearman,0.519
+E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1,spearman,0.519
 E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g1.5,spearman,0.521
 E3 dynasty,REAL HISTORICAL DATA,fundamental k20_g2,spearman,0.518
-E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1,spearman,0.518
-E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1.5,spearman,0.517
-E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g2,spearman,0.509
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1,spearman,0.517
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g1.5,spearman,0.516
+E3 dynasty,REAL HISTORICAL DATA,fundamental k40_g2,spearman,0.511
 E4 rookie slot curve,REAL HISTORICAL DATA,isotonicAverage,LOO MAE,40.707
 E4 rookie slot curve,REAL HISTORICAL DATA,isotonicAverage,LOO bias,0
 E4 rookie slot curve,REAL HISTORICAL DATA,exponential,LOO MAE,34.121
@@ -314,34 +315,123 @@ E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020�
 E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − mutual_min,"their gain difference, same requests",-5.135
 E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − pen05,"my gain difference, same requests",-0.039
 E14 trade finder (paired),REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,finder − pen05,"their gain difference, same requests",0.438
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 0-5%,share won by favoured side (3 seasons),0.524
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 5-10%,share won by favoured side (3 seasons),0.491
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 10-20%,share won by favoured side (3 seasons),0.516
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 20-30%,share won by favoured side (3 seasons),0.617
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 30-50%,share won by favoured side (3 seasons),0.669
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 50-75%,share won by favoured side (3 seasons),0.745
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 75-100%,share won by favoured side (3 seasons),0.809
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 0-5%,share won by favoured side (3 seasons),0.519
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 5-10%,share won by favoured side (3 seasons),0.528
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 10-20%,share won by favoured side (3 seasons),0.549
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 20-30%,share won by favoured side (3 seasons),0.594
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 30-50%,share won by favoured side (3 seasons),0.666
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 50-75%,share won by favoured side (3 seasons),0.77
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",margin 75-100%,share won by favoured side (3 seasons),0.811
 E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",logistic fit,slope on |margin|,1.75
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",adjusted,"corr(predicted margin, realised outcome)",0.618
-E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",plainSums,"corr(predicted margin, realised outcome)",0.616
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,my realised 3-season gain,-0.627
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,their realised 3-season gain,-40.893
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,coverage (share of requests with a package),0.286
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,my realised 3-season gain,-24.994
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,their realised 3-season gain,-41.397
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,coverage (share of requests with a package),0.909
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,my realised 3-season gain,-27.201
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,their realised 3-season gain,-37.423
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,coverage (share of requests with a package),0.909
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,my realised 3-season gain,0.021
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,their realised 3-season gain,-23.413
-E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,coverage (share of requests with a package),0.286
-E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − random_fair,"my gain difference, same requests",30.514
-E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − random_fair,"their gain difference, same requests",-3.279
-E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − most_even,"my gain difference, same requests",28.63
-E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − most_even,"their gain difference, same requests",6.029
-E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum − finder,"my gain difference, same requests",0.647
-E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum − finder,"their gain difference, same requests",17.479
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",adjusted,"corr(predicted margin, realised outcome)",0.614
+E15 dynasty verdict calibration,"REAL HISTORICAL outcomes (nflverse weekly points 2020–2025, FantasyPros dynasty ECR archive); SIMULATED league behaviour",plainSums,"corr(predicted margin, realised outcome)",0.617
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,my realised 3-season gain,-7.659
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,their realised 3-season gain,-42.7
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder,coverage (share of requests with a package),0.275
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,my realised 3-season gain,-12.059
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,their realised 3-season gain,-31.505
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),most_even,coverage (share of requests with a package),0.908
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,my realised 3-season gain,-15.514
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,their realised 3-season gain,-28.838
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),random_fair,coverage (share of requests with a package),0.908
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,my realised 3-season gain,-3.512
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,their realised 3-season gain,-28.997
+E16 dynasty trade finder,REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum,coverage (share of requests with a package),0.275
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − random_fair,"my gain difference, same requests",26.123
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − random_fair,"their gain difference, same requests",3.821
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − most_even,"my gain difference, same requests",31.063
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),finder − most_even,"their gain difference, same requests",-2.671
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum − finder,"my gain difference, same requests",4.147
+E16 dynasty trade finder (paired),REAL HISTORICAL outcomes; SIMULATED leagues; player-only packages (no picks),mutual_sum − finder,"their gain difference, same requests",13.704
+E17 format translation,REAL HISTORICAL DATA,untranslated (standard),spearman (format outcome),0.528
+E17 format translation,REAL HISTORICAL DATA,translated (standard),spearman (format outcome),0.53
+E17 format translation,REAL HISTORICAL DATA,untranslated (half),spearman (format outcome),0.538
+E17 format translation,REAL HISTORICAL DATA,translated (half),spearman (format outcome),0.537
+E17 format translation,REAL HISTORICAL DATA,untranslated (tep05),spearman (format outcome),0.438
+E17 format translation,REAL HISTORICAL DATA,translated (tep05),spearman (format outcome),0.438
+E17 format translation,REAL HISTORICAL DATA,untranslated (tep10),spearman (format outcome),0.439
+E17 format translation,REAL HISTORICAL DATA,translated (tep10),spearman (format outcome),0.441
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_0_5,"corr(predicted margin, realised outcome)",0.486
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_0_5,share of trades where the favoured side gained more,0.655
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_0_75,"corr(predicted margin, realised outcome)",0.528
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_0_75,share of trades where the favoured side gained more,0.676
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1,"corr(predicted margin, realised outcome)",0.546
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1,share of trades where the favoured side gained more,0.681
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_25,"corr(predicted margin, realised outcome)",0.552
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_25,share of trades where the favoured side gained more,0.682
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_5,"corr(predicted margin, realised outcome)",0.549
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_5,share of trades where the favoured side gained more,0.684
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_2,"corr(predicted margin, realised outcome)",0.532
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_2,share of trades where the favoured side gained more,0.683
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,ordinal,"corr(predicted margin, realised outcome)",0.328
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,ordinal,share of trades where the favoured side gained more,0.625
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_15,"corr(predicted margin, realised outcome)",0.539
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_15,share of trades where the favoured side gained more,0.687
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_20,"corr(predicted margin, realised outcome)",0.559
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_20,share of trades where the favoured side gained more,0.69
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_25,"corr(predicted margin, realised outcome)",0.568
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_25,share of trades where the favoured side gained more,0.689
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_35,"corr(predicted margin, realised outcome)",0.568
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_35,share of trades where the favoured side gained more,0.688
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_45,"corr(predicted margin, realised outcome)",0.557
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_45,share of trades where the favoured side gained more,0.683
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,rawPoints,"corr(predicted margin, realised outcome)",0.384
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,rawPoints,share of trades where the favoured side gained more,0.628
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,par,"corr(predicted margin, realised outcome)",0.53
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,par,share of trades where the favoured side gained more,0.686
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.25,"corr(predicted margin, realised outcome)",0.55
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.25,share of trades where the favoured side gained more,0.681
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.5,"corr(predicted margin, realised outcome)",0.548
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.5,share of trades where the favoured side gained more,0.68
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.75,"corr(predicted margin, realised outcome)",0.538
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.75,share of trades where the favoured side gained more,0.677
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_1,"corr(predicted margin, realised outcome)",0.529
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_1,share of trades where the favoured side gained more,0.671
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_pkg,"corr(predicted margin, realised outcome)",0.552
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_pkg,share of trades where the favoured side gained more,0.685
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_25_pkg,"corr(predicted margin, realised outcome)",0.551
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_25_pkg,share of trades where the favoured side gained more,0.685
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_5_pkg,"corr(predicted margin, realised outcome)",0.546
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,power_1_5_pkg,share of trades where the favoured side gained more,0.687
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_25_pkg,"corr(predicted margin, realised outcome)",0.566
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_25_pkg,share of trades where the favoured side gained more,0.689
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_35_pkg,"corr(predicted margin, realised outcome)",0.57
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,chart_35_pkg,share of trades where the favoured side gained more,0.69
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.25_pkg,"corr(predicted margin, realised outcome)",0.554
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.25_pkg,share of trades where the favoured side gained more,0.683
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.5_pkg,"corr(predicted margin, realised outcome)",0.55
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.5_pkg,share of trades where the favoured side gained more,0.683
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.75_pkg,"corr(predicted margin, realised outcome)",0.537
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_0.75_pkg,share of trades where the favoured side gained more,0.68
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_1_pkg,"corr(predicted margin, realised outcome)",0.526
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,repl_1_pkg,share of trades where the favoured side gained more,0.673
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,app_with_package,"corr(predicted margin, realised outcome)",0.552
+E18 value scale,REAL HISTORICAL outcomes (nflverse weekly points 2020–2025); SIMULATED league behaviour,app_with_package,share of trades where the favoured side gained more,0.685
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),QB observed k2,share active k seasons later,0.783
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),QB compounded k2,share active k seasons later,0.749
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),QB observed k3,share active k seasons later,0.702
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),QB compounded k3,share active k seasons later,0.641
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),QB observed k4,share active k seasons later,0.627
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),QB compounded k4,share active k seasons later,0.547
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),RB observed k2,share active k seasons later,0.741
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),RB compounded k2,share active k seasons later,0.763
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),RB observed k3,share active k seasons later,0.584
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),RB compounded k3,share active k seasons later,0.648
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),RB observed k4,share active k seasons later,0.442
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),RB compounded k4,share active k seasons later,0.538
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),WR observed k2,share active k seasons later,0.772
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),WR compounded k2,share active k seasons later,0.818
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),WR observed k3,share active k seasons later,0.644
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),WR compounded k3,share active k seasons later,0.728
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),WR observed k4,share active k seasons later,0.516
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),WR compounded k4,share active k seasons later,0.638
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),TE observed k2,share active k seasons later,0.805
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),TE compounded k2,share active k seasons later,0.818
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),TE observed k3,share active k seasons later,0.69
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),TE compounded k3,share active k seasons later,0.726
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),TE observed k4,share active k seasons later,0.571
+E19 survival,REAL HISTORICAL DATA (nflverse 2006–2025),TE compounded k4,share active k seasons later,0.633
+Structural checks,CURRENT DATA (2026-10-03-27fa2592) — model 2.5.0,current,failures,2
 Monotonicity,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",current,failures,1
 Package simulation,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",raw,"corr(model diff, simulated lineup gain)",0.596
 Package simulation,"CURRENT DATA (2026-10-03-f2898efc, dataset-frozen.json) — model 2.3.0",packageAdjusted,"corr(model diff, simulated lineup gain)",0.602

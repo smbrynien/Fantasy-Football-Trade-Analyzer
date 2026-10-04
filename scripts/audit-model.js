@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Automated model audit: `npm run audit-model` → reports/audit/*.json (+ CSV)
-//   --only=e1,…,e16,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
+//   --only=e1,…,e19,deep,current,compare   run selected sections   --rebuild   rebuild the historical benchmark
 //   --only=scorecard    only rewrite scorecard.csv/.json from the reports already in the output dir (no experiments)
 //   E1–E4 (2.0.0 audit): preseason/in-season/dynasty backtests, rookie curve. E5–E8 (2.2.0 audit): hindsight-free
 //   lineup value (σ), historical league simulation (trades, package), verdict calibration, dynasty value spacing.
@@ -8,6 +8,8 @@
 //   roster-specific values, backtest from the app's own daily signal archive (skips until a season is archived).
 //   E14 trade finder (redraft). E15/E16 (2.4.0): dynasty leagues replayed over three seasons — dynasty verdict
 //   calibration and the trade finder in dynasty (scripts/audit/dynasty-league.js).
+//   Deep audit 2026-10-04 (docs/TRADE_VALUE_DEEP_AUDIT.md): E17 scoring-format translation of the PPR consensus order,
+//   E18 value scale, E19 multi-year survival, `deep` = structural checks on current data (D1–D12).
 //   --freeze            copy the synced dataset to data/benchmark/dataset-frozen.json (the data before/after runs use)
 //   --snapshot-before   save current-model values on the frozen dataset as the 'before' baseline (values-v1.json);
 //                       freezes first if no frozen dataset exists
@@ -41,7 +43,7 @@ if (args.includes('--freeze') || (args.includes('--snapshot-before') && !fs.exis
     console.log(`Froze dataset ${current} → ${rel(FROZEN)}${previous && previous !== current ? ` (replaced ${previous})` : ''}`);
   } catch (e) { console.error(`  ${e.message}`); process.exit(1); }
 }
-const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12', 'e14', 'e15', 'e16'].some(want);
+const needBench = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12', 'e14', 'e15', 'e16', 'e17', 'e18'].some(want);
 const bench = needBench ? await loadBenchmark({ rebuild: args.includes('--rebuild') }) : null;
 if (want('e1')) { console.log('E1 preseason redraft…'); write('e1-preseason-redraft', { label: 'REAL HISTORICAL DATA', oppRates: measureOppRates(bench), ...preseasonRedraft(bench) }); }
 if (want('e2')) { console.log('E2 in-season ROS…'); write('e2-inseason-ros', { label: 'REAL HISTORICAL DATA', ...inSeasonROS(bench) }); }
@@ -97,6 +99,29 @@ if (want('e15') || want('e16')) {
     res.replication = { seed: 99, summary: rep.summary, paired: rep.paired };
     write('e16-dynasty-finder', res);
   }
+}
+if (want('e17')) { const { formatTranslation } = await import('./audit/format-translation.js'); console.log('E17 scoring-format translation…'); write('e17-format-translation', formatTranslation(bench)); }
+if (want('e18')) {
+  const { valueScale } = await import('./audit/value-scale.js');
+  console.log('E18 value scale (2 × 5,000 simulated trades, ~1 min)…');
+  const res = valueScale(bench, { seed: 7 });
+  const rep = valueScale(bench, { seed: 99 });
+  res.replication = { seed: 99, results: rep.results, best: rep.best };
+  write('e18-value-scale', res);
+}
+if (want('e19')) {
+  const { attritionCheck } = await import('./audit/attrition.js');
+  console.log('E19 multi-year survival…');
+  const hist = await loadSeasons(2006, 2025);
+  write('e19-survival', attritionCheck(hist));
+}
+if (want('deep')) {
+  const { loadFrozenDataset } = await import('./audit/current.js');
+  const { loadConfig } = await import('../server/lib/config.js');
+  const { deepCurrentAudit } = await import('./audit/deep-current.js');
+  const live = loadFrozenDataset();
+  if (!live) console.log(`  SKIPPED deep audit: no dataset. ${HOW}`);
+  else { console.log('Deep current-data audit (D1–D12, ~40 s)…'); write('deep-current', deepCurrentAudit(live.ds, loadConfig())); }
 }
 if (want('e13')) {
   const { listArchive, loadArchiveDay } = await import('../server/archive.js');
@@ -201,6 +226,11 @@ if (!setupOnly) {
     for (const [m, v] of Object.entries(e16.summary || {})) { rows.push(['E16 dynasty trade finder', e16.labels, m, 'my realised 3-season gain', v.myGain.mean]); rows.push(['E16 dynasty trade finder', e16.labels, m, 'their realised 3-season gain', v.theirGain.mean]); rows.push(['E16 dynasty trade finder', e16.labels, m, 'coverage (share of requests with a package)', v.coverage]); }
     for (const [m, v] of Object.entries(e16.paired || {})) { rows.push(['E16 dynasty trade finder (paired)', e16.labels, m.replace(/_vs_/, ' − '), 'my gain difference, same requests', v.myGain.mean]); rows.push(['E16 dynasty trade finder (paired)', e16.labels, m.replace(/_vs_/, ' − '), 'their gain difference, same requests', v.theirGain.mean]); }
   }
+  const e17 = rd('e17-format-translation'), e18 = rd('e18-value-scale'), e19 = rd('e19-survival'), deep = rd('deep-current');
+  if (e17) for (const [fmt, v] of Object.entries(e17.summary || {})) for (const m of ['untranslated', 'translated']) rows.push(['E17 format translation', e17.label, `${m} (${fmt})`, 'spearman (format outcome)', v[m]]);
+  if (e18) for (const [m, v] of Object.entries(e18.results || {})) { rows.push(['E18 value scale', e18.labels, m, 'corr(predicted margin, realised outcome)', v.all]); rows.push(['E18 value scale', e18.labels, m, 'share of trades where the favoured side gained more', v.hit]); }
+  if (e19) for (const [pos, v] of Object.entries(e19.summary || {})) for (const k of ['k2', 'k3', 'k4']) { rows.push(['E19 survival', e19.label, `${pos} observed ${k}`, 'share active k seasons later', v[k].observed]); rows.push(['E19 survival', e19.label, `${pos} compounded ${k}`, 'share active k seasons later', v[k].compounded]); }
+  if (deep) rows.push(['Structural checks', deep.label, 'current', 'failures', deep.summary.failed.length]);
   const mono = rd('cur-monotonicity'), pk = rd('cur-package-simulation');
   if (mono) rows.push(['Monotonicity', mono.label, 'current', 'failures', mono.failures]);
   if (pk) for (const [m, v] of Object.entries(pk.overall || {})) rows.push(['Package simulation', pk.label, m, 'corr(model diff, simulated lineup gain)', v]);
@@ -209,8 +239,8 @@ if (!setupOnly) {
   // the Model page (reports/audit/scorecard.json is served; the other audit files are not).
   if (rows.length > 1) {
     const { loadConfig } = await import('../server/lib/config.js');
-    const reportOf = { E15: 'e15-dynasty-verdict', E16: 'e16-dynasty-finder', E14: 'e14-trade-finder', E1: 'e1-preseason-redraft', E1b: 'e1-preseason-redraft', E2: 'e2-inseason-ros', E3: 'e3-dynasty', E4: 'e4-rookie-curve', E5: 'e5-lineup-value', E6: 'e6-league-simulation', E7: 'e7-verdict-calibration', E8: 'e8-dynasty-spacing', E9: 'e9-signal-weights', E10: 'e10-uncertainty', E12: 'e12-roster-values', Monotonicity: 'cur-monotonicity', Package: 'cur-package-simulation' };
-    const fallback = { Monotonicity: 'Monotonicity checks on current data (e.g. more projected points or a younger age never lowers a value)', Package: 'Package-adjustment simulation on current data (does the adjustment track the simulated lineup gain of uneven trades?)' };
+    const reportOf = { E17: 'e17-format-translation', E18: 'e18-value-scale', E19: 'e19-survival', Structural: 'deep-current', E15: 'e15-dynasty-verdict', E16: 'e16-dynasty-finder', E14: 'e14-trade-finder', E1: 'e1-preseason-redraft', E1b: 'e1-preseason-redraft', E2: 'e2-inseason-ros', E3: 'e3-dynasty', E4: 'e4-rookie-curve', E5: 'e5-lineup-value', E6: 'e6-league-simulation', E7: 'e7-verdict-calibration', E8: 'e8-dynasty-spacing', E9: 'e9-signal-weights', E10: 'e10-uncertainty', E12: 'e12-roster-values', Monotonicity: 'cur-monotonicity', Package: 'cur-package-simulation' };
+    const fallback = { Structural: 'Structural checks on current data (docs/TRADE_VALUE_DEEP_AUDIT.md D1–D12): league sweeps, inversions, sensitivity, age adjacency, ablation, missing data, picks, horizon', Monotonicity: 'Monotonicity checks on current data (e.g. more projected points or a younger age never lowers a value)', Package: 'Package-adjustment simulation on current data (does the adjustment track the simulated lineup gain of uneven trades?)' };
     const candidateLabels = (rep) => {
       const out = {};
       for (const [k, v] of Object.entries(rep?.preseason?.candidates || {})) if (typeof v?.label === 'string') out[k] = v.label;

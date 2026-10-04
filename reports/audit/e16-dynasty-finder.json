@@ -4,121 +4,121 @@
   "summary": {
     "finder": {
       "label": "Finder (app, dynasty): top option by starting-lineup value (minimal, maxEdge 5%)",
-      "coverage": 0.286,
+      "coverage": 0.275,
       "myGain": {
-        "n": 571,
-        "mean": -0.627,
-        "lo": -13.566,
-        "hi": 12.313
+        "n": 549,
+        "mean": -7.659,
+        "lo": -21.939,
+        "hi": 6.622
       },
       "theirGain": {
-        "n": 571,
-        "mean": -40.893,
-        "lo": -54.386,
-        "hi": -27.4
+        "n": 549,
+        "mean": -42.7,
+        "lo": -57.026,
+        "hi": -28.375
       },
-      "myGainShare": 0.501,
-      "meanSize": 2.081
+      "myGainShare": 0.499,
+      "meanSize": 2.055
     },
     "most_even": {
       "label": "Value only: the most evenly valued fair package",
-      "coverage": 0.909,
+      "coverage": 0.908,
       "myGain": {
-        "n": 1817,
-        "mean": -24.994,
-        "lo": -31.544,
-        "hi": -18.445
+        "n": 1815,
+        "mean": -12.059,
+        "lo": -18.698,
+        "hi": -5.421
       },
       "theirGain": {
-        "n": 1817,
-        "mean": -41.397,
-        "lo": -47.961,
-        "hi": -34.834
+        "n": 1815,
+        "mean": -31.505,
+        "lo": -37.986,
+        "hi": -25.025
       },
-      "myGainShare": 0.423,
-      "meanSize": 2.395
+      "myGainShare": 0.504,
+      "meanSize": 2.39
     },
     "random_fair": {
       "label": "A random fair minimal package",
-      "coverage": 0.909,
+      "coverage": 0.908,
       "myGain": {
-        "n": 1817,
-        "mean": -27.201,
-        "lo": -33.636,
-        "hi": -20.765
+        "n": 1815,
+        "mean": -15.514,
+        "lo": -22.05,
+        "hi": -8.977
       },
       "theirGain": {
-        "n": 1817,
-        "mean": -37.423,
-        "lo": -43.962,
-        "hi": -30.885
+        "n": 1815,
+        "mean": -28.838,
+        "lo": -35.378,
+        "hi": -22.298
       },
-      "myGainShare": 0.416,
-      "meanSize": 2.336
+      "myGainShare": 0.471,
+      "meanSize": 2.333
     },
     "mutual_sum": {
       "label": "Their roster known: rank by my + their lineup-value gain",
-      "coverage": 0.286,
+      "coverage": 0.275,
       "myGain": {
-        "n": 571,
-        "mean": 0.021,
-        "lo": -13.134,
-        "hi": 13.176
+        "n": 549,
+        "mean": -3.512,
+        "lo": -17.697,
+        "hi": 10.674
       },
       "theirGain": {
-        "n": 571,
-        "mean": -23.413,
-        "lo": -37.303,
-        "hi": -9.524
+        "n": 549,
+        "mean": -28.997,
+        "lo": -43.108,
+        "hi": -14.886
       },
-      "myGainShare": 0.483,
-      "meanSize": 2.154
+      "myGainShare": 0.501,
+      "meanSize": 2.118
     }
   },
   "paired": {
     "finder_vs_random_fair": {
-      "n": 571,
+      "n": 549,
       "myGain": {
-        "n": 571,
-        "mean": 30.514,
-        "lo": 16.912,
-        "hi": 44.117
+        "n": 549,
+        "mean": 26.123,
+        "lo": 12.007,
+        "hi": 40.24
       },
       "theirGain": {
-        "n": 571,
-        "mean": -3.279,
-        "lo": -16.563,
-        "hi": 10.005
+        "n": 549,
+        "mean": 3.821,
+        "lo": -10.091,
+        "hi": 17.732
       }
     },
     "finder_vs_most_even": {
-      "n": 571,
+      "n": 549,
       "myGain": {
-        "n": 571,
-        "mean": 28.63,
-        "lo": 15.72,
-        "hi": 41.54
+        "n": 549,
+        "mean": 31.063,
+        "lo": 17.26,
+        "hi": 44.867
       },
       "theirGain": {
-        "n": 571,
-        "mean": 6.029,
-        "lo": -6.695,
-        "hi": 18.754
+        "n": 549,
+        "mean": -2.671,
+        "lo": -15.932,
+        "hi": 10.591
       }
     },
     "mutual_sum_vs_finder": {
-      "n": 571,
+      "n": 549,
       "myGain": {
-        "n": 571,
-        "mean": 0.647,
-        "lo": -7.665,
-        "hi": 8.96
+        "n": 549,
+        "mean": 4.147,
+        "lo": -4.862,
+        "hi": 13.156
       },
       "theirGain": {
-        "n": 571,
-        "mean": 17.479,
-        "lo": 8.812,
-        "hi": 26.147
+        "n": 549,
+        "mean": 13.704,
+        "lo": 4.377,
+        "hi": 23.03
       }
     }
   },
@@ -127,121 +127,121 @@
     "summary": {
       "finder": {
         "label": "Finder (app, dynasty): top option by starting-lineup value (minimal, maxEdge 5%)",
-        "coverage": 0.307,
+        "coverage": 0.291,
         "myGain": {
-          "n": 614,
-          "mean": 14.231,
-          "lo": 2.293,
-          "hi": 26.168
+          "n": 581,
+          "mean": 11.723,
+          "lo": -1.142,
+          "hi": 24.588
         },
         "theirGain": {
-          "n": 614,
-          "mean": -40.952,
-          "lo": -53.92,
-          "hi": -27.983
+          "n": 581,
+          "mean": -45.471,
+          "lo": -60.127,
+          "hi": -30.814
         },
-        "myGainShare": 0.546,
-        "meanSize": 2.119
+        "myGainShare": 0.551,
+        "meanSize": 2.048
       },
       "most_even": {
         "label": "Value only: the most evenly valued fair package",
-        "coverage": 0.914,
+        "coverage": 0.903,
         "myGain": {
-          "n": 1828,
-          "mean": -14.373,
-          "lo": -20.801,
-          "hi": -7.945
+          "n": 1806,
+          "mean": -10.811,
+          "lo": -17.246,
+          "hi": -4.377
         },
         "theirGain": {
-          "n": 1828,
-          "mean": -30.154,
-          "lo": -37.07,
-          "hi": -23.237
+          "n": 1806,
+          "mean": -34.826,
+          "lo": -41.73,
+          "hi": -27.921
         },
-        "myGainShare": 0.475,
-        "meanSize": 2.379
+        "myGainShare": 0.482,
+        "meanSize": 2.435
       },
       "random_fair": {
         "label": "A random fair minimal package",
-        "coverage": 0.914,
+        "coverage": 0.903,
         "myGain": {
-          "n": 1828,
-          "mean": -11.991,
-          "lo": -18.25,
-          "hi": -5.731
+          "n": 1806,
+          "mean": -12.413,
+          "lo": -19.129,
+          "hi": -5.696
         },
         "theirGain": {
-          "n": 1828,
-          "mean": -34.311,
-          "lo": -41.085,
-          "hi": -27.538
+          "n": 1806,
+          "mean": -32.891,
+          "lo": -39.743,
+          "hi": -26.038
         },
-        "myGainShare": 0.469,
-        "meanSize": 2.331
+        "myGainShare": 0.486,
+        "meanSize": 2.374
       },
       "mutual_sum": {
         "label": "Their roster known: rank by my + their lineup-value gain",
-        "coverage": 0.307,
+        "coverage": 0.291,
         "myGain": {
-          "n": 614,
-          "mean": 9.675,
-          "lo": -2.712,
-          "hi": 22.062
+          "n": 581,
+          "mean": 5.097,
+          "lo": -8.154,
+          "hi": 18.347
         },
         "theirGain": {
-          "n": 614,
-          "mean": -17.78,
-          "lo": -31.205,
-          "hi": -4.355
+          "n": 581,
+          "mean": -21.79,
+          "lo": -36.293,
+          "hi": -7.286
         },
-        "myGainShare": 0.541,
-        "meanSize": 2.191
+        "myGainShare": 0.532,
+        "meanSize": 2.153
       }
     },
     "paired": {
       "finder_vs_random_fair": {
-        "n": 614,
+        "n": 581,
         "myGain": {
-          "n": 614,
-          "mean": 23.25,
-          "lo": 11.605,
-          "hi": 34.896
+          "n": 581,
+          "mean": 24.641,
+          "lo": 11.65,
+          "hi": 37.632
         },
         "theirGain": {
-          "n": 614,
-          "mean": -2.138,
-          "lo": -13.738,
-          "hi": 9.463
+          "n": 581,
+          "mean": 0.869,
+          "lo": -11.952,
+          "hi": 13.691
         }
       },
       "finder_vs_most_even": {
-        "n": 614,
+        "n": 581,
         "myGain": {
-          "n": 614,
-          "mean": 27.483,
-          "lo": 15.992,
-          "hi": 38.975
+          "n": 581,
+          "mean": 23.638,
+          "lo": 11.379,
+          "hi": 35.898
         },
         "theirGain": {
-          "n": 614,
-          "mean": -7.741,
-          "lo": -19.816,
-          "hi": 4.335
+          "n": 581,
+          "mean": -1.533,
+          "lo": -13.498,
+          "hi": 10.432
         }
       },
       "mutual_sum_vs_finder": {
-        "n": 614,
+        "n": 581,
         "myGain": {
-          "n": 614,
-          "mean": -4.556,
-          "lo": -11.884,
-          "hi": 2.773
+          "n": 581,
+          "mean": -6.627,
+          "lo": -14.068,
+          "hi": 0.814
         },
         "theirGain": {
-          "n": 614,
-          "mean": 23.172,
-          "lo": 15.733,
-          "hi": 30.61
+          "n": 581,
+          "mean": 23.681,
+          "lo": 15.475,
+          "hi": 31.887
         }
       }
     }

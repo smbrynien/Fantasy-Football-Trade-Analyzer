@@ -1,5 +1,5 @@
 {
-  "model_version": "2.4.0",
+  "model_version": "2.5.0",
   "_comment": "Valuation model parameters. Bump model_version whenever a formula or default changes so stored trades/values remain comparable. Every parameter is documented in docs/VALUATION_MODEL.md, docs/DYNASTY_MODEL.md and docs/ROOKIE_PICK_MODEL.md.",
   "scale": {
     "top_value": 10000,
@@ -139,7 +139,9 @@
       "current_season_full_games": 8,
       "last_season_weight": 0.8,
       "last_season_min_games": 4,
-      "prior_pseudo_games": 20
+      "prior_pseudo_games": 20,
+      "prior_pseudo_games_by_position": { "WR": 10 },
+      "_prior_comment": "Model 2.5.0 (audit E3, deep audit 2026-10-04): the draft-capital prior counts as k games of evidence. WRs k = 10 (within-position dynasty Spearman .554 vs .532 at 20, better in 4 of 4 seasons; 3-season trade outcomes E15 neutral). QB/RB/TE stay at 20 (QB .492 at 20 vs .412 at 5; RB and TE flat)."
     },
     "uncertainty": {
       "cv_year1": {
@@ -260,6 +262,10 @@
         "0": 1,
         "99": 1
       }
+    },
+    "attrition_later_multiplier": {
+      "_comment": "Model 2.5.0 (audit E19): factor on the attrition hazard for every year after the first (1 = plain compounding). Replaced by calibration/attrition.json later_year_multiplier when present (QB .70, RB 1.35, WR 1.60, TE 1.25 on 2006-2025).",
+      "QB": 1, "RB": 1, "WR": 1, "TE": 1
     },
     "default_attrition": {
       "_comment": "Annual probability of dropping out of fantasy relevance = base + slope*max(0, age-onset), capped at 0.9. Replaced by calibration when present.",
@@ -383,7 +389,7 @@
     "levels": { "lean": 0.6, "clear": 0.7 },
     "roster_logit_slope_per_week": 0.2,
     "_roster_comment": "Model 2.3.0 (audit E12), display only (My Team): P(a team's season points rose) = 1 / (1 + exp(-k x |change in expected lineup points per week|)). From 10,000 team-trades in the historical league simulations: +1 / +3 points per week -> 55% / 65%; 4+ -> 81% observed. Realised gain = 0.80 x predicted.",
-    "_levels_comment": "Model 2.3.0 (audit E10): redraft verdict levels come from the same historical frequency: close < 60% (margin under ~27%), lean 60-70%, clear >= 70% (margin >= ~56%). Historically margins under 30% won 53-57% whatever their size, 30-50% won 64%, 50-75% 72%, 75%+ 80%. The z-score levels (|diff| / the +/- range) disagreed with the frequency shown under the verdict in 23% of trades. Since 2.4.0 dynasty uses the same levels on its own calibrated frequency (dynasty_logit_slope, audit E15: close < 60% = margin under ~17%, lean 17-42%, clear >= ~42%; favoured side won 51% / 64% / 77%). Remove 'levels' to use z in both modes.",
+    "_levels_comment": "Model 2.3.0 (audit E10): redraft verdict levels come from the same historical frequency: close < 60% (margin under ~27%), lean 60-70%, clear >= 70% (margin >= ~56%). Historically margins under 30% won 53-57% whatever their size, 30-50% won 64%, 50-75% 72%, 75%+ 80%. The z-score levels (|diff| / the +/- range) disagreed with the frequency shown under the verdict in 23% of trades. Since 2.4.0 dynasty uses the same levels on its own calibrated frequency (dynasty_logit_slope, audit E15: close < 60% = margin under ~17%, lean 17-42%, clear >= ~42%; favoured side won 51% / 64% / 77%; with the final 2.5.0 values 51-55% / 62-63% / 78-79%, slope fit 1.75 / 2.0 on the two seeds, 1.75 kept). Remove 'levels' to use z in both modes.",
     "_comment": "P(the side receiving more value ends the season with more lineup points) = 1 / (1 + exp(-slope x |margin|)), margin = difference / larger side. Fitted on 5,000 random trades in historical league simulations (audit E7: 12-team PPR, full seasons 2020-2025, real weekly points): margins of 10% / 30% / 50% came out ahead 54% / 61% / 68% of the time. Shown next to the verdict; it does not change any value. Dynasty: dynasty_logit_slope (2.4.0, audit E15)."
   },
   "package": {

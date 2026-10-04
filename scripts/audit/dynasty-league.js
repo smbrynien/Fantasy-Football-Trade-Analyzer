@@ -37,11 +37,14 @@ const TYPES = [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [1, 3], [3, 2], [2, 3], [
 const REPL_RANK = { QB: 12, RB: 30, WR: 42, TE: 12 };
 const LEAGUE = { ...RLEAGUE, roster: { ...RLEAGUE.roster, BENCH: ROSTER - 7 } };
 const WEIGHTS = { fundamental: 0.25, consensus: 0.40 }; // config dynasty.weights without the market (renormalised)
+// The app's fundamental since 2.5.0 (deep audit): aging power 2, draft prior 20 games (WRs 10), later-year attrition
+// hazard × the walk-forward multiplier (E19).
+const APP_FUNDAMENTAL = { priorK: { QB: 20, RB: 20, WR: 10, TE: 20 }, agingPower: 2, survMult: true };
 const r3 = (x) => (x === null || x === undefined || !Number.isFinite(x) ? null : Math.round(x * 1000) / 1000);
 const ci = (xs) => { if (!xs.length) return { n: 0, mean: null, lo: null, hi: null }; const m = mean(xs), se = (sd(xs) || 0) / Math.sqrt(xs.length); return { n: xs.length, mean: r3(m), lo: r3(m - 1.96 * se), hi: r3(m + 1.96 * se) }; };
 
 /** Preseason dynasty values of season Y (app blend without market) for every dynasty-ranked player. */
-function dynastyValues(bench, hist, seasonRows, replOf, Y) {
+function dynastyValues(bench, hist, seasonRows, replOf, Y, fundOpt = {}) {
   const snap = snapshotBefore(bench, 'dynasty', bench.schedule[Y]?.weeks[1]?.first, 45);
   if (!snap) return null;
   const cal = calibrateBefore(hist, Y, { regularize: true });
@@ -51,7 +54,7 @@ function dynastyValues(bench, hist, seasonRows, replOf, Y) {
     const m = hist.meta.get(g);
     if (!m) continue;
     const age = m.birth_date ? (new Date(`${Y}-09-01`) - new Date(m.birth_date)) / (365.25 * 864e5) : null;
-    const F = fundamental(seasonRows, cal, g, m, pos, Y, age, replOf(Y - 1, pos), { priorK: 20, agingPower: 2 });
+    const F = fundamental(seasonRows, cal, g, m, pos, Y, age, replOf(Y - 1, pos), { ...APP_FUNDAMENTAL, ...fundOpt });
     own.set(g, F);
     if (F !== null) (curves[pos] ||= []).push(F);
   }
@@ -130,8 +133,8 @@ async function setup(bench) {
 }
 
 /** One dynasty league for start season Y: values, rosters, the app-like valuation result and a 3-season replay. */
-function buildLeague(ctx, bench, Y, rand, model) {
-  const dv = dynastyValues(bench, ctx.hist, ctx.seasonRows, ctx.replOf, Y);
+function buildLeague(ctx, bench, Y, rand, model, fundOpt = {}) {
+  const dv = dynastyValues(bench, ctx.hist, ctx.seasonRows, ctx.replOf, Y, fundOpt);
   if (!dv || ![0, 1, 2].every((k) => ctx.seasons[Y + k])) return null;
   const universe = [...dv.value].map(([g, x]) => ({ g, ...x }));
   const byG = new Map(universe.map((p) => [p.g, p]));
@@ -169,13 +172,13 @@ function predict(result, getsA, getsB) {
 }
 
 /** E15: dynasty verdict calibration from random trades. */
-export async function dynastyVerdictCalibration(bench, model, { tradesPerSeason = 800, seed = 15 } = {}) {
+export async function dynastyVerdictCalibration(bench, model, { tradesPerSeason = 800, seed = 15, fundOpt = {} } = {}) {
   const ctx = await setup(bench);
   const trades = [];
   const leagues = [];
   for (const Y of [2020, 2021, 2022, 2023]) {
     const rand = rng(seed + Y);
-    const L = buildLeague(ctx, bench, Y, rand, model);
+    const L = buildLeague(ctx, bench, Y, rand, model, fundOpt);
     if (!L) continue;
     leagues.push({ season: Y, snapshot: L.snapshot, players: L.universe.length });
     for (let k = 0; k < tradesPerSeason; k++) {

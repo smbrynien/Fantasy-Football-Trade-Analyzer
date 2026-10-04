@@ -41,6 +41,18 @@ function candidateValues(players, priors, spec) {
     pool.push({ cid: p.g, position: p.pos, rank: p.rank, points: games * priors.rateAt(p.pos, p.rank), games });
   }
   const structure = computeLeagueStructure(pool, LEAGUE);
+  // E18 candidate: replacement level shifted up the ranking by replShift × teams (0 = the league's last starter, as the
+  // app; 0.5 = the average team's worst starter).
+  if (spec.replShift) {
+    for (const pos of POS) {
+      const st = structure.starters[pos];
+      const list = pool.filter((q) => q.position === pos).map((q) => q.points).sort((m, n) => n - m);
+      if (!st || !list.length) continue;
+      const k = Math.max(1, Math.min(list.length - 1, Math.round(st - spec.replShift * LEAGUE.teams)));
+      structure.replacement[pos] = (list[k - 1] + list[k]) / 2;
+      structure.waiver[pos] = Math.min(structure.waiver[pos], structure.replacement[pos]);
+    }
+  }
   const assets = new Map();
   for (const x of pool) {
     let v = surplusPoints(x.points, x.position, structure, spec.beta, spec.sigmaMult * SIGMA[x.position] * x.games);

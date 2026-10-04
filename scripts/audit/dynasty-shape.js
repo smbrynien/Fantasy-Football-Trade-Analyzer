@@ -24,7 +24,7 @@ function ratios(rows, key) {
   return { ratio: t, loss: r3(t.reduce((a, x) => a + (x.ratio > 0 ? Math.log(x.ratio) ** 2 : 0), 0)) };
 }
 
-export function dynastyShape(bench, hist, { discount = 0.82, mults = [0, 0.25, 0.5, 1], regularize = true } = {}) {
+export function dynastyShape(bench, hist, { discount = 0.82, mults = [0, 0.25, 0.5, 1], regularize = true, fundOpt = {} } = {}) {
   const e5 = lineupExperiment(bench, { startWeek: 1, kInfo: 4 });
   const seasonRows = new Map();
   for (const arr of hist.seasons.values()) for (const r of arr) seasonRows.set(`${r.gsis}|${r.season}`, r);
@@ -43,7 +43,7 @@ export function dynastyShape(bench, hist, { discount = 0.82, mults = [0, 0.25, 0
       const m = hist.meta.get(g);
       if (!m) continue;
       const age = m.birth_date ? (new Date(`${Y}-09-01`) - new Date(m.birth_date)) / (365.25 * 864e5) : null;
-      const F = Object.fromEntries(mults.map((cm) => [cm, fundamental(seasonRows, cal, g, m, pos, Y, age, repl(Y - 1, pos), { priorK: 20, agingPower: 2, cvMult: cm })]));
+      const F = Object.fromEntries(mults.map((cm) => [cm, fundamental(seasonRows, cal, g, m, pos, Y, age, repl(Y - 1, pos), { priorK: 20, agingPower: 2, cvMult: cm, ...fundOpt })]));
       for (const cm of mults) if (F[cm] !== null) ((curves[cm] ||= {})[pos] ||= []).push(F[cm]);
       players.push({ g, pos, rank, F });
     }

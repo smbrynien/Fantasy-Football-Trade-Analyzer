@@ -55,3 +55,15 @@ test('compareSummary: leader, gaps in value order, and "about the same" when the
   const near = compareSummary([{ name: 'X', value: 5000, sigma: 400 }, { name: 'Y', value: 4700, sigma: 300 }]);
   assert.equal(near.rows[0].close, true, '300 ≤ 500');
 });
+
+test('deep audit: source-disagreement note and alternative-assumption variants', async () => {
+  const { disagreementNote, assumptionVariants } = await import('../js/ui/trade-helpers.js');
+  assert.equal(disagreementNote({ confidence: { cv: 0.2 }, groupValues: { market: 8000, consensus: 6000 } }), null);
+  const n = disagreementNote({ confidence: { cv: 0.4 }, groupValues: { market: 8000, consensus: 6000, projection: null } }, { market: 'Market' });
+  assert.match(n.title, /Market 8000 · consensus 6000/);
+  for (const mode of ['redraft', 'dynasty']) {
+    const vs = assumptionVariants(mode);
+    assert.equal(vs.length, 3);
+    for (const v of vs) assert.ok(v.overrides[mode].weights);
+  }
+});

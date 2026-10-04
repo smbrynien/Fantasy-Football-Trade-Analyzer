@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T08:58:18.441Z",
-  "method": "P(next season < 4 games or absent | top-N positional finish this season: QB32/RB60/WR84/TE32), pooled +-1 age (+-2 when sparse), then a weighted monotone (non-decreasing in age) fit; +0.06 per year beyond the last age with >=15 pooled observations (cap 0.9).",
+  "generated_at": "2026-10-04T01:05:46.320Z",
+  "method": "P(next season < 4 games or absent | top-N positional finish this season: QB32/RB60/WR84/TE32), pooled +-1 age (+-2 when sparse), then a weighted monotone (non-decreasing in age) fit; +0.06 per year beyond the last age with >=15 pooled observations (cap 0.9). later_year_multiplier (audit E19): factor on the hazard for every transition after the first, least squares to the observed share active 2-4 seasons later.",
   "sample": {
     "seasons": "2006-2025",
     "players": 2975
@@ -102,6 +102,12 @@
       "41": 0.618,
       "42": 0.678
     }
+  },
+  "later_year_multiplier": {
+    "QB": 0.7,
+    "RB": 1.35,
+    "WR": 1.6,
+    "TE": 1.25
   },
   "raw": {
     "QB": {

@@ -1,0 +1,422 @@
+{
+  "experiment": "E17 scoring-format translation of the PPR consensus order (within-position Spearman with format outcomes)",
+  "label": "REAL HISTORICAL DATA",
+  "results": [
+    {
+      "season": 2020,
+      "startWeek": 1,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.539,
+          "translated": 0.535,
+          "oracleRatio": 0.587
+        },
+        "half": {
+          "untranslated": 0.549,
+          "translated": 0.545,
+          "oracleRatio": 0.561
+        },
+        "tep05": {
+          "untranslated": 0.647,
+          "translated": 0.648,
+          "oracleRatio": 0.632
+        },
+        "tep10": {
+          "untranslated": 0.645,
+          "translated": 0.648,
+          "oracleRatio": 0.617
+        }
+      }
+    },
+    {
+      "season": 2020,
+      "startWeek": 6,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.513,
+          "translated": 0.494,
+          "oracleRatio": 0.558
+        },
+        "half": {
+          "untranslated": 0.529,
+          "translated": 0.516,
+          "oracleRatio": 0.548
+        },
+        "tep05": {
+          "untranslated": 0.522,
+          "translated": 0.527,
+          "oracleRatio": 0.463
+        },
+        "tep10": {
+          "untranslated": 0.528,
+          "translated": 0.544,
+          "oracleRatio": 0.431
+        }
+      }
+    },
+    {
+      "season": 2020,
+      "startWeek": 10,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.532,
+          "translated": 0.522,
+          "oracleRatio": 0.587
+        },
+        "half": {
+          "untranslated": 0.555,
+          "translated": 0.549,
+          "oracleRatio": 0.58
+        },
+        "tep05": {
+          "untranslated": 0.776,
+          "translated": 0.773,
+          "oracleRatio": 0.771
+        },
+        "tep10": {
+          "untranslated": 0.761,
+          "translated": 0.76,
+          "oracleRatio": 0.744
+        }
+      }
+    },
+    {
+      "season": 2021,
+      "startWeek": 1,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.546,
+          "translated": 0.539,
+          "oracleRatio": 0.576
+        },
+        "half": {
+          "untranslated": 0.551,
+          "translated": 0.548,
+          "oracleRatio": 0.566
+        },
+        "tep05": {
+          "untranslated": 0.581,
+          "translated": 0.584,
+          "oracleRatio": 0.575
+        },
+        "tep10": {
+          "untranslated": 0.591,
+          "translated": 0.582,
+          "oracleRatio": 0.587
+        }
+      }
+    },
+    {
+      "season": 2021,
+      "startWeek": 6,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.517,
+          "translated": 0.495,
+          "oracleRatio": 0.535
+        },
+        "half": {
+          "untranslated": 0.515,
+          "translated": 0.51,
+          "oracleRatio": 0.518
+        },
+        "tep05": {
+          "untranslated": 0.518,
+          "translated": 0.53,
+          "oracleRatio": 0.544
+        },
+        "tep10": {
+          "untranslated": 0.525,
+          "translated": 0.543,
+          "oracleRatio": 0.565
+        }
+      }
+    },
+    {
+      "season": 2021,
+      "startWeek": 10,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.507,
+          "translated": 0.488,
+          "oracleRatio": 0.604
+        },
+        "half": {
+          "untranslated": 0.516,
+          "translated": 0.509,
+          "oracleRatio": 0.558
+        },
+        "tep05": {
+          "untranslated": 0.549,
+          "translated": 0.564,
+          "oracleRatio": 0.525
+        },
+        "tep10": {
+          "untranslated": 0.561,
+          "translated": 0.578,
+          "oracleRatio": 0.529
+        }
+      }
+    },
+    {
+      "season": 2022,
+      "startWeek": 1,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.609,
+          "translated": 0.61,
+          "oracleRatio": 0.645
+        },
+        "half": {
+          "untranslated": 0.609,
+          "translated": 0.613,
+          "oracleRatio": 0.63
+        },
+        "tep05": {
+          "untranslated": 0.543,
+          "translated": 0.552,
+          "oracleRatio": 0.547
+        },
+        "tep10": {
+          "untranslated": 0.519,
+          "translated": 0.526,
+          "oracleRatio": 0.51
+        }
+      }
+    },
+    {
+      "season": 2022,
+      "startWeek": 6,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.474,
+          "translated": 0.48,
+          "oracleRatio": 0.569
+        },
+        "half": {
+          "untranslated": 0.486,
+          "translated": 0.488,
+          "oracleRatio": 0.53
+        },
+        "tep05": {
+          "untranslated": 0.417,
+          "translated": 0.407,
+          "oracleRatio": 0.385
+        },
+        "tep10": {
+          "untranslated": 0.41,
+          "translated": 0.408,
+          "oracleRatio": 0.332
+        }
+      }
+    },
+    {
+      "season": 2022,
+      "startWeek": 10,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.495,
+          "translated": 0.507,
+          "oracleRatio": 0.624
+        },
+        "half": {
+          "untranslated": 0.509,
+          "translated": 0.515,
+          "oracleRatio": 0.556
+        },
+        "tep05": {
+          "untranslated": 0.37,
+          "translated": 0.361,
+          "oracleRatio": 0.309
+        },
+        "tep10": {
+          "untranslated": 0.359,
+          "translated": 0.355,
+          "oracleRatio": 0.265
+        }
+      }
+    },
+    {
+      "season": 2023,
+      "startWeek": 1,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.538,
+          "translated": 0.542,
+          "oracleRatio": 0.632
+        },
+        "half": {
+          "untranslated": 0.546,
+          "translated": 0.545,
+          "oracleRatio": 0.576
+        },
+        "tep05": {
+          "untranslated": 0.505,
+          "translated": 0.517,
+          "oracleRatio": 0.486
+        },
+        "tep10": {
+          "untranslated": 0.508,
+          "translated": 0.522,
+          "oracleRatio": 0.495
+        }
+      }
+    },
+    {
+      "season": 2023,
+      "startWeek": 6,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.55,
+          "translated": 0.568,
+          "oracleRatio": 0.618
+        },
+        "half": {
+          "untranslated": 0.562,
+          "translated": 0.568,
+          "oracleRatio": 0.592
+        },
+        "tep05": {
+          "untranslated": 0.258,
+          "translated": 0.254,
+          "oracleRatio": 0.248
+        },
+        "tep10": {
+          "untranslated": 0.268,
+          "translated": 0.264,
+          "oracleRatio": 0.254
+        }
+      }
+    },
+    {
+      "season": 2023,
+      "startWeek": 10,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.597,
+          "translated": 0.591,
+          "oracleRatio": 0.655
+        },
+        "half": {
+          "untranslated": 0.607,
+          "translated": 0.604,
+          "oracleRatio": 0.625
+        },
+        "tep05": {
+          "untranslated": 0.461,
+          "translated": 0.451,
+          "oracleRatio": 0.446
+        },
+        "tep10": {
+          "untranslated": 0.459,
+          "translated": 0.455,
+          "oracleRatio": 0.44
+        }
+      }
+    },
+    {
+      "season": 2024,
+      "startWeek": 1,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.478,
+          "translated": 0.484,
+          "oracleRatio": 0.573
+        },
+        "half": {
+          "untranslated": 0.491,
+          "translated": 0.487,
+          "oracleRatio": 0.515
+        },
+        "tep05": {
+          "untranslated": 0.33,
+          "translated": 0.336,
+          "oracleRatio": 0.284
+        },
+        "tep10": {
+          "untranslated": 0.342,
+          "translated": 0.363,
+          "oracleRatio": 0.294
+        }
+      }
+    },
+    {
+      "season": 2024,
+      "startWeek": 6,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.487,
+          "translated": 0.513,
+          "oracleRatio": 0.577
+        },
+        "half": {
+          "untranslated": 0.504,
+          "translated": 0.506,
+          "oracleRatio": 0.528
+        },
+        "tep05": {
+          "untranslated": 0.366,
+          "translated": 0.353,
+          "oracleRatio": 0.325
+        },
+        "tep10": {
+          "untranslated": 0.37,
+          "translated": 0.36,
+          "oracleRatio": 0.299
+        }
+      }
+    },
+    {
+      "season": 2024,
+      "startWeek": 10,
+      "byFormat": {
+        "standard": {
+          "untranslated": 0.54,
+          "translated": 0.541,
+          "oracleRatio": 0.648
+        },
+        "half": {
+          "untranslated": 0.558,
+          "translated": 0.548,
+          "oracleRatio": 0.586
+        },
+        "tep05": {
+          "untranslated": 0.361,
+          "translated": 0.351,
+          "oracleRatio": 0.343
+        },
+        "tep10": {
+          "untranslated": 0.36,
+          "translated": 0.337,
+          "oracleRatio": 0.342
+        }
+      }
+    }
+  ],
+  "summary": {
+    "standard": {
+      "untranslated": 0.528,
+      "translated": 0.53,
+      "oracleRatio": 0.605,
+      "translatedBetterIn": "8/12"
+    },
+    "half": {
+      "untranslated": 0.538,
+      "translated": 0.537,
+      "oracleRatio": 0.565,
+      "translatedBetterIn": "5/12"
+    },
+    "tep05": {
+      "untranslated": 0.438,
+      "translated": 0.438,
+      "oracleRatio": 0.418,
+      "translatedBetterIn": "6/12"
+    },
+    "tep10": {
+      "untranslated": 0.439,
+      "translated": 0.441,
+      "oracleRatio": 0.409,
+      "translatedBetterIn": "5/12"
+    }
+  }
+}

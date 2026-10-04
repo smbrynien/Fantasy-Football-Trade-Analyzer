@@ -79,6 +79,7 @@ export function buildModel(modelConfig, calibration, league) {
     const c = calibration;
     if (c.aging_curves?.curves) m.dynasty.aging_curves = { ...m.dynasty.default_aging_curves, ...c.aging_curves.curves };
     if (c.attrition?.hazard) m.dynasty.attrition_table = c.attrition.hazard;
+    if (c.attrition?.later_year_multiplier) m.dynasty.attrition_later_multiplier = { ...m.dynasty.attrition_later_multiplier, ...c.attrition.later_year_multiplier };
     if (c.availability?.by_position) m.dynasty.availability = { ...m.dynasty.default_availability, ...c.availability.by_position };
     if (c.draft_priors?.priors) m.dynasty.draft_priors = c.draft_priors.priors;
     if (c.rookie_slot_curve?.shape) m.picks.historical_shape = c.rookie_slot_curve.shape;

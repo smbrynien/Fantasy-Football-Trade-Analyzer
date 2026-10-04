@@ -56,7 +56,7 @@ export function monotoneHazard(raw, { from = 21, to = 42, minN = 15, poolN = 30,
  * the `span` years before `lastSupported` (or `fallbackRate` if that window shows no decline). Values inside the
  * supported range are untouched apart from the unimodality fix.
  */
-export function unimodalAgeCurve(curve, lastSupported, { span = 3, fallbackRate = 0.92 } = {}) {
+export function unimodalAgeCurve(curve, lastSupported, { span = 3, fallbackRate = 0.92, concave = false } = {}) {
   const ages = Object.keys(curve).map(Number).sort((a, b) => a - b);
   const v = Object.fromEntries(ages.map((a) => [a, curve[a]]));
   const peakAge = ages.reduce((p, a) => (v[a] > v[p] ? a : p), ages[0]);
@@ -71,6 +71,31 @@ export function unimodalAgeCurve(curve, lastSupported, { span = 3, fallbackRate 
     const ratio = Math.min(v[a] / v[a - 1], cap);
     v[a] = v[a - 1] * ratio;
     cap = ratio;
+  }
+  if (concave) {
+    // Log-concave (deep audit 2026-10-04): the yearly log-change d_a = ln v[a] − ln v[a−1] must not increase with age —
+    // growth slows toward the peak and the decline never slows after it (concave: 'decline' = from the peak on only,
+    // which is what calibrate.js uses). Sampled curves zig-zag (WR 30→31 −8.6%,
+    // 31→32 −5.9%, 32→33 −9.7%), which made identical production worth MORE a year older. Pool-adjacent-violators on
+    // the yearly changes keeps each pooled block's total change, so the curve's overall rise and fall are preserved.
+    // concave === 'decline': only the ages from the peak on (the fitted growth before the peak is kept).
+    const pk = ages.reduce((p, a) => (v[a] > v[p] ? a : p), ages[0]);
+    const pos = ages.filter((a) => v[a] > 0 && (concave !== 'decline' || a >= pk));
+    const d = pos.slice(1).map((a, i) => Math.log(v[a] / v[pos[i]]));
+    const blocks = [];
+    for (const x of d) {
+      blocks.push({ v: x, n: 1 });
+      while (blocks.length > 1 && blocks[blocks.length - 2].v < blocks[blocks.length - 1].v) {
+        const b = blocks.pop(), q = blocks.pop();
+        blocks.push({ v: (q.v * q.n + b.v * b.n) / (q.n + b.n), n: q.n + b.n });
+      }
+    }
+    const dd = blocks.flatMap((b) => Array(b.n).fill(b.v));
+    let lv = Math.log(v[pos[0]]);
+    const out = { [pos[0]]: lv };
+    pos.slice(1).forEach((a, i) => { lv += dd[i]; out[a] = lv; });
+    const peak = Math.max(...Object.values(out));
+    for (const a of pos) v[a] = Math.exp(out[a] - peak) * (concave === 'decline' ? v[pk] : 1);
   }
   return Object.fromEntries(ages.map((a) => [a, Math.round(v[a] * 1000) / 1000]));
 }
